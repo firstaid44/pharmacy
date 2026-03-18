@@ -41,6 +41,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .fi[readonly]{background:#F2F2F7;color:#8E8E93;}
 select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;}
 textarea.fi{resize:none;font-size:15px;line-height:1.5;}
+
+/* Search + Scan row */
+.search-row{display:flex;gap:8px;align-items:stretch;}
+.search-row .fi{flex:1;}
+.scan-btn{padding:0 16px;border-radius:10px;border:0.5px solid #C7C7CC;background:#F2F2F7;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600;color:#185FA5;-webkit-appearance:none;white-space:nowrap;flex-shrink:0;}
+.scan-btn:active{opacity:.7;}
+.scan-btn svg{width:20px;height:20px;stroke:#185FA5;fill:none;stroke-width:2;}
+
+/* Scanner modal */
+.scanner-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;background:rgba(0,0,0,.85);}
+.scanner-modal.open{display:flex;flex-direction:column;}
+.scanner-top{display:flex;align-items:center;justify-content:space-between;padding:1rem 1rem calc(1rem + env(safe-area-inset-top));padding-top:calc(1rem + env(safe-area-inset-top));}
+.scanner-title{font-size:16px;font-weight:600;color:#fff;}
+.scanner-close{padding:8px 16px;border-radius:10px;border:0.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:14px;cursor:pointer;-webkit-appearance:none;}
+.scanner-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;}
+#scanner-video{width:100%;max-width:320px;border-radius:16px;background:#000;}
+.scanner-frame{position:relative;width:100%;max-width:320px;margin:0 auto;}
+.scanner-overlay{position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;border:3px solid #185FA5;pointer-events:none;}
+.scanner-corner{position:absolute;width:24px;height:24px;border-color:#fff;border-style:solid;}
+.sc-tl{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:4px 0 0 0;}
+.sc-tr{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 4px 0 0;}
+.sc-bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px;border-radius:0 0 0 4px;}
+.sc-br{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
+.scanner-hint{color:rgba(255,255,255,.7);font-size:13px;text-align:center;margin-top:1rem;line-height:1.5;}
+.scanner-result{margin-top:1rem;padding:12px 16px;background:rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:14px;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;}
+.scanner-bottom{padding:1rem 1rem calc(1.5rem + env(safe-area-inset-bottom));display:flex;gap:10px;}
+.scanner-action{flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;-webkit-appearance:none;border:none;}
+.sa-cancel{background:rgba(255,255,255,.15);color:#fff;}
+.sa-confirm{background:#185FA5;color:#fff;display:none;}
+
 .sw{position:relative;}
 .sbox{position:absolute;top:100%;left:0;right:0;z-index:200;background:#fff;border:0.5px solid #C7C7CC;border-radius:12px;max-height:260px;overflow-y:auto;display:none;margin-top:4px;-webkit-overflow-scrolling:touch;box-shadow:0 4px 24px rgba(0,0,0,.1);}
 .si{padding:13px 14px;font-size:15px;cursor:pointer;color:#1C1C1E;border-bottom:0.5px solid #E0E0E0;}
@@ -55,6 +85,7 @@ textarea.fi{resize:none;font-size:15px;line-height:1.5;}
 .alert{padding:12px 14px;border-radius:10px;font-size:14px;margin-bottom:1rem;line-height:1.4;}
 .alert-success{background:#EAF7EF;color:#1E7E44;}
 .alert-danger{background:#FDECEC;color:#C0392B;}
+.alert-warning{background:#FFF8EC;color:#B45309;}
 .tbl-card{background:#fff;border-radius:14px;border:0.5px solid #E0E0E0;overflow:hidden;margin-bottom:2rem;}
 .tbl-header{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;border-bottom:0.5px solid #E0E0E0;}
 .tbl-title{font-size:15px;font-weight:600;color:#1C1C1E;}
@@ -68,8 +99,6 @@ textarea.fi{resize:none;font-size:15px;line-height:1.5;}
 .pill.exp{background:#FFF8EC;color:#B45309;}
 .pill.qty{background:#EAF7EF;color:#1E7E44;font-weight:600;}
 .pill.saved{background:#EAF7EF;color:#1E7E44;}
-.pill.saving{background:#FFF8EC;color:#B45309;}
-.pill.error{background:#FDECEC;color:#C0392B;}
 .log-date{font-size:11px;color:#C7C7CC;margin-top:3px;}
 .log-note{font-size:12px;color:#8E8E93;margin-top:4px;font-style:italic;line-height:1.4;}
 .empty{text-align:center;padding:2.5rem 1rem;color:#C7C7CC;font-size:14px;}
@@ -77,8 +106,33 @@ textarea.fi{resize:none;font-size:15px;line-height:1.5;}
 </style>
 </head>
 <body>
-<div class="app">
 
+<!-- Scanner Modal -->
+<div class="scanner-modal" id="scanner-modal">
+  <div class="scanner-top">
+    <span class="scanner-title">สแกน QR / Barcode</span>
+    <button class="scanner-close" onclick="closeScanner()">ปิด</button>
+  </div>
+  <div class="scanner-body">
+    <div class="scanner-frame">
+      <video id="scanner-video" autoplay playsinline muted></video>
+      <div class="scanner-overlay">
+        <div class="scanner-corner sc-tl"></div>
+        <div class="scanner-corner sc-tr"></div>
+        <div class="scanner-corner sc-bl"></div>
+        <div class="scanner-corner sc-br"></div>
+      </div>
+    </div>
+    <div class="scanner-hint">จัดบาร์โค้ดหรือ QR Code ให้อยู่ในกรอบ<br>ระบบจะสแกนอัตโนมัติ</div>
+    <div class="scanner-result" id="scanner-result">รอการสแกน...</div>
+  </div>
+  <div class="scanner-bottom">
+    <button class="scanner-action sa-cancel" onclick="closeScanner()">ยกเลิก</button>
+    <button class="scanner-action sa-confirm" id="sa-confirm" onclick="confirmScan()">ใช้รหัสนี้</button>
+  </div>
+</div>
+
+<div class="app">
   <div class="header">
     <div class="logo">
       <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
@@ -122,19 +176,35 @@ textarea.fi{resize:none;font-size:15px;line-height:1.5;}
     <div class="panel-title">บันทึกรับยาเข้าคลัง</div>
     <div class="sec-label">ข้อมูลยา</div>
     <div class="form-stack">
+
       <div class="fg sw">
         <label class="fl">ชื่อยา <span>*</span></label>
-        <input class="fi" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="text"/>
+        <div class="search-row">
+          <input class="fi" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="text"/>
+          <button class="scan-btn" onclick="openScanner('name')" title="สแกน QR/Barcode">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="19" y="14" width="2" height="2"/><rect x="14" y="19" width="2" height="2"/><rect x="18" y="18" width="3" height="3"/></svg>
+            สแกน
+          </button>
+        </div>
         <div class="sbox" id="sbox"></div>
       </div>
+
       <div class="fg">
         <label class="fl">รหัสยา</label>
         <input class="fi" id="r-code" readonly placeholder="ดึงอัตโนมัติเมื่อเลือกชื่อยา"/>
       </div>
+
       <div class="fg">
         <label class="fl">LOT Number <span>*</span></label>
-        <input class="fi" id="r-lot" placeholder="เช่น LOT2025001" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"/>
+        <div class="search-row">
+          <input class="fi" id="r-lot" placeholder="เช่น LOT2025001" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"/>
+          <button class="scan-btn" onclick="openScanner('lot')" title="สแกน LOT Barcode">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="19" y="14" width="2" height="2"/><rect x="14" y="19" width="2" height="2"/><rect x="18" y="18" width="3" height="3"/></svg>
+            สแกน
+          </button>
+        </div>
       </div>
+
       <div class="fg">
         <label class="fl">วันหมดอายุ <span>*</span></label>
         <input class="fi" id="r-exp" type="date"/>
@@ -178,16 +248,87 @@ textarea.fi{resize:none;font-size:15px;line-height:1.5;}
     </div>
     <div id="log-list"><div class="loading">กำลังโหลดข้อมูล...</div></div>
   </div>
-
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyvfohKGqK9svtBMg50BcM8LTZVATzZO7SmeGy3v0lXPJAAI6IuyvlU-mPuR1iYDbmY/exec';
 
 const drugDB=[["1000016","ALLOPURINOL 100 มก."],["1000122","Enalapril 5 mg. (E5)/TAB"],["1000184","METFORMIN 500 MG./TAB"],["1000284","Spironolactone 25 MG./TAB กส."],["1019001","GLIPIZIDE 5 MG. /TAB กส."],["110104480112","FOLIC ACID 5MG./TAB"],["1419041","GEMfibrozil 300 MG./CAPSULES"],["1440105","AMLODIPINE 5 MG./TAB"],["1460151","ENALAPRIL 20 MG./TAB"],["1500016","Metoprolol 100 MG./TAB กส."],["1500035","METOCLOPRAMIDE 10 mg TAB"],["1530008","ASPIRIN 81 MG./TAB. กส."],["1ALB","ALBENDAZOLE 200 MG./TAB (San San)"],["1AMIT","AMITRIPTYLINE10 MG./ TAB(HK)"],["1AMO","AMOXICILLIN 500 MG./CAPSULES (องค์การเภสัชMOX)"],["1AMX","Amoxicillin 250 mg./cap (องค์การเภสัชMOX)"],["1BUF","IBUPROFEN 400 MG./TAB(I-Profen)"],["1CAL","CALCIUM 1250 MG. tab.(Cal-star)"],["1CET","PARACETAMOL 500 MG./TAB(Masapara)"],["1DCL","DICLOXACILLIN 250 MG. /CAPSULES"],["1DEXT","DEXTROMETHORPHANE"],["1DIC","DICLOFENAC SODIUM 25 MG./TAB"],["1DIM","DIMENHYDRENATE 50 MG."],["1DOM","DOMPERIDONE10 MG./TAB"],["1FBC","FERROUS FUMARATE 200 MG./TAB กส."],["1GABA","GABAPENTIN 100 mg GPO"],["1HOC","HYOSCINE-N-BUTYLBROMIDE 10 .MG/TAB(VS)"],["1lDC","LIDOCAIN 2 %"],["1LST2","LOSARTAN 50 MG.(Berlin)"],["1MET","METRONIDAZOLE 400 MG./TAB"],["1MTV","MTV (MULTIVITAMIN) TAB กส."],["1NAPRO","NAPROXEN 250 MG TAB(Nasin)"],["1NOC","NORFLOXACIN 400 MG./TAB กส."],["1OME","OMEPRAZOLE 20 MG./CAPSULES"],["1ORS","ORS เด็ก(baby-LyteH)"],["1PARA325","PARACETAMOL 325 MG(AU)"],["1STC","SIMETHICONE 80 MG/TAB"],["1TFD","TRIFERDINE TAB. กส."],["1VIB","VITAMIN B COMPLEX TAB"],["1VIC","VITAMIN C 50 MG CIBIC-50"],["2DOMP","DOMPERIDONE SUSPENSION"],["2MCAR","MIXT.CARMINATIVE"],["2MILK","MILK OF MAGNESIA(GPO)"],["2MTUS","BROWN MIXTURE GPO"],["2MTVS","MULTI VITAMIN SYR.(syn o vits)"],["2ORS","ORS ผู้ใหญ่(T.O.S)"],["2SALB","SALBUTAMOL SYR.(sabumol)"],["2SOAT","BENZYL BENZOATE 30 ML."],["3ALB","ALBENDAZOLE SYR. (FALBEN)"],["3ALM","ALUM MILK GEL(BOWA GEL ED)"],["3AMI","AMOXICILLIN 125 MG. /SYR.(Manmox)"],["3ANAL","ANAGESIC BALM (นีโอติก้า)"],["3AOM","AMMONNIUM CARBONATE SYR ."],["3CALA","CALAMINE LOTION"],["3DCL","DICLOXACILLIN 62.5 MG./SYR."],["3HYO","HYOSCINE 5 MG./SYR."],["3SIM","SIMETHICONE ORAL DROPS 40 MG.(Gas-med)"],["3TET","DIPTHERIA AND TESANUS VACCINE"],["3TRIA002","TA CREAM 0.02%(ไมโครไนซ์ ฟอร์ม)"],["3TRIA01","TA CREAM 0.1% (ไตรโนแมน)"],["3WHFO","WHITFIELD OINTMENT"],["4AMS","AMMONIA 450 ML.(วิทยาศรม)"],["4BEN","BENZYL BENZOAT 450 ML."],["4CET","PARACETAMOL 120 MG./SYR. (THOHO)"],["4CRP","CHLORAMPHENICOL *EYE OINTMENT 1% 5 Gm."],["4CTC","CLOTRIMAZOLE CREAM(Mazole)"],["4DEXA","Dexamethasone inj. 4mg./1ml."],["4GEN","GENTAMYCIN EYE 3 MG. /DROP"],["4HSC","CHLORHEXIDINE(hibi scrub) 450 ML."],["4HSC2","CHLORHEXIDINE 30 ML."],["4OPA","ANTAZOLINE HCI BP (Hista oph)"],["4POV","POVIDONE IODINE 15 ML."],["4SLV","SILVERDERM CREAM 25 G."],["4TRI","TRIAMCINOLONE ORAL"],["5ACH","ALCOHOL 70% 450ml."],["5COL","COLCHICINE 0.6 MG. tab."],["5CPM","CHLORPHENIRAMINE 4 MG./TAB (MALEATE)"],["5HCT","HCTZ-Hydrochlorothiazide 25 MG.TAB กส."],["5NOL","NSS. SODIUM CHLORIDE IRRIGATION 1000 MG."],["5PNL","PROPRANOLOL 10 MG./TAB กส."],["5PVD","POVIDONE-IODINE 450 ML."],["6CPM","CHLORPHENIRAMINE 2 MG./SY (GPO)"],["ACV CREAM","ACYCLOVIR CREAM 1 GM"],["ATO","ATORVASTATIN 40 MG/TAB กส."],["BET-1N","BETAMETHASONE+N cream 5 gm(GPO)"],["BET-SA","BETAMETHASONE+SA cream 5 gm"],["Beta","Betahistine 6 mg.(SPS)"],["BRO TAB","BROMHEXINE HCI 8 MG TAB"],["BROM2","BROMHEXINE SYRUP 60 ML Patar Lab"],["BUD","BUDESONIDE MDI 200 MCG"],["CAP RED","CLOPIDOGREL 75 MG."],["CAR","DOXAZOSIN 2MG./Tab กส."],["Carve","Carvedilol 6.25 mg."],["CEP SYR","CEPHALEXIN 125 MG SYR"],["CHL","Chloramphenicol OINTMENT 1%(ขี้ผึ้ง ยูนีซัน)"],["CPM INJ","CHLORPHENIRAMINE INJ."],["DIMEN INJ","DIMEN INJ"],["DP CRP","DIPOTASSIUM CLORAZEPATE 5 MG CAP"],["FER","Ferrous Fumarate 76 mg./5ml (GPO)"],["FERDEK Syrub","FERROUS FUMARATE 15mg/0.6 ml Syrub"],["FLU125","FLUTICASONE 125 MCG INHALOR"],["FLU20","FLUOXETIN 20 MG/TAB กส.(Pharmaland)"],["FURO","FUROSEMIDE 40 MG TAB กส"],["Griss500","GRISEOFULVIN 500 MG. TAB"],["HY251","Hydralazine 25 mg (APRESZINE)"],["HYZ","HYDROXYZINE 10 mg tab"],["ING TRA","TRAMADOL INJ 50MG/ML"],["ISO","ISOSORBIDE DINITRATE 10 MG/TAB กส."],["KTCNZ","KETOCONAZOLE 200 mg tab กส."],["LORA","LORATADINE 10 mg tab"],["MNDP","MANIDIPINE HYDOCHLORIDE"],["NI20","NIFEDIPINE 20 MG SR/CAP"],["NORET5MG","NORETHISTERONE 5 MG TAB"],["PIO1","PIOGLITAZONE 30 MG./Tab (UTMOS 30)"],["PNSL","PREDNISOLONE 5 MG/TAB"],["POLY E","POLYOPH EYE DROP 5 ml(OPSACIN)"],["PROCT TAB","PROCTOSEDYL SUPPOSITORIES TAB"],["RANI INJ","RANITIDINE INJ"],["SIM3","Simvastatin 40 mg"],["TETRA","0.5%TETRACAINE HCL"],["THE","THEOPHYLLINE 200 MG SR/TAB"],["TOL50","TOLPERISONE HCL 50MG/TAB"],["TRIAM LO1","T.A. LOTION 0.1%(starlone)"]];
 
 let localLog=[], todayNew=0, savedNew=0;
+let scanTarget='name', scanStream=null, scanCanvas=null, scanCtx=null, scanLoop=null, lastScan='';
+
 document.getElementById('s-date').textContent=new Date().toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'});
 
+// ── SCANNER ──────────────────────────────────────────
+async function openScanner(target){
+  scanTarget=target;
+  lastScan='';
+  document.getElementById('scanner-result').textContent='รอการสแกน...';
+  document.getElementById('sa-confirm').style.display='none';
+  document.getElementById('scanner-modal').classList.add('open');
+  try{
+    scanStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}
+    });
+    const video=document.getElementById('scanner-video');
+    video.srcObject=scanStream;
+    await video.play();
+    scanCanvas=document.createElement('canvas');
+    scanCtx=scanCanvas.getContext('2d');
+    startScanLoop(video);
+  }catch(e){
+    document.getElementById('scanner-result').textContent='ไม่สามารถเปิดกล้องได้: '+e.message;
+  }
+}
+
+function startScanLoop(video){
+  scanLoop=setInterval(()=>{
+    if(video.readyState!==video.HAVE_ENOUGH_DATA) return;
+    scanCanvas.width=video.videoWidth;
+    scanCanvas.height=video.videoHeight;
+    scanCtx.drawImage(video,0,0);
+    const img=scanCtx.getImageData(0,0,scanCanvas.width,scanCanvas.height);
+    const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
+    if(code && code.data && code.data!==lastScan){
+      lastScan=code.data;
+      onScanned(code.data);
+    }
+  },200);
+}
+
+function onScanned(val){
+  clearInterval(scanLoop);
+  document.getElementById('scanner-result').textContent='สแกนได้: '+val;
+  document.getElementById('sa-confirm').style.display='block';
+  if(scanStream) scanStream.getTracks().forEach(t=>t.stop());
+}
+
+function confirmScan(){
+  const val=lastScan;
+  closeScanner();
+  if(scanTarget==='name'){
+    document.getElementById('r-name').value=val;
+    searchDrug(val);
+    const match=drugDB.find(d=>d[0].toLowerCase()===val.toLowerCase()||d[1].toLowerCase()===val.toLowerCase());
+    if(match){ pickDrug(match[1],match[0]); }
+    else{ showAlert('ไม่พบยารหัส "'+val+'" ในฐานข้อมูล กรุณาเลือกจากรายการ','warning'); }
+  } else if(scanTarget==='lot'){
+    document.getElementById('r-lot').value=val;
+    showAlert('LOT: '+val+' — กรอกเรียบร้อย','success');
+  }
+}
+
+function closeScanner(){
+  clearInterval(scanLoop);
+  if(scanStream) scanStream.getTracks().forEach(t=>t.stop());
+  scanStream=null;
+  document.getElementById('scanner-video').srcObject=null;
+  document.getElementById('scanner-modal').classList.remove('open');
+}
+
+// ── SHEET ─────────────────────────────────────────────
 function setSheet(status,msg){
   const colors={green:'#27AE60',amber:'#F39C12',red:'#E74C3C'};
   document.getElementById('sdot').style.background=colors[status]||colors.amber;
@@ -205,7 +346,7 @@ async function loadFromSheet(){
   setSheet('amber','กำลังโหลดข้อมูลจาก Google Sheet...');
   document.getElementById('log-list').innerHTML='<div class="loading">กำลังโหลดข้อมูล...</div>';
   try{
-    const res=await fetch(SCRIPT_URL+'?t='+Date.now());
+    const res=await fetch(SCRIPT_URL+'?t='+Date.now(),{redirect:'follow'});
     const json=await res.json();
     if(json.status==='ok'){
       document.getElementById('s-today').textContent=json.todayCount+todayNew;
@@ -213,9 +354,7 @@ async function loadFromSheet(){
       document.getElementById('scnt').textContent='ทั้งหมด '+json.totalCount+' รายการ';
       setSheet('green','เชื่อมต่อ Google Sheet สำเร็จ');
       renderLog(json.rows);
-    } else {
-      throw new Error(json.message||'unknown');
-    }
+    } else { throw new Error(json.message||'unknown'); }
   }catch(e){
     setSheet('red','โหลดไม่สำเร็จ — '+e.message);
     document.getElementById('s-today').textContent=todayNew;
@@ -244,15 +383,10 @@ function renderLog(rows){
 }
 
 function formatExp(exp){
-  try{
-    if(exp.includes('-')){
-      const d=new Date(exp);
-      return d.toLocaleDateString('th-TH',{month:'short',year:'numeric'});
-    }
-    return exp;
-  }catch(e){return exp;}
+  try{ if(exp.includes('-')){ const d=new Date(exp); return d.toLocaleDateString('th-TH',{month:'short',year:'numeric'}); } return exp; }catch(e){return exp;}
 }
 
+// ── SEARCH ────────────────────────────────────────────
 function searchDrug(val){
   const box=document.getElementById('sbox');
   if(!val.trim()){box.style.display='none';return;}
@@ -273,6 +407,7 @@ function pickDrug(name,code){
 document.addEventListener('touchstart',e=>{if(!e.target.closest('.sw'))document.getElementById('sbox').style.display='none';},{passive:true});
 document.addEventListener('click',e=>{if(!e.target.closest('.sw'))document.getElementById('sbox').style.display='none';});
 
+// ── FORM ──────────────────────────────────────────────
 function todayTH(){return new Date().toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric'});}
 
 async function receiveStock(){
@@ -283,37 +418,26 @@ async function receiveStock(){
   const unit=document.getElementById('r-unit').value;
   const qty=parseInt(document.getElementById('r-qty').value)||0;
   const note=document.getElementById('r-note').value.trim();
-
   if(!name){showAlert('กรุณาเลือกชื่อยาจากรายการ','danger');return;}
   if(!lot){showAlert('กรุณากรอก LOT Number','danger');return;}
   if(!exp){showAlert('กรุณาระบุวันหมดอายุ','danger');return;}
   if(qty<=0){showAlert('กรุณาระบุจำนวนที่รับเข้า','danger');return;}
-
   const entry={name,code,lot,exp,unit,qty,note,date:todayTH()};
   const btn=document.getElementById('save-btn');
-  btn.textContent='กำลังบันทึก...';
-  btn.disabled=true;
+  btn.textContent='กำลังบันทึก...'; btn.disabled=true;
   setSheet('amber','กำลังส่งข้อมูลไป Google Sheet...');
   clearForm();
-
   try{
-    await fetch(SCRIPT_URL,{
-      method:'POST',mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(entry)
-    });
-    localLog.unshift(entry);
-    todayNew++;savedNew++;
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+    localLog.unshift(entry); todayNew++; savedNew++;
     setSheet('green','บันทึกสำเร็จ — ข้อมูลอยู่ใน Google Sheet แล้ว');
     showAlert('บันทึก "'+name+'" LOT: '+lot+' จำนวน '+qty+' '+unit+' เรียบร้อย','success');
-    setTimeout(()=>loadFromSheet(), 1500);
+    setTimeout(()=>loadFromSheet(),1500);
   }catch(e){
-    setSheet('red','บันทึกไม่สำเร็จ — ตรวจสอบการเชื่อมต่อ');
+    setSheet('red','บันทึกไม่สำเร็จ');
     showAlert('ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่','danger');
   }
-
-  btn.textContent='+ บันทึกและส่งไป Sheet';
-  btn.disabled=false;
+  btn.textContent='+ บันทึกและส่งไป Sheet'; btn.disabled=false;
 }
 
 function clearForm(){
