@@ -206,7 +206,10 @@ async function loadFromSheet(){
 setSheet(‘amber’,‘กำลังโหลดข้อมูลจาก Google Sheet…’);
 document.getElementById(‘log-list’).innerHTML=’<div class="loading">กำลังโหลดข้อมูล…</div>’;
 try{
-const res=await fetch(SCRIPT_URL+’?t=’+Date.now());
+const res = await fetch(SCRIPT_URL+'?t='+Date.now(), {
+  method: 'GET',
+  mode: 'cors'
+});
 const json=await res.json();
 if(json.status===‘ok’){
 document.getElementById(‘s-today’).textContent=json.todayCount+todayNew;
