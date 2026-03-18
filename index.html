@@ -301,8 +301,33 @@ function startScanLoop(video){
 function onScanned(val){
   clearInterval(scanLoop);
   document.getElementById('scanner-result').textContent='สแกนได้: '+val;
-  document.getElementById('sa-confirm').style.display='block';
+
+  // ปิดกล้องทันที
   if(scanStream) scanStream.getTracks().forEach(t=>t.stop());
+
+  // ใส่ค่าอัตโนมัติ
+  if(scanTarget==='name'){
+    document.getElementById('r-name').value=val;
+    searchDrug(val);
+
+    const match=drugDB.find(d=>
+      d[0].toLowerCase()===val.toLowerCase() ||
+      d[1].toLowerCase()===val.toLowerCase()
+    );
+
+    if(match){
+      pickDrug(match[1],match[0]);
+    } else {
+      showAlert('ไม่พบยารหัส "'+val+'" ในฐานข้อมูล กรุณาเลือกจากรายการ','warning');
+    }
+
+  } else if(scanTarget==='lot'){
+    document.getElementById('r-lot').value=val;
+    showAlert('LOT: '+val+' — กรอกเรียบร้อย','success');
+  }
+
+  // ปิด modal อัตโนมัติ
+  setTimeout(()=>closeScanner(),300);
 }
 
 function confirmScan(){
