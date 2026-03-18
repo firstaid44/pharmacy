@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ระบบบริหารจัดการคลังยา — PCU สะบ้าย้อย</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#F2F2F7;-webkit-text-size-adjust:100%;}
+.app{padding:.75rem .75rem calc(.75rem + env(safe-area-inset-bottom));max-width:430px;margin:0 auto;}
+.header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding-bottom:.875rem;border-bottom:0.5px solid #E0E0E0;}
+.logo{width:38px;height:38px;background:#E6F1FB;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo svg{width:22px;height:22px;stroke:#185FA5;fill:none;stroke-width:2;}
+.app-title{font-size:16px;font-weight:600;color:#1C1C1E;letter-spacing:-.3px;}
+.app-sub{font-size:12px;color:#8E8E93;margin-top:1px;}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;margin-bottom:1rem;}
+.tab{padding:9px 4px;border-radius:9px;border:0.5px solid #C7C7CC;font-size:12px;cursor:pointer;background:transparent;color:#8E8E93;text-align:center;-webkit-appearance:none;}
+.tab.active{background:#E6F1FB;color:#185FA5;border-color:transparent;font-weight:600;}
+.tab.disabled{color:#C7C7CC;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
+.stat-card{background:#fff;border-radius:12px;padding:.75rem;border:0.5px solid #E0E0E0;}
+.stat-label{font-size:11px;color:#8E8E93;margin-bottom:3px;}
+.stat-value{font-size:22px;font-weight:600;color:#1C1C1E;letter-spacing:-.5px;}
+.stat-value.green{color:#27AE60;}
+.stat-value.info{color:#185FA5;}
+.db-bar{display:flex;align-items:center;gap:8px;background:#EAF7EF;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:13px;color:#1E7E44;}
+.dot-green{width:8px;height:8px;border-radius:50%;background:#27AE60;flex-shrink:0;}
+.sheet-bar{display:flex;align-items:center;justify-content:space-between;background:#F2F2F7;border-radius:10px;padding:9px 12px;margin-bottom:1rem;border:0.5px solid #E0E0E0;}
+.sheet-left{display:flex;align-items:center;gap:8px;font-size:12px;color:#8E8E93;}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.panel{background:#fff;border-radius:14px;border:0.5px solid #E0E0E0;padding:1rem;margin-bottom:1rem;}
+.panel-title{font-size:15px;font-weight:600;color:#1C1C1E;margin-bottom:.875rem;letter-spacing:-.2px;}
+.sec-label{font-size:11px;font-weight:600;color:#8E8E93;text-transform:uppercase;letter-spacing:.07em;margin:.875rem 0 8px;padding-bottom:5px;border-bottom:0.5px solid #E0E0E0;}
+.form-stack{display:flex;flex-direction:column;gap:12px;}
+.fg{display:flex;flex-direction:column;gap:6px;}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fl{font-size:13px;font-weight:500;color:#8E8E93;}
+.fl span{color:#E84040;margin-left:2px;}
+.fi{padding:13px 14px;border:0.5px solid #C7C7CC;border-radius:10px;font-size:16px;background:#fff;color:#1C1C1E;width:100%;-webkit-appearance:none;appearance:none;transition:border-color .15s;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;}
+.fi:focus{outline:none;border-color:#185FA5;}
+.fi[readonly]{background:#F2F2F7;color:#8E8E93;}
+select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;}
+textarea.fi{resize:none;font-size:15px;line-height:1.5;}
+.sw{position:relative;}
+.sbox{position:absolute;top:100%;left:0;right:0;z-index:200;background:#fff;border:0.5px solid #C7C7CC;border-radius:12px;max-height:260px;overflow-y:auto;display:none;margin-top:4px;-webkit-overflow-scrolling:touch;box-shadow:0 4px 24px rgba(0,0,0,.1);}
+.si{padding:13px 14px;font-size:15px;cursor:pointer;color:#1C1C1E;border-bottom:0.5px solid #E0E0E0;}
+.si:last-child{border-bottom:none;}
+.si:active{background:#F2F2F7;}
+.si-sub{font-size:12px;color:#8E8E93;margin-top:2px;}
+.btn-row{display:flex;gap:8px;margin-top:1.125rem;}
+.btn{flex:1;padding:15px 12px;border-radius:12px;font-size:16px;cursor:pointer;font-weight:500;border:0.5px solid #C7C7CC;background:#F2F2F7;color:#1C1C1E;text-align:center;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;transition:opacity .1s;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;}
+.btn:active{opacity:.7;}
+.btn-primary{flex:2;background:#E6F1FB;color:#185FA5;border-color:transparent;font-weight:600;}
+.btn-primary:disabled{opacity:.5;}
+.alert{padding:12px 14px;border-radius:10px;font-size:14px;margin-bottom:1rem;line-height:1.4;}
+.alert-success{background:#EAF7EF;color:#1E7E44;}
+.alert-danger{background:#FDECEC;color:#C0392B;}
+.tbl-card{background:#fff;border-radius:14px;border:0.5px solid #E0E0E0;overflow:hidden;margin-bottom:2rem;}
+.tbl-header{padding:.875rem 1rem;border-bottom:0.5px solid #E0E0E0;font-size:15px;font-weight:600;color:#1C1C1E;}
+.log-item{padding:13px 1rem;border-bottom:0.5px solid #E0E0E0;}
+.log-item:last-child{border-bottom:none;}
+.log-name{font-size:14px;font-weight:600;color:#1C1C1E;margin-bottom:5px;line-height:1.3;}
+.log-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:3px;}
+.pill{background:#F2F2F7;padding:3px 9px;border-radius:20px;font-size:11px;color:#8E8E93;font-weight:500;}
+.pill.lot{background:#EEF4FF;color:#2563EB;}
+.pill.exp{background:#FFF8EC;color:#B45309;}
+.pill.qty{background:#EAF7EF;color:#1E7E44;font-weight:600;}
+.pill.saved{background:#EAF7EF;color:#1E7E44;}
+.pill.saving{background:#FFF8EC;color:#B45309;}
+.pill.error{background:#FDECEC;color:#C0392B;}
+.log-date{font-size:11px;color:#C7C7CC;margin-top:3px;}
+.log-note{font-size:12px;color:#8E8E93;margin-top:4px;font-style:italic;line-height:1.4;}
+.empty{text-align:center;padding:2.5rem 1rem;color:#C7C7CC;font-size:14px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    </div>
+    <div>
+      <div class="app-title">ระบบบริหารจัดการคลังยา</div>
+      <div class="app-sub">PCU สะบ้าย้อย</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active">รับยาเข้า</button>
+    <button class="tab disabled">เบิกยาออก</button>
+    <button class="tab disabled">คลังยา</button>
+    <button class="tab disabled">ประวัติ</button>
+  </div>
+
+  <div id="alert-box" style="display:none;"></div>
+
+  <div class="db-bar">
+    <div class="dot-green"></div>
+    <span>ฐานข้อมูลยา PCU สะบ้าย้อย — <strong>118 รายการ</strong></span>
+  </div>
+
+  <div class="sheet-bar">
+    <div class="sheet-left">
+      <div class="sdot" id="sdot" style="background:#F39C12;"></div>
+      <span id="smsg">เชื่อมต่อ Google Sheet พร้อมบันทึก</span>
+    </div>
+    <span id="scnt" style="font-size:12px;color:#8E8E93;font-weight:600;">บันทึกแล้ว 0 รายการ</span>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">รายการยาในระบบ</div><div class="stat-value info">118</div></div>
+    <div class="stat-card"><div class="stat-label">วันที่</div><div class="stat-value" id="s-date" style="font-size:14px;padding-top:4px;color:#8E8E93;font-weight:500;"></div></div>
+    <div class="stat-card"><div class="stat-label">รับเข้าวันนี้</div><div class="stat-value green" id="s-today">0</div></div>
+    <div class="stat-card"><div class="stat-label">บันทึกสำเร็จ</div><div class="stat-value green" id="s-saved">0</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">บันทึกรับยาเข้าคลัง</div>
+    <div class="sec-label">ข้อมูลยา</div>
+    <div class="form-stack">
+      <div class="fg sw">
+        <label class="fl">ชื่อยา <span>*</span></label>
+        <input class="fi" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="text"/>
+        <div class="sbox" id="sbox"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">รหัสยา</label>
+        <input class="fi" id="r-code" readonly placeholder="ดึงอัตโนมัติเมื่อเลือกชื่อยา"/>
+      </div>
+      <div class="fg">
+        <label class="fl">LOT Number <span>*</span></label>
+        <input class="fi" id="r-lot" placeholder="เช่น LOT2025001" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"/>
+      </div>
+      <div class="fg">
+        <label class="fl">วันหมดอายุ <span>*</span></label>
+        <input class="fi" id="r-exp" type="date"/>
+      </div>
+      <div class="fg-row">
+        <div class="fg">
+          <label class="fl">หน่วยนับ <span>*</span></label>
+          <select class="fi" id="r-unit">
+            <option value="เม็ด">เม็ด</option>
+            <option value="แคปซูล">แคปซูล</option>
+            <option value="ขวด">ขวด</option>
+            <option value="หลอด">หลอด</option>
+            <option value="ซอง">ซอง</option>
+            <option value="กล่อง">กล่อง</option>
+            <option value="อัน">อัน</option>
+            <option value="ชิ้น">ชิ้น</option>
+            <option value="หน่วย">หน่วย</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">จำนวน <span>*</span></label>
+          <input class="fi" id="r-qty" type="number" min="1" placeholder="0" inputmode="numeric" pattern="[0-9]*"/>
+        </div>
+      </div>
+    </div>
+    <div class="sec-label">หมายเหตุ</div>
+    <div class="fg">
+      <label class="fl">หมายเหตุ / Note</label>
+      <textarea class="fi" id="r-note" rows="3" placeholder="บันทึกข้อมูลเพิ่มเติม..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="clearForm()">ล้าง</button>
+      <button class="btn btn-primary" id="save-btn" onclick="receiveStock()">+ บันทึกและส่งไป Sheet</button>
+    </div>
+  </div>
+
+  <div class="tbl-card">
+    <div class="tbl-header">รายการรับยาเข้าล่าสุด</div>
+    <div id="log-list"><div class="empty">ยังไม่มีรายการรับยา</div></div>
+  </div>
+
+</div>
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyvfohKGqK9svtBMg50BcM8LTZVATzZO7SmeGy3v0lXPJAAI6IuyvlU-mPuR1iYDbmY/exec';
+
+const drugDB=[["1000016","ALLOPURINOL 100 มก."],["1000122","Enalapril 5 mg. (E5)/TAB"],["1000184","METFORMIN 500 MG./TAB"],["1000284","Spironolactone 25 MG./TAB กส."],["1019001","GLIPIZIDE 5 MG. /TAB กส."],["110104480112","FOLIC ACID 5MG./TAB"],["1419041","GEMfibrozil 300 MG./CAPSULES"],["1440105","AMLODIPINE 5 MG./TAB"],["1460151","ENALAPRIL 20 MG./TAB"],["1500016","Metoprolol 100 MG./TAB กส."],["1500035","METOCLOPRAMIDE 10 mg TAB"],["1530008","ASPIRIN 81 MG./TAB. กส."],["1ALB","ALBENDAZOLE 200 MG./TAB (San San)"],["1AMIT","AMITRIPTYLINE10 MG./ TAB(HK)"],["1AMO","AMOXICILLIN 500 MG./CAPSULES (องค์การเภสัชMOX)"],["1AMX","Amoxicillin 250 mg./cap (องค์การเภสัชMOX)"],["1BUF","IBUPROFEN 400 MG./TAB(I-Profen)"],["1CAL","CALCIUM 1250 MG. tab.(Cal-star)"],["1CET","PARACETAMOL 500 MG./TAB(Masapara)"],["1DCL","DICLOXACILLIN 250 MG. /CAPSULES"],["1DEXT","DEXTROMETHORPHANE"],["1DIC","DICLOFENAC SODIUM 25 MG./TAB"],["1DIM","DIMENHYDRENATE 50 MG."],["1DOM","DOMPERIDONE10 MG./TAB"],["1FBC","FERROUS FUMARATE 200 MG./TAB กส."],["1GABA","GABAPENTIN 100 mg GPO"],["1HOC","HYOSCINE-N-BUTYLBROMIDE 10 .MG/TAB(VS)"],["1lDC","LIDOCAIN 2 %"],["1LST2","LOSARTAN 50 MG.(Berlin)"],["1MET","METRONIDAZOLE 400 MG./TAB"],["1MTV","MTV (MULTIVITAMIN) TAB กส."],["1NAPRO","NAPROXEN 250 MG TAB(Nasin)"],["1NOC","NORFLOXACIN 400 MG./TAB กส."],["1OME","OMEPRAZOLE 20 MG./CAPSULES"],["1ORS","ORS เด็ก(baby-LyteH)"],["1PARA325","PARACETAMOL 325 MG(AU)"],["1STC","SIMETHICONE 80 MG/TAB"],["1TFD","TRIFERDINE TAB. กส."],["1VIB","VITAMIN B COMPLEX TAB"],["1VIC","VITAMIN C 50 MG CIBIC-50"],["2DOMP","DOMPERIDONE SUSPENSION"],["2MCAR","MIXT.CARMINATIVE"],["2MILK","MILK OF MAGNESIA(GPO)"],["2MTUS","BROWN MIXTURE GPO"],["2MTVS","MULTI VITAMIN SYR.(syn o vits)"],["2ORS","ORS ผู้ใหญ่(T.O.S)"],["2SALB","SALBUTAMOL SYR.(sabumol)"],["2SOAT","BENZYL BENZOATE 30 ML."],["3ALB","ALBENDAZOLE SYR. (FALBEN)"],["3ALM","ALUM MILK GEL(BOWA GEL ED)"],["3AMI","AMOXICILLIN 125 MG. /SYR.(Manmox)"],["3ANAL","ANAGESIC BALM (นีโอติก้า)"],["3AOM","AMMONNIUM CARBONATE SYR ."],["3CALA","CALAMINE LOTION"],["3DCL","DICLOXACILLIN 62.5 MG./SYR."],["3HYO","HYOSCINE 5 MG./SYR."],["3SIM","SIMETHICONE ORAL DROPS 40 MG.(Gas-med)"],["3TET","DIPTHERIA AND TESANUS VACCINE"],["3TRIA002","TA CREAM 0.02%(ไมโครไนซ์ ฟอร์ม)"],["3TRIA01","TA CREAM 0.1% (ไตรโนแมน)"],["3WHFO","WHITFIELD OINTMENT"],["4AMS","AMMONIA 450 ML.(วิทยาศรม)"],["4BEN","BENZYL BENZOAT 450 ML."],["4CET","PARACETAMOL 120 MG./SYR. (THOHO)"],["4CRP","CHLORAMPHENICOL *EYE OINTMENT 1% 5 Gm."],["4CTC","CLOTRIMAZOLE CREAM(Mazole)"],["4DEXA","Dexamethasone inj. 4mg./1ml."],["4GEN","GENTAMYCIN EYE 3 MG. /DROP"],["4HSC","CHLORHEXIDINE(hibi scrub) 450 ML."],["4HSC2","CHLORHEXIDINE 30 ML."],["4OPA","ANTAZOLINE HCI BP (Hista oph)"],["4POV","POVIDONE IODINE 15 ML."],["4SLV","SILVERDERM CREAM 25 G."],["4TRI","TRIAMCINOLONE ORAL"],["5ACH","ALCOHOL 70% 450ml."],["5COL","COLCHICINE 0.6 MG. tab."],["5CPM","CHLORPHENIRAMINE 4 MG./TAB (MALEATE)"],["5HCT","HCTZ-Hydrochlorothiazide 25 MG.TAB กส."],["5NOL","NSS. SODIUM CHLORIDE IRRIGATION 1000 MG."],["5PNL","PROPRANOLOL 10 MG./TAB กส."],["5PVD","POVIDONE-IODINE 450 ML."],["6CPM","CHLORPHENIRAMINE 2 MG./SY (GPO)"],["ACV CREAM","ACYCLOVIR CREAM 1 GM"],["ATO","ATORVASTATIN 40 MG/TAB กส."],["BET-1N","BETAMETHASONE+N cream 5 gm(GPO)"],["BET-SA","BETAMETHASONE+SA cream 5 gm"],["Beta","Betahistine 6 mg.(SPS)"],["BRO TAB","BROMHEXINE HCI 8 MG TAB"],["BROM2","BROMHEXINE SYRUP 60 ML Patar Lab"],["BUD","BUDESONIDE MDI 200 MCG"],["CAP RED","CLOPIDOGREL 75 MG."],["CAR","DOXAZOSIN 2MG./Tab กส."],["Carve","Carvedilol 6.25 mg."],["CEP SYR","CEPHALEXIN 125 MG SYR"],["CHL","Chloramphenicol OINTMENT 1%(ขี้ผึ้ง ยูนีซัน)"],["CPM INJ","CHLORPHENIRAMINE INJ."],["DIMEN INJ","DIMEN INJ"],["DP CRP","DIPOTASSIUM CLORAZEPATE 5 MG CAP"],["FER","Ferrous Fumarate 76 mg./5ml (GPO)"],["FERDEK Syrub","FERROUS FUMARATE 15mg/0.6 ml Syrub"],["FLU125","FLUTICASONE 125 MCG INHALOR"],["FLU20","FLUOXETIN 20 MG/TAB กส.(Pharmaland)"],["FURO","FUROSEMIDE 40 MG TAB กส"],["Griss500","GRISEOFULVIN 500 MG. TAB"],["HY251","Hydralazine 25 mg (APRESZINE)"],["HYZ","HYDROXYZINE 10 mg tab"],["ING TRA","TRAMADOL INJ 50MG/ML"],["ISO","ISOSORBIDE DINITRATE 10 MG/TAB กส."],["KTCNZ","KETOCONAZOLE 200 mg tab กส."],["LORA","LORATADINE 10 mg tab"],["MNDP","MANIDIPINE HYDOCHLORIDE"],["NI20","NIFEDIPINE 20 MG SR/CAP"],["NORET5MG","NORETHISTERONE 5 MG TAB"],["PIO1","PIOGLITAZONE 30 MG./Tab (UTMOS 30)"],["PNSL","PREDNISOLONE 5 MG/TAB"],["POLY E","POLYOPH EYE DROP 5 ml(OPSACIN)"],["PROCT TAB","PROCTOSEDYL SUPPOSITORIES TAB"],["RANI INJ","RANITIDINE INJ"],["SIM3","Simvastatin 40 mg"],["TETRA","0.5%TETRACAINE HCL"],["THE","THEOPHYLLINE 200 MG SR/TAB"],["TOL50","TOLPERISONE HCL 50MG/TAB"],["TRIAM LO1","T.A. LOTION 0.1%(starlone)"]];
+
+let receiveLog=[],todayCount=0,savedCount=0;
+document.getElementById('s-date').textContent=new Date().toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'});
+
+function setSheet(status,msg){
+  const colors={green:'#27AE60',amber:'#F39C12',red:'#E74C3C'};
+  document.getElementById('sdot').style.background=colors[status]||colors.amber;
+  document.getElementById('smsg').textContent=msg;
+}
+
+function showAlert(msg,type){
+  const b=document.getElementById('alert-box');
+  b.className='alert alert-'+type;b.textContent=msg;b.style.display='block';
+  clearTimeout(b._t);b._t=setTimeout(()=>b.style.display='none',5000);
+  b.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function searchDrug(val){
+  const box=document.getElementById('sbox');
+  if(!val.trim()){box.style.display='none';return;}
+  const q=val.toLowerCase();
+  const hits=drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q)).slice(0,10);
+  if(!hits.length){box.style.display='none';return;}
+  box.innerHTML=hits.map(d=>`<div class="si" ontouchstart="" onclick='pickDrug(${JSON.stringify(d[1])},${JSON.stringify(d[0])})'><div>${d[1]}</div><div class="si-sub">${d[0]}</div></div>`).join('');
+  box.style.display='block';
+}
+
+function pickDrug(name,code){
+  document.getElementById('r-name').value=name;
+  document.getElementById('r-code').value=code;
+  document.getElementById('sbox').style.display='none';
+  setTimeout(()=>document.getElementById('r-lot').focus(),100);
+}
+
+document.addEventListener('touchstart',e=>{if(!e.target.closest('.sw'))document.getElementById('sbox').style.display='none';},{passive:true});
+document.addEventListener('click',e=>{if(!e.target.closest('.sw'))document.getElementById('sbox').style.display='none';});
+
+function todayTH(){return new Date().toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric'});}
+
+async function receiveStock(){
+  const name=document.getElementById('r-name').value.trim();
+  const code=document.getElementById('r-code').value.trim();
+  const lot=document.getElementById('r-lot').value.trim();
+  const exp=document.getElementById('r-exp').value;
+  const unit=document.getElementById('r-unit').value;
+  const qty=parseInt(document.getElementById('r-qty').value)||0;
+  const note=document.getElementById('r-note').value.trim();
+
+  if(!name){showAlert('กรุณาเลือกชื่อยาจากรายการ','danger');return;}
+  if(!lot){showAlert('กรุณากรอก LOT Number','danger');return;}
+  if(!exp){showAlert('กรุณาระบุวันหมดอายุ','danger');return;}
+  if(qty<=0){showAlert('กรุณาระบุจำนวนที่รับเข้า','danger');return;}
+
+  const entry={name,code,lot,exp,unit,qty,note,date:todayTH()};
+  receiveLog.unshift({...entry,status:'saving'});
+  todayCount++;
+  document.getElementById('s-today').textContent=todayCount;
+
+  const btn=document.getElementById('save-btn');
+  btn.textContent='กำลังบันทึก...';
+  btn.disabled=true;
+  setSheet('amber','กำลังส่งข้อมูลไป Google Sheet...');
+  renderLog();
+  clearForm();
+
+  try{
+    await fetch(SCRIPT_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(entry)
+    });
+    receiveLog[0].status='saved';
+    savedCount++;
+    document.getElementById('s-saved').textContent=savedCount;
+    document.getElementById('scnt').textContent='บันทึกแล้ว '+savedCount+' รายการ';
+    setSheet('green','บันทึกสำเร็จ — ข้อมูลอยู่ใน Google Sheet แล้ว');
+    showAlert('บันทึก "'+name+'" LOT: '+lot+' จำนวน '+qty+' '+unit+' → Google Sheet เรียบร้อย','success');
+  }catch(e){
+    receiveLog[0].status='error';
+    setSheet('red','บันทึกไม่สำเร็จ — ตรวจสอบการเชื่อมต่อ');
+    showAlert('ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่','danger');
+  }
+
+  btn.textContent='+ บันทึกและส่งไป Sheet';
+  btn.disabled=false;
+  renderLog();
+}
+
+function clearForm(){
+  ['r-name','r-code','r-lot','r-qty','r-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('r-exp').value='';
+  document.getElementById('sbox').style.display='none';
+}
+
+function renderLog(){
+  const el=document.getElementById('log-list');
+  if(!receiveLog.length){el.innerHTML='<div class="empty">ยังไม่มีรายการรับยา</div>';return;}
+  const lbl={saving:'กำลังบันทึก...',saved:'บันทึกแล้ว ✓',error:'บันทึกไม่สำเร็จ'};
+  const cls={saving:'saving',saved:'saved',error:'error'};
+  el.innerHTML=receiveLog.slice(0,20).map(e=>`
+    <div class="log-item">
+      <div class="log-name">${e.name}</div>
+      <div class="log-pills">
+        <span class="pill">${e.code||'—'}</span>
+        <span class="pill lot">LOT: ${e.lot}</span>
+        <span class="pill exp">EXP: ${e.exp?new Date(e.exp).toLocaleDateString('th-TH',{month:'short',year:'numeric'}):'—'}</span>
+        <span class="pill qty">${e.qty} ${e.unit}</span>
+        <span class="pill ${cls[e.status]||'saved'}">${lbl[e.status]||'บันทึกแล้ว ✓'}</span>
+      </div>
+      ${e.note?`<div class="log-note">${e.note}</div>`:''}
+      <div class="log-date">${e.date}</div>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>
