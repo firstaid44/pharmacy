@@ -628,12 +628,20 @@ function stockItemHtml(i,expClass){
 
 function parseExpDate(exp){
   if(!exp) return null;
-  if(exp.includes('-')) return new Date(exp);
-  if(exp.includes('/')) {
-    const p=exp.split('/');
-    if(p.length===3) return new Date(p[2]+'-'+p[1]+'-'+p[0]);
-  }
-  return null;
+  try{
+    let d,m,y;
+    if(exp.includes('/')){
+      const p=exp.split('/');
+      if(p.length!==3) return null;
+      d=parseInt(p[0]); m=parseInt(p[1])-1; y=parseInt(p[2]);
+    } else if(exp.includes('-')){
+      const p=exp.split('-');
+      if(p.length!==3) return null;
+      y=parseInt(p[0]); m=parseInt(p[1])-1; d=parseInt(p[2]);
+    } else return null;
+    if(isNaN(d)||isNaN(m)||isNaN(y)) return null;
+    return new Date(y,m,d,0,0,0,0);
+  }catch(e){return null;}
 }
 
 // ── HISTORY ──
@@ -760,10 +768,20 @@ document.addEventListener('click',e=>{
 });
 document.getElementById('edit-modal').addEventListener('click',e=>{if(e.target===document.getElementById('edit-modal'))closeEditModal();});
 
-function todayTH(){return new Date().toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function todayTH(){
+  const n=new Date();
+  const d=String(n.getDate()).padStart(2,'0');
+  const m=String(n.getMonth()+1).padStart(2,'0');
+  const y=n.getFullYear();
+  return d+'/'+m+'/'+y;
+}
 function fmtExp(exp){
   if(!exp) return '—';
-  try{ if(exp.includes('-')){const d=new Date(exp);return d.toLocaleDateString('th-TH',{month:'short',year:'numeric'});} return exp; }catch(e){return exp;}
+  try{
+    if(exp.includes('-')){const p=exp.split('-');if(p.length===3) return p[2]+'/'+p[1]+'/'+p[0];}
+    if(exp.includes('/')){const p=exp.split('/');if(p.length===3) return p[0].padStart(2,'0')+'/'+p[1].padStart(2,'0')+'/'+p[2];}
+    return exp;
+  }catch(e){return exp;}
 }
 
 async function receiveStock(){
