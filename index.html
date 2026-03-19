@@ -147,6 +147,8 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
 .sum-unit{font-size:11px;color:#8E8E93;text-align:right;}
 .exp-warn{background:#FFF3F3;border-left:3px solid #FF3B30;}
 .exp-caution{background:#FFFBF0;border-left:3px solid #FF9500;}
+.exp-range-btn{padding:6px 14px;border-radius:20px;border:1.5px solid #E5E5EA;background:#F0F2F5;font-size:13px;font-weight:600;color:#636366;cursor:pointer;-webkit-appearance:none;}
+.exp-range-btn.active{background:#FDECEC;color:#C0392B;border-color:#FF3B30;}
 
 /* history */
 .hist-item{padding:12px 1rem;border-bottom:0.5px solid #F2F2F7;display:flex;align-items:flex-start;gap:10px;}
@@ -418,10 +420,20 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
       <button class="section-action" onclick="loadStock()">รีเฟรช</button>
     </div>
     <div class="card" id="stock-summary"><div class="loading">กำลังโหลด...</div></div>
-    <div class="section-hd" style="margin-top:.5rem;">
-      <span class="section-title">ยาใกล้หมดอายุ (0–6 เดือน)</span>
+    <div class="card" style="margin-top:.5rem;padding:1rem;">
+      <div style="font-size:15px;font-weight:700;color:#1C1C1E;margin-bottom:.75rem;">ยาใกล้หมดอายุ</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:.75rem;">
+        <label style="font-size:13px;font-weight:600;color:#3C3C43;white-space:nowrap;">คำนวณจากวันที่</label>
+        <input type="date" id="exp-ref-date" class="form-input" style="flex:1;" oninput="renderExpiringList()"/>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <button class="exp-range-btn active" data-months="6" onclick="setExpRange(this,6)">6 เดือน</button>
+        <button class="exp-range-btn" data-months="3" onclick="setExpRange(this,3)">3 เดือน</button>
+        <button class="exp-range-btn" data-months="1" onclick="setExpRange(this,1)">1 เดือน</button>
+        <button class="exp-range-btn" data-months="12" onclick="setExpRange(this,12)">12 เดือน</button>
+      </div>
+      <div id="stock-expiring-list"><div class="loading">กำลังโหลด...</div></div>
     </div>
-    <div class="card" id="stock-expiring-list"><div class="loading">กำลังโหลด...</div></div>
     <div class="section-hd" style="margin-top:.5rem;">
       <span class="section-title">แยกกลุ่มตามวันหมดอายุ</span>
     </div>
@@ -480,7 +492,15 @@ function switchTab(tab, el){
   document.getElementById('page-'+tab).classList.add('active');
   el.classList.add('active');
   if(tab==='dispense') loadDispense();
-  if(tab==='stock') loadStock();
+  if(tab==='stock'){
+    // Set default ref date to today if empty
+    const refEl=document.getElementById('exp-ref-date');
+    if(refEl&&!refEl.value){
+      const n=new Date();
+      refEl.value=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+    }
+    loadStock();
+  }
   if(tab==='history') renderHistory();
 }
 
@@ -653,18 +673,9 @@ async function loadStock(){
       </table>`:'<div class="empty">ไม่มีข้อมูล</div>';
     document.getElementById('stock-summary').innerHTML=summaryHtml;
 
-    // Expiring soon list (red group only)
-    const expiringHtml=red.length?`
-      <table class="sum-table">
-        <thead><tr><th>ชื่อยา / LOT</th><th>หมดอายุ</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
-        <tbody>${[...red].sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;}).map(i=>`
-          <tr class="exp-warn">
-            <td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:#8E8E93;">LOT: ${i.lot}</div></td>
-            <td style="white-space:nowrap;font-size:12px;color:#C0392B;font-weight:700;">${fmtExp(i.exp)}</td>
-            <td><div class="sum-qty" style="color:#C0392B;">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td>
-          </tr>`).join('')}</tbody>
-      </table>`:'<div style="padding:1rem;text-align:center;font-size:13px;color:#27AE60;">ไม่มียาใกล้หมดอายุ ✓</div>';
-    document.getElementById('stock-expiring-list').innerHTML=expiringHtml;
+    // Store items globally for renderExpiringList
+    window._allStockItems=items;
+    renderExpiringList();
 
     // 3-col grid
     const gridHtml=`<div class="stock-cols">
@@ -995,6 +1006,80 @@ function closeScanner(){
   scanStream=null;
   const v=document.getElementById('scanner-video'); if(v) v.srcObject=null;
   document.getElementById('scanner-modal').classList.remove('open');
+}
+
+
+// ── EXPIRING DATE FILTER ──
+let _expRangeMonths = 6;
+
+function setExpRange(btn, months){
+  _expRangeMonths = months;
+  document.querySelectorAll('.exp-range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderExpiringList();
+}
+
+function renderExpiringList(){
+  const el = document.getElementById('stock-expiring-list');
+  if(!el) return;
+  const items = window._allStockItems || [];
+  if(!items.length){ el.innerHTML='<div class="empty">ยังไม่มีข้อมูลคลัง กดรีเฟรช</div>'; return; }
+
+  // Get reference date from picker, default = today
+  const refInput = document.getElementById('exp-ref-date');
+  let refDate;
+  if(refInput && refInput.value){
+    const p = refInput.value.split('-');
+    refDate = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]), 0,0,0,0);
+  } else {
+    refDate = new Date(); refDate.setHours(0,0,0,0);
+  }
+
+  const cutoff = new Date(refDate);
+  cutoff.setMonth(cutoff.getMonth() + _expRangeMonths);
+
+  // Filter items expiring before cutoff
+  const filtered = items.filter(i => {
+    const ed = parseExpDate(i.exp);
+    return ed && ed <= cutoff;
+  }).sort((a,b) => {
+    const ea = parseExpDate(a.exp), eb = parseExpDate(b.exp);
+    if(!ea) return 1; if(!eb) return -1; return ea - eb;
+  });
+
+  // Update section label
+  const refStr = (()=>{
+    const d=String(refDate.getDate()).padStart(2,'0');
+    const m=String(refDate.getMonth()+1).padStart(2,'0');
+    const y=refDate.getFullYear();
+    return d+'/'+m+'/'+y;
+  })();
+
+  if(!filtered.length){
+    el.innerHTML=`<div style="padding:1rem;text-align:center;font-size:13px;color:#27AE60;">ไม่มียาหมดอายุภายใน ${_expRangeMonths} เดือน (นับจาก ${refStr}) ✓</div>`;
+    return;
+  }
+
+  el.innerHTML=`
+    <div style="padding:8px 10px 4px;font-size:11px;color:#8E8E93;">นับจาก <strong style="color:#1C1C1E;">${refStr}</strong> ภายใน <strong style="color:#C0392B;">${_expRangeMonths} เดือน</strong> — พบ ${filtered.length} รายการ</div>
+    <table class="sum-table">
+      <thead><tr><th>ชื่อยา / LOT</th><th>หมดอายุ</th><th>เหลือ(วัน)</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
+      <tbody>${filtered.map(i => {
+        const ed = parseExpDate(i.exp);
+        const daysLeft = ed ? Math.ceil((ed - refDate)/(1000*60*60*24)) : null;
+        const isExpired = daysLeft !== null && daysLeft < 0;
+        const isUrgent = daysLeft !== null && daysLeft <= 30;
+        const rowCls = isExpired ? 'exp-warn' : isUrgent ? 'exp-warn' : 'exp-caution';
+        const dayColor = isExpired ? '#C0392B' : isUrgent ? '#C0392B' : '#B45309';
+        const dayLabel = isExpired ? `หมดแล้ว ${Math.abs(daysLeft)} วัน` : daysLeft !== null ? `${daysLeft} วัน` : '—';
+        return `<tr class="${rowCls}">
+          <td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:#8E8E93;">LOT: ${i.lot}</div></td>
+          <td style="white-space:nowrap;font-size:12px;color:${dayColor};font-weight:700;">${fmtExp(i.exp)}</td>
+          <td style="font-size:12px;font-weight:700;color:${dayColor};white-space:nowrap;">${dayLabel}</td>
+          <td><div class="sum-qty" style="color:${dayColor};">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
 }
 
 loadReceive();
