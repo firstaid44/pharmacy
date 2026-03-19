@@ -137,6 +137,16 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
 .stock-mini-unit{font-size:10px;color:#8E8E93;}
 .stock-mini-exp{font-size:10px;font-weight:600;margin-top:3px;}
 .exp-r{color:#C0392B;}.exp-y{color:#B45309;}.exp-g{color:#1E7E44;}
+.sum-table{width:100%;border-collapse:collapse;font-size:13px;}
+.sum-table th{padding:8px 10px;font-size:11px;font-weight:700;color:#8E8E93;border-bottom:1px solid #F2F2F7;text-align:left;background:#F9F9F9;}
+.sum-table td{padding:10px 10px;border-bottom:0.5px solid #F2F2F7;vertical-align:middle;}
+.sum-table tr:last-child td{border-bottom:none;}
+.sum-name{font-size:13px;font-weight:600;color:#1C1C1E;line-height:1.3;}
+.sum-exp{font-size:11px;margin-top:2px;}
+.sum-qty{font-size:16px;font-weight:700;text-align:right;}
+.sum-unit{font-size:11px;color:#8E8E93;text-align:right;}
+.exp-warn{background:#FFF3F3;border-left:3px solid #FF3B30;}
+.exp-caution{background:#FFFBF0;border-left:3px solid #FF9500;}
 
 /* history */
 .hist-item{padding:12px 1rem;border-bottom:0.5px solid #F2F2F7;display:flex;align-items:flex-start;gap:10px;}
@@ -404,8 +414,16 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
       <div class="stat-card"><div class="stat-label">ยาใกล้หมดอายุ</div><div class="stat-value red" id="st-expiring">—</div></div>
     </div>
     <div class="section-hd">
-      <span class="section-title">สถานะวันหมดอายุ</span>
+      <span class="section-title">สรุปยาคงเหลือรายตัว</span>
       <button class="section-action" onclick="loadStock()">รีเฟรช</button>
+    </div>
+    <div class="card" id="stock-summary"><div class="loading">กำลังโหลด...</div></div>
+    <div class="section-hd" style="margin-top:.5rem;">
+      <span class="section-title">ยาใกล้หมดอายุ (0–6 เดือน)</span>
+    </div>
+    <div class="card" id="stock-expiring-list"><div class="loading">กำลังโหลด...</div></div>
+    <div class="section-hd" style="margin-top:.5rem;">
+      <span class="section-title">แยกกลุ่มตามวันหมดอายุ</span>
     </div>
     <div class="card" id="stock-list"><div class="loading">กำลังโหลด...</div></div>
   </div>
@@ -453,7 +471,7 @@ const drugDB=[["1000016","ALLOPURINOL 100 มก."],["1000122","Enalapril 5 mg. 
 let receiveRows=[], dispenseRows=[], historyLog=[], editTarget=null;
 let scanTarget='', scanStream=null, scanCanvas=null, scanCtx=null, scanLoop=null, lastScan='';
 
-document.getElementById('s-date').textContent=new Date().toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'});
+(()=>{const n=new Date();const d=String(n.getDate()).padStart(2,'0');const m=String(n.getMonth()+1).padStart(2,'0');const y=n.getFullYear();document.getElementById('s-date').textContent=d+'/'+m+'/'+y;})();
 
 // ── TABS ──
 function switchTab(tab, el){
@@ -602,6 +620,53 @@ async function loadStock(){
       </div>`;
     };
 
+    // ─ Summary table: merge by name, sort by earliest exp
+    const summaryMap={};
+    items.forEach(i=>{
+      if(!summaryMap[i.name]) summaryMap[i.name]={name:i.name,code:i.code,qty:0,unit:i.unit,earliestExp:null};
+      summaryMap[i.name].qty+=i.qty;
+      const ed=parseExpDate(i.exp);
+      if(ed&&(!summaryMap[i.name].earliestExp||ed<summaryMap[i.name].earliestExp)){
+        summaryMap[i.name].earliestExp=ed;
+        summaryMap[i.name].exp=i.exp;
+      }
+    });
+    const summaryItems=Object.values(summaryMap).sort((a,b)=>{
+      if(!a.earliestExp) return 1;
+      if(!b.earliestExp) return -1;
+      return a.earliestExp-b.earliestExp;
+    });
+
+    // Summary table HTML
+    const summaryHtml=summaryItems.length?`
+      <table class="sum-table">
+        <thead><tr><th>ชื่อยา</th><th>หมดอายุ</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
+        <tbody>${summaryItems.map(i=>{
+          const months=i.earliestExp?(i.earliestExp-now)/(1000*60*60*24*30.4):99;
+          const rowCls=months<=6?'exp-warn':months<=12?'exp-caution':'';
+          const qtyColor=months<=6?'#C0392B':months<=12?'#B45309':'#27AE60';
+          return `<tr class="${rowCls}">
+            <td><div class="sum-name">${i.name}</div><div class="sum-exp ${months<=6?'exp-r':months<=12?'exp-y':'exp-g'}">${fmtExp(i.exp)}</div></td>
+            <td style="white-space:nowrap;font-size:12px;color:#636366;">${fmtExp(i.exp)}</td>
+            <td><div class="sum-qty" style="color:${qtyColor};">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td>
+          </tr>`;}).join('')}</tbody>
+      </table>`:'<div class="empty">ไม่มีข้อมูล</div>';
+    document.getElementById('stock-summary').innerHTML=summaryHtml;
+
+    // Expiring soon list (red group only)
+    const expiringHtml=red.length?`
+      <table class="sum-table">
+        <thead><tr><th>ชื่อยา / LOT</th><th>หมดอายุ</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
+        <tbody>${[...red].sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;}).map(i=>`
+          <tr class="exp-warn">
+            <td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:#8E8E93;">LOT: ${i.lot}</div></td>
+            <td style="white-space:nowrap;font-size:12px;color:#C0392B;font-weight:700;">${fmtExp(i.exp)}</td>
+            <td><div class="sum-qty" style="color:#C0392B;">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td>
+          </tr>`).join('')}</tbody>
+      </table>`:'<div style="padding:1rem;text-align:center;font-size:13px;color:#27AE60;">ไม่มียาใกล้หมดอายุ ✓</div>';
+    document.getElementById('stock-expiring-list').innerHTML=expiringHtml;
+
+    // 3-col grid
     const gridHtml=`<div class="stock-cols">
       ${colHtml(red,'col-red','exp-r','🔴 0–6 เดือน')}
       ${colHtml(yellow,'col-yellow','exp-y','🟡 6–12 เดือน')}
@@ -685,7 +750,11 @@ function openEditModal(idx){
   document.getElementById('edit-idx').value=idx;
   document.getElementById('edit-name').value=e.name;
   document.getElementById('edit-lot').value=e.lot;
-  document.getElementById('edit-exp').value=e.exp&&e.exp.includes('-')?e.exp:'';
+  document.getElementById('edit-exp').value=(()=>{
+    if(!e.exp) return '';
+    if(e.exp.includes('/')){const p=e.exp.split('/');return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+    return e.exp.includes('-')?e.exp:'';
+  })();
   document.getElementById('edit-qty').value=e.qty;
   document.getElementById('edit-unit').value=e.unit;
   document.getElementById('edit-note').value=e.note||'';
@@ -703,7 +772,7 @@ async function saveEdit(){
   const newData={
     ...e,
     lot:document.getElementById('edit-lot').value,
-    exp:document.getElementById('edit-exp').value,
+    exp:(()=>{const v=document.getElementById('edit-exp').value;return v?v.split('-').reverse().join('/'):''})(),
     qty:document.getElementById('edit-qty').value,
     unit:document.getElementById('edit-unit').value,
     note:document.getElementById('edit-note').value,
@@ -747,7 +816,7 @@ function populateLotOptions(name){
   const sel=document.getElementById('d-lot');
   const lots=receiveRows.filter(r=>r.name===name);
   sel.innerHTML='<option value="">— เลือก LOT —</option>';
-  lots.forEach(r=>{ sel.innerHTML+=`<option value="${r.lot}" data-exp="${r.exp}">${r.lot} (EXP: ${fmtExp(r.exp)})</option>`; });
+  lots.forEach(r=>{ sel.innerHTML+=`<option value="${r.lot}" data-exp="${r.exp}">${r.lot}</option>`; });
   sel.onchange=()=>{
     const opt=sel.selectedOptions[0];
     document.getElementById('d-exp').value=opt?opt.dataset.exp||'':'';
@@ -788,7 +857,8 @@ async function receiveStock(){
   const name=document.getElementById('r-name').value.trim();
   const code=document.getElementById('r-code').value.trim();
   const lot=document.getElementById('r-lot').value.trim();
-  const exp=document.getElementById('r-exp').value;
+  const expRaw=document.getElementById('r-exp').value;
+  const exp=expRaw?expRaw.split('-').reverse().join('/'):''
   const unit=document.getElementById('r-unit').value;
   const qty=parseInt(document.getElementById('r-qty').value)||0;
   const note=document.getElementById('r-note').value.trim();
@@ -820,7 +890,8 @@ async function dispenseStock(){
   const name=document.getElementById('d-name').value.trim();
   const code=document.getElementById('d-code').value.trim();
   const lot=document.getElementById('d-lot').value;
-  const exp=document.getElementById('d-exp').value;
+  const expRaw=document.getElementById('d-exp').value;
+  const exp=expRaw?expRaw.split('-').reverse().join('/'):''
   const unit=document.getElementById('d-unit').value;
   const qty=parseInt(document.getElementById('d-qty').value)||0;
   const requester=document.getElementById('d-requester').value.trim();
@@ -907,7 +978,11 @@ function openDispenseEditModal(idx){
   document.getElementById('edit-idx').value='d_'+idx;
   document.getElementById('edit-name').value=e.name;
   document.getElementById('edit-lot').value=e.lot;
-  document.getElementById('edit-exp').value=e.exp&&e.exp.includes('-')?e.exp:'';
+  document.getElementById('edit-exp').value=(()=>{
+    if(!e.exp) return '';
+    if(e.exp.includes('/')){const p=e.exp.split('/');return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+    return e.exp.includes('-')?e.exp:'';
+  })();
   document.getElementById('edit-qty').value=e.qty;
   document.getElementById('edit-unit').value=e.unit;
   document.getElementById('edit-note').value=e.note||'';
