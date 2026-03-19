@@ -895,6 +895,8 @@ function openDispenseEditModal(idx){
   document.getElementById('edit-note').value=e.note||'';
   document.getElementById('edit-modal').classList.add('open');
 }
+
+function closeScanner(){
   clearInterval(scanLoop);
   if(scanStream) scanStream.getTracks().forEach(t=>t.stop());
   scanStream=null;
