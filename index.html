@@ -603,8 +603,9 @@ async function loadStock(){
     const stockMap={};
     rows.forEach(r=>{
       const k=r.name+'|'+r.lot;
-      if(!stockMap[k]) stockMap[k]={name:r.name,code:r.code,lot:r.lot,exp:r.exp,unit:r.unit,qty:0};
+      if(!stockMap[k]) stockMap[k]={name:r.name,code:r.code,lot:r.lot,exp:r.exp,unit:r.unit,qty:0,group:r.group||''};
       stockMap[k].qty+=parseFloat(r.qty)||0;
+      if(r.group) stockMap[k].group=r.group; // keep latest group value
     });
     // ลบ dispense
     drows.forEach(d=>{
@@ -612,15 +613,23 @@ async function loadStock(){
       if(stockMap[k]) stockMap[k].qty-=parseFloat(d.qty)||0;
     });
     const items=Object.values(stockMap).filter(i=>i.qty>0);
-    const now=new Date();
+    const now=new Date(); now.setHours(0,0,0,0);
     const red=[],yellow=[],green=[];
     items.forEach(i=>{
-      const exp=parseExpDate(i.exp);
-      if(!exp){green.push(i);return;}
-      const months=(exp-now)/(1000*60*60*24*30.4);
-      if(months<=6) red.push(i);
-      else if(months<=12) yellow.push(i);
-      else green.push(i);
+      // Use group from Sheet col J if available
+      const g=(i.group||'').trim();
+      if(g==='สีแดง'||g==='แดง') red.push(i);
+      else if(g==='สีเหลือง'||g==='เหลือง') yellow.push(i);
+      else if(g==='สีเขียว'||g==='เขียว') green.push(i);
+      else {
+        // fallback: calculate from exp
+        const exp=parseExpDate(i.exp);
+        if(!exp){green.push(i);return;}
+        const months=(exp-now)/(1000*60*60*24*30.4);
+        if(months<=6) red.push(i);
+        else if(months<=12) yellow.push(i);
+        else green.push(i);
+      }
     });
     document.getElementById('st-total').textContent=items.length;
     document.getElementById('st-expiring').textContent=red.length;
@@ -1038,8 +1047,17 @@ function renderExpiringList(){
   const cutoff = new Date(refDate);
   cutoff.setMonth(cutoff.getMonth() + _expRangeMonths);
 
-  // Filter items expiring before cutoff
+  // Filter items by group from Sheet or by date calculation
   const filtered = items.filter(i => {
+    const g=(i.group||'').trim();
+    if(g){
+      // map group to months
+      const gMonths = (g==='สีแดง'||g==='แดง') ? 1
+                    : (g==='สีเหลือง'||g==='เหลือง') ? 7
+                    : 13;
+      return gMonths <= _expRangeMonths;
+    }
+    // fallback: calculate from exp date
     const ed = parseExpDate(i.exp);
     return ed && ed <= cutoff;
   }).sort((a,b) => {
@@ -1066,6 +1084,8 @@ function renderExpiringList(){
       <thead><tr><th>ชื่อยา / LOT</th><th>หมดอายุ</th><th>เหลือ(วัน)</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
       <tbody>${filtered.map(i => {
         const ed = parseExpDate(i.exp);
+        // Use group from sheet to determine urgency, fallback to date calc
+        const g2=(i.group||'').trim();
         const daysLeft = ed ? Math.ceil((ed - refDate)/(1000*60*60*24)) : null;
         const isExpired = daysLeft !== null && daysLeft < 0;
         const isUrgent = daysLeft !== null && daysLeft <= 30;
