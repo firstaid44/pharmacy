@@ -376,7 +376,13 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
           <div class="form-group"><label class="form-label">หน่วยนับ</label>
             <select class="form-input" id="d-unit"><option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option><option>ซอง</option><option>กล่อง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option></select>
           </div>
-          <div class="form-group"><label class="form-label">จำนวนเบิก <span class="req">*</span></label><input class="form-input" id="d-qty" type="number" min="1" placeholder="0" inputmode="numeric" pattern="[0-9]*"/></div>
+          <div class="form-group">
+            <label class="form-label">จำนวนเบิก <span class="req">*</span></label>
+            <select class="form-input" id="d-qty">
+              <option value="">— เลือกจำนวน —</option>
+            </select>
+            <div id="d-stock-info" style="display:none;margin-top:6px;padding:8px 12px;background:#EBF5FF;border-radius:10px;font-size:12px;color:#1558B0;font-weight:600;"></div>
+          </div>
         </div>
         <div class="form-group"><label class="form-label">ชื่อผู้เบิก <span class="req">*</span></label>
           <select class="form-input" id="d-requester">
@@ -491,7 +497,11 @@ function switchTab(tab, el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
   el.classList.add('active');
-  if(tab==='dispense') loadDispense();
+  if(tab==='dispense'){
+    // Load both receive and dispense data so stock calc is accurate
+    if(!receiveRows.length) loadReceive();
+    loadDispense();
+  }
   if(tab==='stock'){
     // Set default ref date to today if empty
     const refEl=document.getElementById('exp-ref-date');
@@ -832,16 +842,74 @@ function pickDrug(name,code,boxId){
   else setTimeout(()=>document.getElementById('r-lot').focus(),100);
 }
 
+function calcStock(name, lot){
+  // รวม receive qty สำหรับ name+lot นี้
+  const received = receiveRows
+    .filter(r => r.name===name && r.lot===lot)
+    .reduce((s,r) => s + (parseFloat(r.qty)||0), 0);
+  // ลบ dispense qty
+  const dispensed = dispenseRows
+    .filter(d => d.name===name && d.lot===lot)
+    .reduce((s,d) => s + (parseFloat(d.qty)||0), 0);
+  return Math.max(0, Math.round(received - dispensed));
+}
+
+function calcStockByName(name){
+  const received = receiveRows
+    .filter(r => r.name===name)
+    .reduce((s,r) => s + (parseFloat(r.qty)||0), 0);
+  const dispensed = dispenseRows
+    .filter(d => d.name===name)
+    .reduce((s,d) => s + (parseFloat(d.qty)||0), 0);
+  return Math.max(0, Math.round(received - dispensed));
+}
+
+function populateQtyOptions(stock){
+  const sel = document.getElementById('d-qty');
+  const info = document.getElementById('d-stock-info');
+  sel.innerHTML = '<option value="">— เลือกจำนวน —</option>';
+  if(stock <= 0){
+    sel.innerHTML = '<option value="">ยาหมดคลัง</option>';
+    info.textContent = 'ยาคงเหลือในคลัง: 0 — ไม่สามารถเบิกได้';
+    info.style.background = '#FDECEC';
+    info.style.color = '#C0392B';
+    info.style.display = 'block';
+    return;
+  }
+  for(let i = 1; i <= stock; i++){
+    sel.innerHTML += `<option value="${i}">${i}</option>`;
+  }
+  info.textContent = `ยาคงเหลือในคลัง: ${stock} — เลือกจำนวนที่ต้องการเบิก`;
+  info.style.background = '#EBF5FF';
+  info.style.color = '#1558B0';
+  info.style.display = 'block';
+}
+
 function populateLotOptions(name){
   const sel=document.getElementById('d-lot');
   const lots=receiveRows.filter(r=>r.name===name);
   sel.innerHTML='<option value="">— เลือก LOT —</option>';
-  lots.forEach(r=>{ sel.innerHTML+=`<option value="${r.lot}" data-exp="${r.exp}">${r.lot}</option>`; });
+  lots.forEach(r=>{
+    const lotStock = calcStock(name, r.lot);
+    sel.innerHTML+=`<option value="${r.lot}" data-exp="${r.exp}" data-stock="${lotStock}">${r.lot} (คงเหลือ: ${lotStock})</option>`;
+  });
+  // Reset qty
+  document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';
+  document.getElementById('d-stock-info').style.display='none';
+
   sel.onchange=()=>{
     const opt=sel.selectedOptions[0];
     document.getElementById('d-exp').value=opt?opt.dataset.exp||'':'';
     const u=lots.find(r=>r.lot===sel.value);
     if(u){ const s=document.getElementById('d-unit'); for(let i=0;i<s.options.length;i++) if(s.options[i].value===u.unit){s.selectedIndex=i;break;} }
+    // Populate qty based on stock for this LOT
+    if(sel.value){
+      const stock = parseInt(opt.dataset.stock)||0;
+      populateQtyOptions(stock);
+    } else {
+      document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';
+      document.getElementById('d-stock-info').style.display='none';
+    }
   };
 }
 
@@ -934,10 +1002,13 @@ async function dispenseStock(){
 }
 
 function clearDispenseForm(){
-  ['d-name','d-code','d-qty','d-note'].forEach(id=>document.getElementById(id).value='');
+  ['d-name','d-code','d-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('d-exp').value='';
   document.getElementById('d-requester').value='';
   document.getElementById('d-lot').innerHTML='<option value="">— เลือก LOT —</option>';
+  document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';
+  const info=document.getElementById('d-stock-info');
+  if(info) info.style.display='none';
   document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');
 }
 
