@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>ระบบบริหารจัดการคลังยา — PCU สะบ้าย้อย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#F0F2F5;-webkit-text-size-adjust:100%;color:#1C1C1E;}
+body{font-family:'Noto Sans Thai',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#F0F2F5;-webkit-text-size-adjust:100%;color:#1C1C1E;}
 .app{max-width:430px;margin:0 auto;padding-bottom:calc(80px + env(safe-area-inset-bottom));}
 .header{background:#fff;padding:calc(.875rem + env(safe-area-inset-top)) 1rem .875rem;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #E5E5EA;position:sticky;top:0;z-index:100;}
 .logo{width:36px;height:36px;background:linear-gradient(135deg,#1A6FDB,#0D9E75);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -37,7 +40,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
 .form-label{font-size:13px;font-weight:600;color:#3C3C43;}
 .form-label .req{color:#FF3B30;margin-left:2px;}
-.form-input{padding:13px 14px;border:1.5px solid #E5E5EA;border-radius:12px;font-size:16px;background:#fff;color:#1C1C1E;width:100%;-webkit-appearance:none;appearance:none;font-family:inherit;transition:border-color .15s;min-height:50px;}
+.form-input{padding:13px 14px;border:1.5px solid #E5E5EA;border-radius:12px;font-size:16px;background:#fff;color:#1C1C1E;width:100%;-webkit-appearance:none;appearance:none;font-family:'Noto Sans Thai',-apple-system,sans-serif;transition:border-color .15s;min-height:50px;}
 .form-input:focus{outline:none;border-color:#1A6FDB;}
 .form-input[readonly]{background:#F9F9F9;color:#8E8E93;}
 input[type="date"].form-input{min-height:50px;line-height:1.2;}
@@ -55,7 +58,7 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
 .si:active{background:#F9F9F9;}
 .si-sub{font-size:11px;color:#8E8E93;margin-top:2px;}
 .btn-row{display:flex;gap:10px;margin-top:1rem;}
-.btn{flex:1;padding:15px;border-radius:14px;font-size:16px;cursor:pointer;font-weight:600;border:1.5px solid #E5E5EA;background:#F0F2F5;color:#1C1C1E;text-align:center;-webkit-appearance:none;font-family:inherit;}
+.btn{flex:1;padding:15px;border-radius:14px;font-size:16px;cursor:pointer;font-weight:600;border:1.5px solid #E5E5EA;background:#F0F2F5;color:#1C1C1E;text-align:center;-webkit-appearance:none;font-family:'Noto Sans Thai',-apple-system,sans-serif;}
 .btn:active{opacity:.7;}
 .btn-primary{flex:2;background:linear-gradient(135deg,#1A6FDB,#1558B0);color:#fff;border-color:transparent;}
 .btn:disabled{opacity:.4;}
@@ -77,7 +80,8 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
 .pill-purple{background:#F3EEFF;color:#6C3FC4;}
 .log-date{font-size:11px;color:#AEAEB2;margin-top:4px;}
 .log-note{font-size:12px;color:#8E8E93;margin-top:3px;font-style:italic;}
-.edit-btn{position:absolute;top:14px;right:14px;padding:5px 12px;border-radius:8px;border:1px solid #E5E5EA;background:#F9F9F9;font-size:12px;color:#1A6FDB;cursor:pointer;font-weight:600;}
+.edit-btn{position:absolute;top:14px;right:70px;padding:5px 12px;border-radius:8px;border:1px solid #E5E5EA;background:#F9F9F9;font-size:12px;color:#1A6FDB;cursor:pointer;font-weight:600;}
+.del-btn{position:absolute;top:14px;right:14px;padding:5px 10px;border-radius:8px;border:1px solid #FDECEC;background:#FFF5F5;font-size:12px;color:#C0392B;cursor:pointer;font-weight:600;}
 /* Stock */
 .sum-table{width:100%;border-collapse:collapse;font-size:13px;}
 .sum-table th{padding:8px 10px;font-size:11px;font-weight:700;color:#8E8E93;border-bottom:1px solid #F2F2F7;text-align:left;background:#F9F9F9;cursor:pointer;user-select:none;white-space:nowrap;}
@@ -340,6 +344,11 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
   <!-- คลังยา -->
   <div class="page" id="page-stock">
     <div style="height:.75rem;"></div>
+    <!-- Search box -->
+    <div style="position:relative;margin-bottom:1rem;">
+      <input class="form-input" id="stock-search" placeholder="🔍  ค้นหาชื่อยาหรือรหัสยา..." oninput="searchStock(this.value)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" style="padding-left:16px;"/>
+      <div id="stock-sbox" style="position:absolute;top:100%;left:0;right:0;z-index:300;background:#fff;border:1.5px solid #E5E5EA;border-radius:14px;max-height:280px;overflow-y:auto;display:none;margin-top:4px;box-shadow:0 8px 32px rgba(0,0,0,.12);-webkit-overflow-scrolling:touch;"></div>
+    </div>
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">รายการยาทั้งหมด</div><div class="stat-value blue" id="st-total">—</div></div>
       <div class="stat-card"><div class="stat-label">ยาใกล้หมดอายุ</div><div class="stat-value red" id="st-expiring">—</div></div>
@@ -754,6 +763,7 @@ function renderReceiveLog(){
     <div class="log-item">
       <div class="log-name">${e.name}</div>
       <button class="edit-btn" onclick="openEditModal('receive',${i})">แก้ไข</button>
+      <button class="del-btn" onclick="confirmDelete('receive',${i})">ลบ</button>
       <div class="log-pills">
         <span class="pill pill-gray">${e.code||'—'}</span>
         <span class="pill pill-blue">LOT: ${e.lot}</span>
@@ -772,6 +782,7 @@ function renderDispenseLog(){
     <div class="log-item">
       <div class="log-name">${e.name}</div>
       <button class="edit-btn" onclick="openEditModal('dispense',${i})">แก้ไข</button>
+      <button class="del-btn" onclick="confirmDelete('dispense',${i})">ลบ</button>
       <div class="log-pills">
         <span class="pill pill-gray">${e.code||'—'}</span>
         <span class="pill pill-blue">LOT: ${e.lot}</span>
@@ -902,8 +913,14 @@ function populateLotOptions(name){
   };
 }
 
-document.addEventListener('touchstart',e=>{if(!e.target.closest('.suggest-wrap'))document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');},{passive:true});
-document.addEventListener('click',e=>{if(!e.target.closest('.suggest-wrap'))document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');});
+document.addEventListener('touchstart',e=>{
+  if(!e.target.closest('.suggest-wrap'))document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');
+  if(!e.target.closest('#stock-search')&&!e.target.closest('#stock-sbox'))document.getElementById('stock-sbox').style.display='none';
+},{passive:true});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.suggest-wrap'))document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');
+  if(!e.target.closest('#stock-search')&&!e.target.closest('#stock-sbox'))document.getElementById('stock-sbox').style.display='none';
+});
 document.getElementById('edit-modal').addEventListener('click',e=>{if(e.target===document.getElementById('edit-modal'))closeEditModal();});
 document.getElementById('drug-detail-modal').addEventListener('click',e=>{if(e.target===document.getElementById('drug-detail-modal'))document.getElementById('drug-detail-modal').classList.remove('open');});
 
@@ -1048,6 +1065,97 @@ function closeScanner(){
   scanStream=null;
   const v=document.getElementById('scanner-video');if(v)v.srcObject=null;
   document.getElementById('scanner-modal').classList.remove('open');
+}
+
+
+// ── DELETE ──
+function confirmDelete(mode, idx){
+  const rows = mode==='receive' ? receiveRows : dispenseRows;
+  const e = rows[idx];
+  if(!confirm(`ลบรายการ "${e.name}" LOT: ${e.lot} วันที่: ${e.date} ออกจาก Google Sheet?
+
+การลบไม่สามารถกู้คืนได้`)) return;
+  deleteRow(mode, idx);
+}
+
+async function deleteRow(mode, idx){
+  const rows = mode==='receive' ? receiveRows : dispenseRows;
+  const e = rows[idx];
+  const payload = {
+    name: e.name,
+    lot: e.lot,
+    date: e.date,
+    action: mode==='receive' ? 'delete_receive' : 'delete_dispense'
+  };
+  showAlert('กำลังลบข้อมูล...', 'info');
+  try{
+    const r = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if(j.status==='ok'){
+      rows.splice(idx, 1);
+      if(mode==='receive') renderReceiveLog(); else renderDispenseLog();
+      addHistory('edit', `ลบรายการ: ${e.name}`, `LOT: ${e.lot} | ${e.date}`);
+      showAlert(`ลบ "${e.name}" LOT: ${e.lot} ออกจาก Google Sheet เรียบร้อย`, 'success');
+    } else {
+      showAlert('ลบไม่สำเร็จ: '+(j.message||'ไม่พบข้อมูลใน Sheet'), 'danger');
+    }
+  }catch(err){
+    showAlert('เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่', 'danger');
+  }
+}
+
+
+// ── STOCK SEARCH ──
+function searchStock(val){
+  const box = document.getElementById('stock-sbox');
+  if(!val.trim()){box.style.display='none';return;}
+  const q = val.toLowerCase();
+
+  // Search across all stock items (by name or code)
+  const nameMap = {};
+  _allStockItems.forEach(i=>{
+    if(!nameMap[i.name]) nameMap[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||''};
+    nameMap[i.name].qty += i.qty;
+  });
+  const matches = Object.values(nameMap)
+    .filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q))
+    .slice(0,12);
+
+  if(!matches.length){
+    box.innerHTML='<div style="padding:14px;font-size:13px;color:#AEAEB2;text-align:center;">ไม่พบยาที่ค้นหา</div>';
+    box.style.display='block';
+    return;
+  }
+
+  box.innerHTML = matches.map(i=>{
+    const g=(i.group||'').trim();
+    const isRed=g==='สีแดง'||g==='แดง';
+    const isYellow=g==='สีเหลือง'||g==='เหลือง';
+    const dot=isRed?'🔴':isYellow?'🟡':'🟢';
+    const qtyColor=isRed?'#C0392B':isYellow?'#B45309':'#27AE60';
+    const sn=i.name.replace(/'/g,"\'");
+    return `<div ontouchstart="" onclick="pickStockDrug('${sn}')" style="padding:12px 14px;border-bottom:0.5px solid #F2F2F7;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:600;color:#1C1C1E;line-height:1.3;">${i.name}</div>
+        <div style="font-size:11px;color:#8E8E93;margin-top:2px;">${i.code} ${dot}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:16px;font-weight:700;color:${qtyColor};">${Math.round(i.qty)}</div>
+        <div style="font-size:11px;color:#8E8E93;">${i.unit}</div>
+      </div>
+    </div>`;
+  }).join('');
+  box.style.display='block';
+}
+
+function pickStockDrug(name){
+  document.getElementById('stock-search').value=name;
+  document.getElementById('stock-sbox').style.display='none';
+  showDrugDetail(name);
 }
 
 loadReceive();
