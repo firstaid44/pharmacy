@@ -421,29 +421,48 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
       <div class="stat-card"><div class="stat-label">รายการยาทั้งหมด</div><div class="stat-value blue" id="st-total">—</div></div>
       <div class="stat-card"><div class="stat-label">ยาใกล้หมดอายุ</div><div class="stat-value red" id="st-expiring">—</div></div>
     </div>
-    <div class="section-hd">
-      <span class="section-title">สรุปยาคงเหลือรายตัว</span>
-      <button class="section-action" onclick="loadStock()">รีเฟรช</button>
-    </div>
-    <div class="card" id="stock-summary"><div class="loading">กำลังโหลด...</div></div>
-    <div class="card" style="margin-top:.5rem;padding:1rem;">
-      <div style="font-size:15px;font-weight:700;color:#1C1C1E;margin-bottom:.75rem;">ยาใกล้หมดอายุ</div>
+
+    <!-- ยาใกล้หมดอายุ (ขึ้นก่อน) -->
+    <div class="card" style="padding:1rem;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
+        <span style="font-size:15px;font-weight:700;color:#1C1C1E;">ยาใกล้หมดอายุ</span>
+        <button class="section-action" onclick="loadStock()">รีเฟรช</button>
+      </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:.75rem;">
         <label style="font-size:13px;font-weight:600;color:#3C3C43;white-space:nowrap;">คำนวณจากวันที่</label>
         <input type="date" id="exp-ref-date" class="form-input" style="flex:1;" oninput="renderExpiringList()"/>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:1rem;">
-        <button class="exp-range-btn active" data-months="6" onclick="setExpRange(this,6)">6 เดือน</button>
+      <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+        <button class="exp-range-btn active" data-months="6" onclick="setExpRange(this,1)">1 เดือน</button>
         <button class="exp-range-btn" data-months="3" onclick="setExpRange(this,3)">3 เดือน</button>
-        <button class="exp-range-btn" data-months="1" onclick="setExpRange(this,1)">1 เดือน</button>
+        <button class="exp-range-btn" data-months="1" onclick="setExpRange(this,6)">6 เดือน</button>
         <button class="exp-range-btn" data-months="12" onclick="setExpRange(this,12)">12 เดือน</button>
       </div>
       <div id="stock-expiring-list"><div class="loading">กำลังโหลด...</div></div>
     </div>
+
+    <!-- สรุปยาคงเหลือรายตัว -->
+    <div class="section-hd">
+      <span class="section-title">สรุปยาคงเหลือรายตัว</span>
+    </div>
+    <div class="card" id="stock-summary"><div class="loading">กำลังโหลด...</div></div>
+
+    <!-- แยกกลุ่มตามวันหมดอายุ -->
     <div class="section-hd" style="margin-top:.5rem;">
       <span class="section-title">แยกกลุ่มตามวันหมดอายุ</span>
     </div>
     <div class="card" id="stock-list"><div class="loading">กำลังโหลด...</div></div>
+
+    <!-- Detail Modal -->
+    <div class="modal-bg" id="drug-detail-modal">
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div id="drug-detail-content"></div>
+        <div class="btn-row" style="margin-top:1rem;">
+          <button class="btn btn-primary" onclick="document.getElementById('drug-detail-modal').classList.remove('open')">ปิด</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- PAGE: ประวัติ -->
@@ -677,16 +696,22 @@ async function loadStock(){
     });
 
     // Summary table HTML
+    // Build summary using group from Sheet (col J) for color, fallback to months calc
     const summaryHtml=summaryItems.length?`
-      <table class="sum-table">
-        <thead><tr><th>ชื่อยา</th><th>หมดอายุ</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
+      <table class="sum-table" style="cursor:pointer;">
+        <thead><tr><th>ชื่อยา</th><th>กลุ่ม</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
         <tbody>${summaryItems.map(i=>{
+          const g=(i.group||'').trim();
           const months=i.earliestExp?(i.earliestExp-now)/(1000*60*60*24*30.4):99;
-          const rowCls=months<=6?'exp-warn':months<=12?'exp-caution':'';
-          const qtyColor=months<=6?'#C0392B':months<=12?'#B45309':'#27AE60';
-          return `<tr class="${rowCls}">
-            <td><div class="sum-name">${i.name}</div><div class="sum-exp ${months<=6?'exp-r':months<=12?'exp-y':'exp-g'}">${fmtExp(i.exp)}</div></td>
-            <td style="white-space:nowrap;font-size:12px;color:#636366;">${fmtExp(i.exp)}</td>
+          const isRed = g==='สีแดง'||g==='แดง'||(g===''&&months<=6);
+          const isYellow = g==='สีเหลือง'||g==='เหลือง'||(g===''&&months>6&&months<=12);
+          const rowCls=isRed?'exp-warn':isYellow?'exp-caution':'';
+          const qtyColor=isRed?'#C0392B':isYellow?'#B45309':'#27AE60';
+          const groupLabel=isRed?'🔴 ใกล้หมด':isYellow?'🟡 ระวัง':'🟢 ปกติ';
+          const safeName=i.name.replace(/'/g,"\\'");
+          return `<tr class="${rowCls}" onclick="showDrugDetail('${safeName}')" style="cursor:pointer;">
+            <td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:#8E8E93;">EXP: ${fmtExp(i.exp)}</div></td>
+            <td style="font-size:12px;font-weight:600;white-space:nowrap;">${groupLabel}</td>
             <td><div class="sum-qty" style="color:${qtyColor};">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td>
           </tr>`;}).join('')}</tbody>
       </table>`:'<div class="empty">ไม่มีข้อมูล</div>';
@@ -1118,18 +1143,16 @@ function renderExpiringList(){
   const cutoff = new Date(refDate);
   cutoff.setMonth(cutoff.getMonth() + _expRangeMonths);
 
-  // Filter items by group from Sheet or by date calculation
+  // Filter using months from Sheet (col I) or group (col J) or date calc
   const filtered = items.filter(i => {
     const g=(i.group||'').trim();
+    const m=parseFloat(i.months)||null;
+    if(m!==null) return m <= _expRangeMonths;
     if(g){
-      // map group to months
-      const gMonths = (g==='สีแดง'||g==='แดง') ? 1
-                    : (g==='สีเหลือง'||g==='เหลือง') ? 7
-                    : 13;
+      const gMonths=(g==='สีแดง'||g==='แดง')?1:(g==='สีเหลือง'||g==='เหลือง')?7:13;
       return gMonths <= _expRangeMonths;
     }
-    // fallback: calculate from exp date
-    const ed = parseExpDate(i.exp);
+    const ed=parseExpDate(i.exp);
     return ed && ed <= cutoff;
   }).sort((a,b) => {
     const ea = parseExpDate(a.exp), eb = parseExpDate(b.exp);
@@ -1157,13 +1180,17 @@ function renderExpiringList(){
         const ed = parseExpDate(i.exp);
         // Use group from sheet to determine urgency, fallback to date calc
         const g2=(i.group||'').trim();
-        const daysLeft = ed ? Math.ceil((ed - refDate)/(1000*60*60*24)) : null;
+        // Use months from Sheet if available for display
+        const sheetMonths = parseFloat(i.months)||null;
+        const daysLeft = ed ? Math.ceil((ed - refDate)/(1000*60*60*24))
+                       : sheetMonths!==null ? Math.round(sheetMonths*30.4) : null;
         const isExpired = daysLeft !== null && daysLeft < 0;
         const isUrgent = daysLeft !== null && daysLeft <= 30;
         const rowCls = isExpired ? 'exp-warn' : isUrgent ? 'exp-warn' : 'exp-caution';
         const dayColor = isExpired ? '#C0392B' : isUrgent ? '#C0392B' : '#B45309';
         const dayLabel = isExpired ? `หมดแล้ว ${Math.abs(daysLeft)} วัน` : daysLeft !== null ? `${daysLeft} วัน` : '—';
-        return `<tr class="${rowCls}">
+        const safeN=i.name.replace(/'/g,"\\'");
+        return `<tr class="${rowCls}" onclick="showDrugDetail('${safeN}')" style="cursor:pointer;">
           <td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:#8E8E93;">LOT: ${i.lot}</div></td>
           <td style="white-space:nowrap;font-size:12px;color:${dayColor};font-weight:700;">${fmtExp(i.exp)}</td>
           <td style="font-size:12px;font-weight:700;color:${dayColor};white-space:nowrap;">${dayLabel}</td>
@@ -1171,6 +1198,75 @@ function renderExpiringList(){
         </tr>`;
       }).join('')}</tbody>
     </table>`;
+}
+
+
+// ── DRUG DETAIL MODAL ──
+function showDrugDetail(name){
+  const modal = document.getElementById('drug-detail-modal');
+  const el = document.getElementById('drug-detail-content');
+  if(!modal||!el) return;
+
+  // Gather all LOTs for this drug from receiveRows
+  const lots = receiveRows.filter(r=>r.name===name);
+  if(!lots.length){ el.innerHTML='<div class="empty">ไม่พบข้อมูลยานี้</div>'; modal.classList.add('open'); return; }
+
+  const totalReceived = lots.reduce((s,r)=>s+(parseFloat(r.qty)||0),0);
+  const totalDispensed = dispenseRows.filter(d=>d.name===name).reduce((s,d)=>s+(parseFloat(d.qty)||0),0);
+  const stockLeft = Math.max(0, Math.round(totalReceived - totalDispensed));
+
+  // Group by LOT
+  const lotMap = {};
+  lots.forEach(r=>{
+    if(!lotMap[r.lot]) lotMap[r.lot]={lot:r.lot,exp:r.exp,group:r.group||'',months:r.months||'',received:0,dispensed:0};
+    lotMap[r.lot].received += parseFloat(r.qty)||0;
+  });
+  dispenseRows.filter(d=>d.name===name).forEach(d=>{
+    if(lotMap[d.lot]) lotMap[d.lot].dispensed += parseFloat(d.qty)||0;
+  });
+
+  const lotItems = Object.values(lotMap).sort((a,b)=>{
+    const ea=parseExpDate(a.exp), eb=parseExpDate(b.exp);
+    if(!ea)return 1; if(!eb)return -1; return ea-eb;
+  });
+
+  const code = lots[0].code||'';
+  const unit = lots[0].unit||'';
+  const g = lots[0].group||'';
+  const isRed = g==='สีแดง'||g==='แดง';
+  const isYellow = g==='สีเหลือง'||g==='เหลือง';
+  const statusColor = isRed?'#C0392B':isYellow?'#B45309':'#27AE60';
+  const statusLabel = isRed?'🔴 ใกล้หมดอายุ':isYellow?'🟡 ต้องระวัง':'🟢 ปกติ';
+
+  el.innerHTML=`
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:17px;font-weight:700;color:#1C1C1E;line-height:1.3;margin-bottom:4px;">${name}</div>
+      <div style="font-size:12px;color:#8E8E93;">รหัส: ${code}</div>
+    </div>
+    <div class="stats-grid" style="margin-bottom:1rem;">
+      <div class="stat-card"><div class="stat-label">คงเหลือรวม</div><div class="stat-value" style="color:${statusColor};">${stockLeft}</div><div style="font-size:11px;color:#8E8E93;">${unit}</div></div>
+      <div class="stat-card"><div class="stat-label">สถานะ</div><div style="font-size:14px;font-weight:700;padding-top:4px;">${statusLabel}</div></div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#1C1C1E;margin-bottom:8px;">รายละเอียดแต่ละ LOT</div>
+    <table class="sum-table">
+      <thead><tr><th>LOT</th><th>วันหมดอายุ</th><th style="text-align:right;">รับเข้า</th><th style="text-align:right;">เบิกออก</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
+      <tbody>${lotItems.map(l=>{
+        const left=Math.max(0,Math.round(l.received-l.dispensed));
+        const lg=l.group||'';
+        const lRed=lg==='สีแดง'||lg==='แดง';
+        const lYellow=lg==='สีเหลือง'||lg==='เหลือง';
+        const lColor=lRed?'#C0392B':lYellow?'#B45309':'#27AE60';
+        const lCls=lRed?'exp-warn':lYellow?'exp-caution':'';
+        return `<tr class="${lCls}">
+          <td style="font-family:var(--font-mono,monospace);font-size:12px;font-weight:600;">${l.lot}</td>
+          <td style="font-size:12px;white-space:nowrap;">${fmtExp(l.exp)}</td>
+          <td style="text-align:right;font-size:12px;">${Math.round(l.received)}</td>
+          <td style="text-align:right;font-size:12px;color:#C0392B;">${Math.round(l.dispensed)}</td>
+          <td style="text-align:right;font-weight:700;font-size:14px;color:${lColor};">${left}</td>
+        </tr>`;}).join('')}
+      </tbody>
+    </table>`;
+  modal.classList.add('open');
 }
 
 loadReceive();
