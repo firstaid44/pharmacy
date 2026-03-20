@@ -419,13 +419,13 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
     <div style="height:.75rem;"></div>
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">รายการยาทั้งหมด</div><div class="stat-value blue" id="st-total">—</div></div>
-      <div class="stat-card"><div class="stat-label">ยาใกล้หมดอายุ</div><div class="stat-value red" id="st-expiring">—</div></div>
+      <div class="stat-card"><div class="stat-label"></div><div class="stat-value red" id="st-expiring">—</div></div>
     </div>
 
-    <!-- ยาใกล้หมดอายุ (ขึ้นก่อน) -->
+    <!--  (ขึ้นก่อน) -->
     <div class="card" style="padding:1rem;margin-bottom:1rem;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
-        <span style="font-size:15px;font-weight:700;color:#1C1C1E;">ยาใกล้หมดอายุ</span>
+        <span style="font-size:15px;font-weight:700;color:#1C1C1E;"></span>
         <button class="section-action" onclick="loadStock()">รีเฟรช</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:.75rem;">
@@ -433,10 +433,11 @@ textarea.form-input{resize:none;line-height:1.5;font-size:15px;}
         <input type="date" id="exp-ref-date" class="form-input" style="flex:1;" oninput="renderExpiringList()"/>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
-        <button class="exp-range-btn active" data-months="6" onclick="setExpRange(this,1)">1 เดือน</button>
+        <button class="exp-range-btn active" data-months="1" onclick="setExpRange(this,1)">1 เดือน</button>
         <button class="exp-range-btn" data-months="3" onclick="setExpRange(this,3)">3 เดือน</button>
-        <button class="exp-range-btn" data-months="1" onclick="setExpRange(this,6)">6 เดือน</button>
+        <button class="exp-range-btn" data-months="6" onclick="setExpRange(this,6)">6 เดือน</button>
         <button class="exp-range-btn" data-months="12" onclick="setExpRange(this,12)">12 เดือน</button>
+        <button class="exp-range-btn" data-months=">12" onclick="setExpRange(this,>12)"> มากกว่า 12 เดือน</button>
       </div>
       <div id="stock-expiring-list"><div class="loading">กำลังโหลด...</div></div>
     </div>
