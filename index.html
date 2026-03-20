@@ -651,9 +651,11 @@ function setSummarySort(col){
 function goSummaryPage(p){summaryPage=p;renderSummaryTable(_allStockItems);}
 
 // ── EXPIRING LIST ──
-function setExpRange(btn,months){
-  _expRangeMonths=months;
-  document.querySelectorAll('.exp-range-btn').forEach(b=>b.classList.remove('active'));
+function setExpRange(btn, min, max) {
+  // reset ปุ่ม
+  document.querySelectorAll('.exp-range-btn')
+    .forEach(b => b.classList.remove('active'));
+
   btn.classList.add('active');
   renderExpiringList();
 }
