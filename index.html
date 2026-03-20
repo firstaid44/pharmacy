@@ -623,7 +623,7 @@ function renderSummaryTable(items){
         const isYellow=g==='สีเหลือง'||g==='เหลือง';
         const rowCls=isRed?'exp-warn':isYellow?'exp-caution':'';
         const qtyColor=isRed?'#C0392B':isYellow?'#B45309':'#27AE60';
-        const groupLabel=isRed?'🔴 ใกล้หมด':isYellow?'🟡 ระวัง':'🟢 ปกติ';
+        const groupLabel=isRed?'🔴 ภายใน6เดือน':isYellow?'🟡 ภายใน6-12เดือน':'🟢 นานกว่า12เดือน';
         const sn=i.name.replace(/'/g,"\\'");
         return `<tr class="${rowCls}" onclick="showDrugDetail('${sn}')" style="cursor:pointer;">
           <td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:#8E8E93;">EXP: ${fmtExp(i.exp)}</div></td>
