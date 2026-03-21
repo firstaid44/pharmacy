@@ -739,8 +739,110 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;min-height:auto;}
     </div>
   </div>
 
+  <!-- ══ TAB: LINE ════════════════════════ -->
+  <div class="page" id="page-line">
+    <div class="spacer"></div>
+
+    <!-- สถานะ LINE -->
+    <div id="line-status-bar" style="display:flex;align-items:center;gap:10px;background:#E8F8EF;border:1px solid #B7DFC8;border-radius:12px;padding:11px 14px;margin-bottom:1rem;font-size:13px;color:#0A6E3F;font-weight:600;">
+      <svg width="18" height="18" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="#06C755"/><path d="M24 10C16.268 10 10 15.6 10 22.5c0 5.7 3.79 10.6 9.4 12.7l-.9 3.3c-.1.4.3.7.6.5l4.1-2.7c.6.1 1.2.1 1.8.1 7.73 0 14-5.6 14-12.5C39 15.6 31.73 10 24 10z" fill="white"/></svg>
+      <span id="line-status-text">ยังไม่ได้ตั้งค่า LINE</span>
+    </div>
+
+    <!-- ตั้งค่า Token -->
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title">ตั้งค่า LINE Messaging API</span>
+      </div>
+      <div class="card-body">
+        <div style="background:#F0F7FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#1558B0;line-height:1.7;">
+          <strong>วิธีตั้งค่า:</strong><br>
+          1. สร้าง LINE Official Account + เปิด Messaging API<br>
+          2. คัดลอก <strong>Channel Access Token</strong> จาก LINE Developers Console<br>
+          3. คัดลอก <strong>Group ID</strong> หรือ <strong>User ID</strong> ปลายทาง<br>
+          4. กด "บันทึก" แล้วทดสอบส่งข้อความ
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Channel Access Token <span class="req">*</span></label>
+          <div style="position:relative;">
+            <input class="form-input" id="line-token" type="password" placeholder="eyJhbGc..." autocomplete="off" style="padding-right:50px;"/>
+            <button onclick="toggleTokenVisibility()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--c-ink-3);padding:4px;" id="toggle-token-btn">
+              <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Group ID หรือ User ID ปลายทาง <span class="req">*</span></label>
+          <input class="form-input" id="line-to" placeholder="C... หรือ U... หรือ R..." autocomplete="off"/>
+          <div style="margin-top:6px;font-size:11px;color:var(--c-ink-3);">Group: ขึ้นต้น C · User: ขึ้นต้น U · Room: ขึ้นต้น R</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="line-enabled" style="width:18px;height:18px;cursor:pointer;" onchange="saveLineSettings()"/>
+            <span>เปิดใช้งานแจ้งเตือนทุกครั้งที่เบิกยา</span>
+          </label>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn" onclick="testLineMessage()">🔔 ทดสอบส่ง</button>
+          <button class="btn btn-primary" onclick="saveLineSettings()" style="background:linear-gradient(135deg,#06C755,#059646);">บันทึกการตั้งค่า</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flex Message Preview -->
+    <div class="sec-hd"><span class="sec-title">ตัวอย่าง Flex Message</span></div>
+    <div class="card" style="overflow:visible;">
+      <div style="padding:1rem;background:linear-gradient(135deg,#F0F9FF,#F0FFF4);border-radius:inherit;">
+        <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.12);">
+          <!-- Mock flex card -->
+          <div style="background:linear-gradient(135deg,#1A6FDB,#06C755);padding:14px 16px;display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </div>
+            <div>
+              <div style="color:#fff;font-size:13px;font-weight:800;line-height:1.2;">แจ้งเตือนเบิกยา</div>
+              <div style="color:rgba(255,255,255,.75);font-size:11px;">PCU สะบ้าย้อย</div>
+            </div>
+          </div>
+          <div style="padding:14px 16px 16px;">
+            <div style="font-size:15px;font-weight:800;color:#0F1923;margin-bottom:10px;line-height:1.3;">AMOXICILLIN 500 MG./CAPSULES</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div style="background:#F4F6FA;border-radius:8px;padding:8px 10px;">
+                <div style="font-size:10px;color:#94A3B8;font-weight:600;margin-bottom:2px;">จำนวนเบิก</div>
+                <div style="font-size:18px;font-weight:800;color:#E5323A;">30 <span style="font-size:12px;font-weight:600;">แคปซูล</span></div>
+              </div>
+              <div style="background:#F4F6FA;border-radius:8px;padding:8px 10px;">
+                <div style="font-size:10px;color:#94A3B8;font-weight:600;margin-bottom:2px;">คงเหลือ</div>
+                <div style="font-size:18px;font-weight:800;color:#0FA862;">120 <span style="font-size:12px;font-weight:600;">แคปซูล</span></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;">
+              <div style="display:flex;justify-content:space-between;"><span style="color:#94A3B8;">LOT</span><span style="font-weight:700;color:#0F1923;">LOT2025001</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:#94A3B8;">หมดอายุ</span><span style="font-weight:700;color:#D97706;">31/12/2026</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:#94A3B8;">ผู้เบิก</span><span style="font-weight:700;color:#0F1923;">นางสาวสาลูมา โต๊ะหัด</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:#94A3B8;">วันที่</span><span style="font-weight:600;color:#64748B;">21/03/2569</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ประวัติส่ง LINE -->
+    <div class="sec-hd" style="margin-top:.25rem;">
+      <span class="sec-title">ประวัติส่ง LINE</span>
+      <button class="sec-btn" onclick="clearLineLog()">ล้าง</button>
+    </div>
+    <div class="card">
+      <div id="line-log"><div class="empty">ยังไม่มีประวัติส่ง LINE</div></div>
+    </div>
+  </div>
+
   <!-- Bottom Nav -->
-  <div class="bottom-nav">
+  <div class="bottom-nav" style="grid-template-columns:repeat(5,1fr);">
     <button class="nav-btn active" onclick="switchTab('receive',this)">
       <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
       <span class="nav-lbl">รับยาเข้า</span>
@@ -760,6 +862,12 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;min-height:auto;}
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span class="nav-lbl">ประวัติ</span>
       <span class="nav-badge" id="hist-badge" style="display:none;">0</span>
+      <div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" onclick="switchTab('line',this)" id="nav-line">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5C21 16.75 16.75 21 12 21c-.87 0-1.71-.1-2.5-.3L5 22l1.3-4.5A9 9 0 1121 11.5z"/></svg>
+      <span class="nav-lbl">LINE</span>
+      <span class="nav-badge" id="line-badge" style="display:none;background:#06C755;">✓</span>
       <div class="nav-dot"></div>
     </button>
   </div>
@@ -787,7 +895,7 @@ function gChip(g){return g==='red'?'chip chip-r':g==='yellow'?'chip chip-y':'chi
 function gLbl(g){return g==='red'?'ใกล้หมด':g==='yellow'?'ระวัง':'ปกติ';}
 function gBg(g){return g==='red'?'#D93025':g==='yellow'?'#C67B00':'#1B9E5A';}
 
-function switchTab(tab,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+tab).classList.add('active');el.classList.add('active');if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();}if(tab==='stock')loadStock();if(tab==='history')renderHistory();}
+function switchTab(tab,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+tab).classList.add('active');el.classList.add('active');if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();}if(tab==='stock')loadStock();if(tab==='history')renderHistory();if(tab==='line')loadLineSettings();}
 function showAlert(msg,type){const b=document.getElementById('alert-box');b.innerHTML=`<div class="alert alert-${type}">${msg}</div>`;b.style.display='block';clearTimeout(b._t);b._t=setTimeout(()=>b.style.display='none',5000);}
 function setSheet(s,msg){const c={green:'#1B9E5A',amber:'#E8A000',red:'#D93025'};document.getElementById('sdot').style.background=c[s]||c.amber;document.getElementById('smsg').textContent=msg;}
 
@@ -880,7 +988,9 @@ function populateQtyOptions(stock){const sel=document.getElementById('d-qty'),in
 function populateLotOptions(name){const sel=document.getElementById('d-lot'),lots=receiveRows.filter(r=>r.name===name);sel.innerHTML='<option value="">— เลือก LOT —</option>';lots.forEach(r=>{const s=calcStock(name,r.lot);sel.innerHTML+=`<option value="${r.lot}" data-exp="${r.exp}" data-stock="${s}">${r.lot} (คงเหลือ: ${s})</option>`;});document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';document.getElementById('d-stock-info').style.display='none';sel.onchange=()=>{const opt=sel.selectedOptions[0];document.getElementById('d-exp').value=opt?opt.dataset.exp||'':'';const u=lots.find(r=>r.lot===sel.value);if(u){const s=document.getElementById('d-unit');for(let i=0;i<s.options.length;i++)if(s.options[i].value===u.unit){s.selectedIndex=i;break;}}if(sel.value)populateQtyOptions(parseInt(opt.dataset.stock)||0);else{document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';document.getElementById('d-stock-info').style.display='none';}};}
 async function receiveStock(){const name=document.getElementById('r-name').value.trim();const code=document.getElementById('r-code').value.trim();const lot=document.getElementById('r-lot').value.trim();const expRaw=document.getElementById('r-exp').value;const exp=expRaw?expRaw.split('-').reverse().join('/'):'';const unit=document.getElementById('r-unit').value;const qty=parseInt(document.getElementById('r-qty').value)||0;const note=document.getElementById('r-note').value.trim();if(!name){showAlert('กรุณาเลือกชื่อยา','danger');return;}if(!lot){showAlert('กรุณากรอก LOT Number','danger');return;}if(!exp){showAlert('กรุณาระบุวันหมดอายุ','danger');return;}if(qty<=0){showAlert('กรุณาระบุจำนวน','danger');return;}const entry={name,code,lot,exp,unit,qty,note,date:todayTH(),action:'receive'};const btn=document.getElementById('save-btn');btn.textContent='กำลังบันทึก...';btn.disabled=true;setSheet('amber','กำลังส่งข้อมูล...');clearReceiveForm();try{await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});setSheet('green','บันทึกสำเร็จ');showAlert(`รับยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} เรียบร้อย`,'success');addHistory('in',`รับยาเข้า: ${name}`,`LOT: ${lot} | ${qty} ${unit}`);setTimeout(()=>loadReceive(),1500);}catch(e){setSheet('red','บันทึกไม่สำเร็จ');showAlert('ส่งข้อมูลไม่สำเร็จ','danger');}btn.textContent='+ บันทึกรับยาเข้า';btn.disabled=false;}
 function clearReceiveForm(){['r-name','r-code','r-lot','r-qty','r-note'].forEach(id=>document.getElementById(id).value='');document.getElementById('r-exp').value='';document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');}
-async function dispenseStock(){const name=document.getElementById('d-name').value.trim();const code=document.getElementById('d-code').value.trim();const lot=document.getElementById('d-lot').value;const exp=document.getElementById('d-exp').value;const unit=document.getElementById('d-unit').value;const qty=parseInt(document.getElementById('d-qty').value)||0;const requester=document.getElementById('d-requester').value;const note=document.getElementById('d-note').value.trim();if(!name){showAlert('กรุณาเลือกชื่อยา','danger');return;}if(!lot){showAlert('กรุณาเลือก LOT','danger');return;}if(qty<=0){showAlert('กรุณาระบุจำนวน','danger');return;}if(!requester){showAlert('กรุณาระบุชื่อผู้เบิก','danger');return;}const entry={name,code,lot,exp,unit,qty,requester,note,date:todayTH(),action:'dispense'};const btn=document.getElementById('d-save-btn');btn.textContent='กำลังบันทึก...';btn.disabled=true;clearDispenseForm();try{await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});showAlert(`เบิกยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} โดย ${requester}`,'success');addHistory('out',`เบิกยาออก: ${name}`,`LOT: ${lot} | ${qty} ${unit} | ผู้เบิก: ${requester}`);setTimeout(()=>loadDispense(),1500);}catch(e){showAlert('ส่งข้อมูลไม่สำเร็จ','danger');}btn.textContent='เบิกยาออก';btn.disabled=false;}
+async function dispenseStock(){const name=document.getElementById('d-name').value.trim();const code=document.getElementById('d-code').value.trim();const lot=document.getElementById('d-lot').value;const exp=document.getElementById('d-exp').value;const unit=document.getElementById('d-unit').value;const qty=parseInt(document.getElementById('d-qty').value)||0;const requester=document.getElementById('d-requester').value;const note=document.getElementById('d-note').value.trim();if(!name){showAlert('กรุณาเลือกชื่อยา','danger');return;}if(!lot){showAlert('กรุณาเลือก LOT','danger');return;}if(qty<=0){showAlert('กรุณาระบุจำนวน','danger');return;}if(!requester){showAlert('กรุณาระบุชื่อผู้เบิก','danger');return;}const entry={name,code,lot,exp,unit,qty,requester,note,date:todayTH(),action:'dispense'};const btn=document.getElementById('d-save-btn');btn.textContent='กำลังบันทึก...';btn.disabled=true;clearDispenseForm();try{await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});showAlert(`เบิกยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} โดย ${requester}`,'success');addHistory('out',`เบิกยาออก: ${name}`,`LOT: ${lot} | ${qty} ${unit} | ผู้เบิก: ${requester}`);// คำนวณยาคงเหลือ (เดิม) หักจำนวนที่เบิก
+const stockLeft=calcStock(name,lot)-qty;setTimeout(()=>loadDispense(),1500);// ส่ง LINE Flex Message
+sendLineFlexDispense({name,code,lot,exp,unit,qty,requester,note,date:todayTH(),stockLeft:Math.max(0,stockLeft)});}catch(e){showAlert('ส่งข้อมูลไม่สำเร็จ','danger');}btn.textContent='เบิกยาออก';btn.disabled=false;}
 function clearDispenseForm(){['d-name','d-code','d-note'].forEach(id=>document.getElementById(id).value='');document.getElementById('d-exp').value='';document.getElementById('d-requester').value='';document.getElementById('d-lot').innerHTML='<option value="">— เลือก LOT —</option>';document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';const info=document.getElementById('d-stock-info');if(info)info.style.display='none';document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');}
 function addHistory(type,msg,detail){const time=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});historyLog.unshift({type,msg,detail,time});const badge=document.getElementById('hist-badge');badge.style.display='block';badge.textContent=historyLog.length;}
 function renderHistory(){const el=document.getElementById('history-log');if(!historyLog.length){el.innerHTML='<div class="empty">ยังไม่มีประวัติในเซสชันนี้</div>';return;}const icons={in:'<path d="M12 5v14M5 12l7-7 7 7"/>',out:'<path d="M12 19V5M5 12l7 7 7-7"/>',edit:'<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>'};el.innerHTML=historyLog.map(h=>`<div class="hist-item"><div class="hist-icon ${h.type}"><svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor">${icons[h.type]||icons.edit}</svg></div><div style="flex:1;"><div class="hist-title">${h.msg}</div><div class="hist-detail">${h.detail}</div><div class="hist-time">${h.time}</div></div></div>`).join('');}
@@ -896,6 +1006,248 @@ document.addEventListener('touchstart',e=>{if(!e.target.closest('.suggest-wrap')
 document.addEventListener('click',e=>{if(!e.target.closest('.suggest-wrap'))document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');if(!e.target.closest('#stock-search')&&!e.target.closest('#stock-sbox'))document.getElementById('stock-sbox').style.display='none';});
 document.getElementById('edit-modal').addEventListener('click',e=>{if(e.target===document.getElementById('edit-modal'))closeEditModal();});
 document.getElementById('drug-detail-modal').addEventListener('click',e=>{if(e.target===document.getElementById('drug-detail-modal'))document.getElementById('drug-detail-modal').classList.remove('open');});
+
+// ══ LINE MESSAGING API ═══════════════════════════════════════
+let lineLog2=[];
+
+function loadLineSettings(){
+  const token=localStorage.getItem('line_token')||'';
+  const to=localStorage.getItem('line_to')||'';
+  const enabled=localStorage.getItem('line_enabled')==='true';
+  if(document.getElementById('line-token')) document.getElementById('line-token').value=token;
+  if(document.getElementById('line-to')) document.getElementById('line-to').value=to;
+  if(document.getElementById('line-enabled')) document.getElementById('line-enabled').checked=enabled;
+  updateLineStatusBar();
+  renderLineLog();
+}
+
+function saveLineSettings(){
+  const token=(document.getElementById('line-token').value||'').trim();
+  const to=(document.getElementById('line-to').value||'').trim();
+  const enabled=document.getElementById('line-enabled').checked;
+  if(!token){showAlert('กรุณากรอก Channel Access Token','danger');return;}
+  if(!to){showAlert('กรุณากรอก Group ID หรือ User ID','danger');return;}
+  localStorage.setItem('line_token',token);
+  localStorage.setItem('line_to',to);
+  localStorage.setItem('line_enabled',String(enabled));
+  updateLineStatusBar();
+  showAlert(enabled?'✓ บันทึกและเปิดแจ้งเตือน LINE แล้ว':'บันทึกการตั้งค่า LINE แล้ว (แจ้งเตือนปิดอยู่)','success');
+}
+
+function updateLineStatusBar(){
+  const token=localStorage.getItem('line_token')||'';
+  const to=localStorage.getItem('line_to')||'';
+  const enabled=localStorage.getItem('line_enabled')==='true';
+  const bar=document.getElementById('line-status-bar');
+  const txt=document.getElementById('line-status-text');
+  const badge=document.getElementById('line-badge');
+  if(!bar||!txt) return;
+  if(token&&to&&enabled){
+    bar.style.cssText='display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#DCFCE7,#D1FAE5);border:1px solid #6EE7B7;border-radius:12px;padding:11px 14px;margin-bottom:1rem;font-size:13px;color:#065F46;font-weight:600;';
+    txt.textContent='✓ LINE เปิดใช้งาน — ส่งแจ้งเตือนทุกครั้งที่มีการเบิกยา';
+    if(badge){badge.style.display='block';badge.style.background='#06C755';}
+  } else if(token&&to){
+    bar.style.cssText='display:flex;align-items:center;gap:10px;background:#FEF3E2;border:1px solid #FDE68A;border-radius:12px;padding:11px 14px;margin-bottom:1rem;font-size:13px;color:#92400E;font-weight:600;';
+    txt.textContent='⚠ ตั้งค่าไว้แล้วแต่ยังไม่ได้เปิดแจ้งเตือน — เปิดสวิตช์ด้านล่าง';
+    if(badge) badge.style.display='none';
+  } else {
+    bar.style.cssText='display:flex;align-items:center;gap:10px;background:#F4F6FA;border:1px solid #E2E8F0;border-radius:12px;padding:11px 14px;margin-bottom:1rem;font-size:13px;color:#64748B;font-weight:600;';
+    txt.textContent='ยังไม่ได้ตั้งค่า LINE — กรอก Token และ ID เพื่อเริ่มใช้งาน';
+    if(badge) badge.style.display='none';
+  }
+}
+
+function toggleTokenVisibility(){
+  const inp=document.getElementById('line-token');
+  const ico=document.getElementById('eye-icon');
+  if(!inp) return;
+  if(inp.type==='password'){
+    inp.type='text';
+    if(ico) ico.innerHTML='<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    inp.type='password';
+    if(ico) ico.innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+function buildFlexMessage(d){
+  // d = {name,code,lot,exp,unit,qty,requester,note,date,stockLeft}
+  const stockColor = d.stockLeft<=10?'#E5323A' : d.stockLeft<=30?'#D97706' : '#0FA862';
+  const stockBg    = d.stockLeft<=10?'#FEE9E9' : d.stockLeft<=30?'#FEF3E2' : '#DCFCE7';
+  const expStr     = fmtExp(d.exp)||'—';
+  const noteRow    = d.note ? [{
+    type:'box',layout:'horizontal',paddingTop:'6px',
+    contents:[
+      {type:'text',text:'หมายเหตุ',size:'xs',color:'#94A3B8',flex:2,weight:'bold'},
+      {type:'text',text:d.note,size:'xs',color:'#475569',flex:4,align:'end',wrap:true}
+    ]
+  }] : [];
+
+  return {
+    type:'flex',
+    altText:`💊 เบิกยา: ${d.name} | ${d.qty} ${d.unit} | ผู้เบิก: ${d.requester}`,
+    contents:{
+      type:'bubble',
+      size:'kilo',
+      styles:{body:{backgroundColor:'#FFFFFF'},footer:{backgroundColor:'#F8FAFC'}},
+      header:{
+        type:'box',layout:'horizontal',
+        backgroundColor:'#1B6EF3',
+        paddingAll:'16px',spacing:'md',
+        contents:[
+          {type:'box',layout:'vertical',width:'38px',height:'38px',
+           backgroundColor:'rgba(255,255,255,0.18)',cornerRadius:'10px',
+           justifyContent:'center',alignItems:'center',
+           contents:[{type:'text',text:'💊',size:'lg',align:'center',gravity:'center'}]},
+          {type:'box',layout:'vertical',flex:1,paddingStart:'4px',
+           justifyContent:'center',
+           contents:[
+             {type:'text',text:'แจ้งเตือนการเบิกยา',color:'#FFFFFF',size:'sm',weight:'bold'},
+             {type:'text',text:'PCU สะบ้าย้อย',color:'rgba(255,255,255,0.65)',size:'xs',margin:'xs'}
+           ]}
+        ]
+      },
+      body:{
+        type:'box',layout:'vertical',paddingAll:'16px',spacing:'none',
+        contents:[
+          // ชื่อยา
+          {type:'text',text:d.name,weight:'bold',size:'md',color:'#0F1923',wrap:true,margin:'none'},
+          {type:'text',text:`รหัส: ${d.code||'—'}`,size:'xs',color:'#94A3B8',margin:'xs'},
+          {type:'separator',margin:'md'},
+          // 2 stat boxes
+          {type:'box',layout:'horizontal',margin:'md',spacing:'sm',
+           contents:[
+             {type:'box',layout:'vertical',flex:1,backgroundColor:'#FEE9E9',cornerRadius:'10px',paddingAll:'12px',
+              contents:[
+                {type:'text',text:'จำนวนเบิก',size:'xxs',color:'#94A3B8',weight:'bold'},
+                {type:'box',layout:'baseline',spacing:'xs',margin:'sm',
+                 contents:[
+                   {type:'text',text:String(d.qty),size:'xxl',weight:'bold',color:'#E5323A',flex:0},
+                   {type:'text',text:d.unit,size:'xs',color:'#B91C1C',flex:0,margin:'sm',gravity:'bottom'}
+                 ]}
+              ]},
+             {type:'box',layout:'vertical',flex:1,backgroundColor:stockBg,cornerRadius:'10px',paddingAll:'12px',
+              contents:[
+                {type:'text',text:'คงเหลือ',size:'xxs',color:'#94A3B8',weight:'bold'},
+                {type:'box',layout:'baseline',spacing:'xs',margin:'sm',
+                 contents:[
+                   {type:'text',text:String(d.stockLeft),size:'xxl',weight:'bold',color:stockColor,flex:0},
+                   {type:'text',text:d.unit,size:'xs',color:stockColor,flex:0,margin:'sm',gravity:'bottom'}
+                 ]}
+              ]}
+           ]},
+          // Detail rows
+          {type:'box',layout:'vertical',margin:'md',spacing:'sm',
+           paddingAll:'12px',backgroundColor:'#F8FAFC',cornerRadius:'10px',
+           contents:[
+             {type:'box',layout:'horizontal',
+              contents:[
+                {type:'text',text:'LOT',size:'xs',color:'#94A3B8',flex:2,weight:'bold'},
+                {type:'text',text:d.lot,size:'xs',color:'#1E293B',flex:4,align:'end',weight:'bold'}
+              ]},
+             {type:'box',layout:'horizontal',paddingTop:'6px',
+              contents:[
+                {type:'text',text:'วันหมดอายุ',size:'xs',color:'#94A3B8',flex:2,weight:'bold'},
+                {type:'text',text:expStr,size:'xs',color:'#D97706',flex:4,align:'end',weight:'bold'}
+              ]},
+             {type:'box',layout:'horizontal',paddingTop:'6px',
+              contents:[
+                {type:'text',text:'ผู้เบิก',size:'xs',color:'#94A3B8',flex:2,weight:'bold'},
+                {type:'text',text:d.requester,size:'xs',color:'#1E293B',flex:4,align:'end',weight:'bold',wrap:true}
+              ]},
+             {type:'box',layout:'horizontal',paddingTop:'6px',
+              contents:[
+                {type:'text',text:'วันที่',size:'xs',color:'#94A3B8',flex:2,weight:'bold'},
+                {type:'text',text:d.date,size:'xs',color:'#64748B',flex:4,align:'end'}
+              ]},
+             ...noteRow
+           ]}
+        ]
+      },
+      footer:{
+        type:'box',layout:'horizontal',paddingAll:'12px',
+        contents:[
+          {type:'text',text:'ระบบบริหารจัดการคลังยา PCU สะบ้าย้อย',size:'xxs',color:'#94A3B8',align:'center',flex:1,wrap:true}
+        ]
+      }
+    }
+  };
+}
+
+async function sendLineFlexDispense(data){
+  const token=(localStorage.getItem('line_token')||'').trim();
+  const to=(localStorage.getItem('line_to')||'').trim();
+  const enabled=localStorage.getItem('line_enabled')==='true';
+  if(!enabled||!token||!to) return;
+
+  const flexMsg=buildFlexMessage(data);
+  try{
+    const resp=await fetch('https://api.line.me/v2/bot/message/push',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+token
+      },
+      body:JSON.stringify({to:to, messages:[flexMsg]})
+    });
+    const j=await resp.json();
+    const ok=resp.ok&&!j.message;
+    addLineLog(ok?'ok':'err', data.name, data.qty, data.unit, data.requester,
+               ok?'ส่งสำเร็จ ✓':('Error: '+(j.message||resp.status)));
+    if(ok) showAlert('📱 ส่งแจ้งเตือน LINE สำเร็จ ✓','success');
+  }catch(e){
+    addLineLog('err',data.name,data.qty,data.unit,data.requester,'เชื่อมต่อ LINE API ไม่ได้');
+  }
+}
+
+async function testLineMessage(){
+  saveLineSettings();
+  const token=(localStorage.getItem('line_token')||'').trim();
+  const to=(localStorage.getItem('line_to')||'').trim();
+  if(!token||!to){showAlert('กรุณากรอก Token และ ID ก่อนทดสอบ','danger');return;}
+  showAlert('📤 กำลังส่งข้อความทดสอบ...','info');
+  await sendLineFlexDispense({
+    name:'[ทดสอบ] PARACETAMOL 500 MG./TAB',
+    code:'1CET',lot:'TEST001',exp:'31/12/2027',
+    unit:'เม็ด',qty:30,requester:'ทดสอบระบบ',
+    note:'ข้อความทดสอบจากระบบ PCU',
+    date:todayTH(),stockLeft:120
+  });
+}
+
+function addLineLog(status,name,qty,unit,requester,msg){
+  const time=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  lineLog2.unshift({status,name,qty,unit,requester,msg,time});
+  if(document.getElementById('page-line').classList.contains('active')) renderLineLog();
+}
+function renderLineLog(){
+  const el=document.getElementById('line-log');
+  if(!el)return;
+  if(!lineLog2.length){el.innerHTML='<div class="empty">ยังไม่มีประวัติส่ง LINE ในเซสชันนี้</div>';return;}
+  el.innerHTML=lineLog2.slice(0,30).map(l=>`
+    <div style="padding:11px 1rem;border-bottom:1px solid var(--c-border);display:flex;align-items:flex-start;gap:10px;">
+      <div style="width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;background:${l.status==='ok'?'#DCFCE7':'#FEE9E9'};">${l.status==='ok'?'✓':'✕'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--c-ink-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.name}</div>
+        <div style="font-size:12px;color:var(--c-ink-2);margin-top:2px;">${l.qty} ${l.unit} · ${l.requester}</div>
+        <div style="font-size:11px;font-weight:600;margin-top:3px;color:${l.status==='ok'?'#0A6E3F':'#B91C1C'};">${l.msg}</div>
+        <div style="font-size:10px;color:var(--c-ink-3);margin-top:2px;">${l.time}</div>
+      </div>
+    </div>`).join('');
+}
+function clearLineLog(){lineLog2=[];renderLineLog();}
+
+// init: แสดง LINE badge ถ้าเปิดใช้งานอยู่
+(()=>{
+  const t=localStorage.getItem('line_token')||'';
+  const id=localStorage.getItem('line_to')||'';
+  const on=localStorage.getItem('line_enabled')==='true';
+  if(t&&id&&on){
+    const b=document.getElementById('line-badge');
+    if(b){b.style.display='block';b.style.background='#06C755';}
+  }
+})();
+
 loadReceive();
 </script>
 </body>
