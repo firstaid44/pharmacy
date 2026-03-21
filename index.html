@@ -1188,18 +1188,25 @@ async function sendLineFlexDispense(data){
     flex:JSON.stringify(flexMsg)
   };
   try{
-    // ใช้ mode:'no-cors' เหมือน receive/dispense — Apps Script รับได้แน่นอน
-    await fetch(SCRIPT_URL,{
+    // ใช้ redirect:'follow' เหมือน edit_receive / edit_dispense / delete
+    // ไม่ใช้ no-cors เพราะ Apps Script จะอ่าน body ไม่ได้
+    const resp=await fetch(SCRIPT_URL,{
       method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
+      redirect:'follow',
+      headers:{'Content-Type':'text/plain'},
       body:JSON.stringify(payload)
     });
-    // no-cors จะได้ opaque response เสมอ — ถือว่าส่งถึง Apps Script แล้ว
-    addLineLog('ok',data.name,data.qty,data.unit,data.requester,'ส่งถึง Apps Script แล้ว ✓');
-    showAlert('📱 ส่งแจ้งเตือน LINE เรียบร้อย ✓','success');
+    const j=await resp.json();
+    const ok=j.status==='ok';
+    addLineLog(
+      ok?'ok':'err',
+      data.name,data.qty,data.unit,data.requester,
+      ok?'ส่ง LINE สำเร็จ ✓':('LINE error: '+(j.message||'unknown'))
+    );
+    if(ok) showAlert('📱 ส่งแจ้งเตือน LINE สำเร็จ ✓','success');
+    else   showAlert('LINE: '+(j.message||'ส่งไม่สำเร็จ'),'warning');
   }catch(e){
-    addLineLog('err',data.name,data.qty,data.unit,data.requester,'fetch ไม่สำเร็จ: '+e.message);
+    addLineLog('err',data.name,data.qty,data.unit,data.requester,'fetch error: '+e.message);
   }
 }
 
