@@ -6,566 +6,446 @@
 <title>ระบบบริหารจัดการคลังยา — PCU สะบ้าย้อย</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #F4F6F9;
-  --surface: #FFFFFF;
-  --surface-2: #F8FAFC;
-  --border: rgba(0,0,0,0.08);
-  --border-strong: rgba(0,0,0,0.14);
-
-  --blue: #1A5FD4;
-  --blue-light: #EBF2FF;
-  --blue-mid: #2D78F5;
-  --teal: #0B9E72;
-  --teal-light: #E6F7F2;
-  --red: #D93025;
-  --red-light: #FDECEA;
-  --amber: #C07000;
-  --amber-light: #FFF3DC;
-  --purple: #6B3FC4;
-  --purple-light: #F3EEFF;
-  --green: #1E8A4A;
-  --green-light: #E9F7EF;
-
-  --text-primary: #0F1923;
-  --text-secondary: #4A5568;
-  --text-muted: #94A3B8;
-  --text-xmuted: #C4CDD8;
-
-  --shadow-xs: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.04);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.05);
-
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
-
-  --nav-h: 68px;
-  --header-h: 60px;
+:root{
+  --bg:#F0F4F8;
+  --surface:#FFFFFF;
+  --surface2:#F7F9FC;
+  --border:rgba(0,0,0,.07);
+  --border2:rgba(0,0,0,.12);
+  --blue:#1A5FD4;--blue-d:#1347A8;--blue-l:#EBF2FF;
+  --teal:#0B9E72;--teal-l:#E6F7F2;
+  --red:#D93025;--red-l:#FDECEA;
+  --amber:#C07000;--amber-l:#FFF3DC;
+  --purple:#6B3FC4;--purple-l:#F3EEFF;
+  --green:#1E8A4A;--green-l:#E9F7EF;
+  --text1:#0F1923;--text2:#4A5568;--text3:#94A3B8;--text4:#C4CDD8;
+  --sh-xs:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh-sm:0 2px 8px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);
+  --sh-md:0 4px 16px rgba(0,0,0,.09),0 2px 6px rgba(0,0,0,.04);
+  --sh-lg:0 12px 40px rgba(0,0,0,.12),0 4px 12px rgba(0,0,0,.05);
+  --r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:24px;
 }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{
+  font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+  background:var(--bg);color:var(--text1);
+  -webkit-text-size-adjust:100%;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 15% 0%,rgba(26,95,212,.05) 0%,transparent 55%),
+             radial-gradient(ellipse at 85% 100%,rgba(11,158,114,.05) 0%,transparent 55%);
+}
+.app{max-width:430px;margin:0 auto;padding-bottom:calc(84px + env(safe-area-inset-bottom));position:relative;z-index:1;}
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+/* ── HEADER ── */
+.header{
+  background:rgba(255,255,255,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  padding:calc(.875rem + env(safe-area-inset-top)) 1rem .875rem;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;
+}
+.logo{
+  width:38px;height:38px;background:linear-gradient(140deg,#1A5FD4,#0B9E72);
+  border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(26,95,212,.28);
+}
+.logo svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;}
+.app-title{font-size:15px;font-weight:700;color:var(--text1);letter-spacing:-.3px;}
+.app-sub{font-size:11px;color:var(--text3);margin-top:1px;font-weight:400;}
+.conn-chip{
+  display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;
+  background:var(--surface2);border:1px solid var(--border);
+  font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;transition:all .3s;
+}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:#FFC107;flex-shrink:0;transition:background .3s;}
+.conn-dot.ok{background:var(--teal);box-shadow:0 0 0 3px rgba(11,158,114,.15);}
+.conn-dot.err{background:var(--red);}
 
-body {
-  font-family: 'Noto Sans Thai', -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--text-primary);
-  -webkit-text-size-adjust: 100%;
-  overflow-x: hidden;
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;
+  background:rgba(15,25,35,.92);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-top:1px solid rgba(255,255,255,.08);
+  display:grid;grid-template-columns:repeat(5,1fr);
+  padding-bottom:env(safe-area-inset-bottom);z-index:200;
+  box-shadow:0 -8px 32px rgba(0,0,0,.25);
 }
-
-/* ─── BACKGROUND PATTERN ─── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    radial-gradient(circle at 20% 20%, rgba(26,95,212,0.04) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(11,158,114,0.04) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 2px 9px;cursor:pointer;gap:4px;
+  -webkit-appearance:none;background:transparent;border:none;
+  color:rgba(255,255,255,.38);position:relative;transition:color .2s;
 }
-
-.app {
-  max-width: 430px;
-  margin: 0 auto;
-  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);
-  position: relative;
-  z-index: 1;
+.nav-item.active{color:#FFFFFF;}
+.nav-item svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.nav-item.active svg{transform:translateY(-2px);}
+.nav-label{font-size:9.5px;font-weight:600;letter-spacing:.3px;transition:color .2s;}
+/* pill indicator */
+.nav-pill{
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:0;height:3px;border-radius:3px 3px 0 0;
+  background:linear-gradient(90deg,#4A9EFF,#06C755);
+  transition:width .28s cubic-bezier(.34,1.56,.64,1);
 }
-
-/* ─── HEADER ─── */
-.header {
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: calc(.875rem + env(safe-area-inset-top)) 1rem .875rem;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 200;
+.nav-item.active .nav-pill{width:32px;}
+/* active icon glow */
+.nav-item.active svg{filter:drop-shadow(0 0 6px rgba(74,158,255,.6));}
+.nav-item:nth-child(2).active svg{filter:drop-shadow(0 0 6px rgba(255,120,80,.6));}
+.nav-item:nth-child(3).active svg{filter:drop-shadow(0 0 6px rgba(74,158,255,.5));}
+.nav-item:nth-child(5).active svg{filter:drop-shadow(0 0 6px rgba(6,199,85,.7));}
+.nav-badge{
+  background:var(--red);color:#fff;border-radius:10px;
+  font-size:9px;font-weight:700;padding:1px 5px;min-width:16px;text-align:center;
+  position:absolute;top:7px;right:calc(50% - 22px);
+  border:1.5px solid rgba(15,25,35,.9);
 }
-
-.logo {
-  width: 38px; height: 38px;
-  background: linear-gradient(140deg, #1A5FD4 0%, #0B9E72 100%);
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(26,95,212,0.3);
-}
-.logo svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2.2; }
-.header-text { flex: 1; }
-.app-title { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -.3px; }
-.app-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; font-weight: 400; }
-
-.conn-chip {
-  display: flex; align-items: center; gap: 5px;
-  padding: 5px 10px; border-radius: 20px;
-  background: var(--surface-2); border: 1px solid var(--border);
-  font-size: 11px; font-weight: 600; color: var(--text-secondary);
-  white-space: nowrap;
-  transition: all .3s;
-}
-.conn-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: #FFC107; flex-shrink: 0;
-  transition: background .3s;
-}
-.conn-dot.ok { background: var(--teal); box-shadow: 0 0 0 3px rgba(11,158,114,.15); }
-.conn-dot.err { background: var(--red); }
-
-/* ─── BOTTOM NAV ─── */
-.bottom-nav {
-  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 100%; max-width: 430px;
-  background: rgba(255,255,255,0.96);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border);
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  padding-bottom: env(safe-area-inset-bottom);
-  z-index: 200;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-}
-.nav-item {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 10px 4px 8px; cursor: pointer; gap: 3px;
-  -webkit-appearance: none; background: transparent; border: none;
-  color: var(--text-muted); position: relative;
-  transition: color .2s;
-}
-.nav-item.active { color: var(--blue); }
-.nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; transition: transform .2s; }
-.nav-item.active svg { transform: translateY(-1px); }
-.nav-label { font-size: 10px; font-weight: 600; letter-spacing: .2px; }
-.nav-active-bar {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 0; height: 2.5px; border-radius: 0 0 3px 3px;
-  background: var(--blue);
-  transition: width .25s cubic-bezier(.34,1.56,.64,1);
-}
-.nav-item.active .nav-active-bar { width: 28px; }
-.nav-badge {
-  background: var(--red); color: #fff;
-  border-radius: 10px; font-size: 10px; font-weight: 700;
-  padding: 1px 6px; min-width: 18px; text-align: center;
-  position: absolute; top: 7px; right: calc(50% - 24px);
-  border: 2px solid #fff;
+.nav-line-badge{
+  position:absolute;top:7px;right:calc(50% - 22px);
+  width:8px;height:8px;border-radius:50%;background:#06C755;
+  border:1.5px solid rgba(15,25,35,.9);display:none;
+  box-shadow:0 0 0 2px rgba(6,199,85,.3);
 }
 
-/* ─── PAGES ─── */
-.page { display: none; padding: 1rem; }
-.page.active { display: block; animation: pageIn .25s ease; }
-@keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+/* ── PAGES ── */
+.page{display:none;padding:1rem;}
+.page.active{display:block;animation:pageIn .22s ease;}
+@keyframes pageIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
-/* ─── ALERT ─── */
-#alert-box { padding: 0 1rem; position: sticky; top: calc(var(--header-h) + env(safe-area-inset-top)); z-index: 150; }
-.alert {
-  padding: 12px 16px; border-radius: var(--radius-md);
-  font-size: 13px; font-weight: 600; line-height: 1.4;
-  display: flex; align-items: flex-start; gap: 8px;
-  animation: alertIn .3s cubic-bezier(.34,1.56,.64,1);
-  box-shadow: var(--shadow-md);
-  border: 1px solid transparent;
+/* ── ALERT ── */
+#alert-box{padding:0 1rem;position:sticky;top:62px;z-index:150;}
+.alert{
+  padding:11px 15px;border-radius:var(--r-md);
+  font-size:13px;font-weight:600;line-height:1.4;
+  display:flex;align-items:flex-start;gap:8px;
+  animation:alertIn .28s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:var(--sh-md);border:1px solid transparent;margin-bottom:2px;
 }
-@keyframes alertIn { from { opacity: 0; transform: translateY(-10px) scale(.97); } to { opacity: 1; transform: none; } }
-.alert-success { background: var(--green-light); color: var(--green); border-color: rgba(30,138,74,.15); }
-.alert-danger { background: var(--red-light); color: var(--red); border-color: rgba(217,48,37,.15); }
-.alert-warning { background: var(--amber-light); color: var(--amber); border-color: rgba(192,112,0,.15); }
-.alert-info { background: var(--blue-light); color: var(--blue); border-color: rgba(26,95,212,.15); }
+@keyframes alertIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}
+.alert-success{background:var(--green-l);color:var(--green);border-color:rgba(30,138,74,.15);}
+.alert-danger{background:var(--red-l);color:var(--red);border-color:rgba(217,48,37,.15);}
+.alert-warning{background:var(--amber-l);color:var(--amber);border-color:rgba(192,112,0,.15);}
+.alert-info{background:var(--blue-l);color:var(--blue);border-color:rgba(26,95,212,.15);}
 
-/* ─── CARDS ─── */
-.card {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow .2s;
+/* ── CARDS ── */
+.card{
+  background:var(--surface);border-radius:var(--r-lg);
+  border:1px solid var(--border);overflow:hidden;
+  margin-bottom:12px;box-shadow:var(--sh-sm);
 }
-.card-body { padding: 1rem; }
+.card-body{padding:1rem;}
 
-/* ─── STATS GRID ─── */
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.stat-card {
-  background: var(--surface); border-radius: var(--radius-md);
-  padding: 14px; border: 1px solid var(--border);
-  box-shadow: var(--shadow-xs);
-  position: relative; overflow: hidden;
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat-card{
+  background:var(--surface);border-radius:var(--r-md);
+  padding:14px;border:1px solid var(--border);
+  box-shadow:var(--sh-xs);position:relative;overflow:hidden;
 }
-.stat-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--accent-color, var(--blue));
-}
-.stat-card.c-blue { --accent-color: var(--blue); }
-.stat-card.c-teal { --accent-color: var(--teal); }
-.stat-card.c-amber { --accent-color: #E29000; }
-.stat-card.c-red { --accent-color: var(--red); }
-.stat-label { font-size: 10px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
-.stat-value { font-size: 26px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px; line-height: 1; }
-.stat-value.sv-blue { color: var(--blue); }
-.stat-value.sv-teal { color: var(--teal); }
-.stat-value.sv-amber { color: var(--amber); }
-.stat-value.sv-red { color: var(--red); }
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ac,var(--blue));}
+.stat-card.c-blue{--ac:var(--blue);}
+.stat-card.c-teal{--ac:var(--teal);}
+.stat-card.c-amber{--ac:#E29000;}
+.stat-card.c-red{--ac:var(--red);}
+.stat-label{font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.stat-value{font-size:26px;font-weight:700;color:var(--text1);letter-spacing:-1px;line-height:1;font-family:'IBM Plex Mono',monospace;}
+.sv-blue{color:var(--blue);}.sv-teal{color:var(--teal);}.sv-amber{color:var(--amber);}.sv-red{color:var(--red);}
 
-/* ─── SECTION HEADER ─── */
-.section-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.section-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-.section-action {
-  font-size: 12px; color: var(--blue); cursor: pointer;
-  padding: 5px 12px; border-radius: 20px;
-  border: 1px solid rgba(26,95,212,.2); background: var(--blue-light);
-  -webkit-appearance: none; font-weight: 600;
-  transition: all .15s;
+/* ── SECTION ── */
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.section-title{font-size:15px;font-weight:700;color:var(--text1);}
+.section-action{
+  font-size:12px;color:var(--blue);cursor:pointer;
+  padding:5px 12px;border-radius:20px;
+  border:1px solid rgba(26,95,212,.2);background:var(--blue-l);
+  -webkit-appearance:none;font-weight:600;transition:all .15s;font-family:inherit;
 }
-.section-action:active { opacity: .7; }
+.section-action:active{opacity:.7;}
 
-/* ─── FORMS ─── */
-.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.form-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .4px; }
-.form-label .req { color: var(--red); margin-left: 2px; }
-.form-input {
-  padding: 13px 14px; border: 1.5px solid var(--border-strong);
-  border-radius: var(--radius-md); font-size: 16px;
-  background: var(--surface); color: var(--text-primary);
-  width: 100%; -webkit-appearance: none; appearance: none;
-  font-family: 'Noto Sans Thai', -apple-system, sans-serif;
-  transition: border-color .15s, box-shadow .15s; min-height: 50px;
+/* ── FORM ── */
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.form-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;}
+.form-label .req{color:var(--red);margin-left:2px;}
+.form-input{
+  padding:13px 14px;border:1.5px solid var(--border2);
+  border-radius:var(--r-md);font-size:15px;
+  background:var(--surface);color:var(--text1);width:100%;
+  -webkit-appearance:none;appearance:none;
+  font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+  transition:border-color .15s,box-shadow .15s;min-height:50px;
 }
-.form-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,95,212,.12); }
-.form-input[readonly] { background: var(--surface-2); color: var(--text-muted); }
-input[type="date"].form-input { min-height: 50px; line-height: 1.2; }
-select.form-input {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394A3B8' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+.form-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,95,212,.1);}
+.form-input[readonly]{background:var(--surface2);color:var(--text3);}
+input[type="date"].form-input{min-height:50px;line-height:1.2;}
+select.form-input{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394A3B8' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;
 }
-textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.input-with-scan{display:flex;gap:8px;}
+.input-with-scan .form-input{flex:1;}
+.scan-btn{
+  padding:0 14px;border-radius:var(--r-md);
+  border:1.5px solid rgba(26,95,212,.25);background:var(--blue-l);
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+  font-size:12px;font-weight:700;color:var(--blue);
+  -webkit-appearance:none;white-space:nowrap;flex-shrink:0;transition:all .15s;
+  font-family:inherit;
+}
+.scan-btn svg{width:16px;height:16px;stroke:var(--blue);fill:none;stroke-width:2;}
+.scan-btn:active{transform:scale(.97);}
 
-/* ─── SCAN BTN ─── */
-.input-with-scan { display: flex; gap: 8px; }
-.input-with-scan .form-input { flex: 1; }
-.scan-btn {
-  padding: 0 14px; border-radius: var(--radius-md);
-  border: 1.5px solid rgba(26,95,212,.25); background: var(--blue-light);
-  cursor: pointer; display: flex; align-items: center; gap: 5px;
-  font-size: 12px; font-weight: 700; color: var(--blue);
-  -webkit-appearance: none; white-space: nowrap; flex-shrink: 0;
-  transition: all .15s;
+/* ── SUGGEST ── */
+.suggest-wrap{position:relative;}
+.sbox{
+  position:absolute;top:100%;left:0;right:0;z-index:300;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r-lg);max-height:240px;overflow-y:auto;
+  display:none;margin-top:5px;-webkit-overflow-scrolling:touch;
+  box-shadow:var(--sh-lg);animation:dropIn .15s ease;
 }
-.scan-btn svg { width: 16px; height: 16px; stroke: var(--blue); fill: none; stroke-width: 2; }
-.scan-btn:active { background: rgba(26,95,212,.15); transform: scale(.97); }
+@keyframes dropIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.si{padding:12px 14px;font-size:14px;cursor:pointer;color:var(--text1);border-bottom:1px solid var(--border);}
+.si:last-child{border-bottom:none;}
+.si:active{background:var(--surface2);}
+.si-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
 
-/* ─── SUGGEST ─── */
-.suggest-wrap { position: relative; }
-.sbox {
-  position: absolute; top: 100%; left: 0; right: 0; z-index: 300;
-  background: var(--surface); border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg); max-height: 240px; overflow-y: auto;
-  display: none; margin-top: 5px;
-  -webkit-overflow-scrolling: touch;
-  box-shadow: var(--shadow-lg);
-  animation: dropIn .15s ease;
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:10px;margin-top:1rem;}
+.btn{
+  flex:1;padding:15px;border-radius:var(--r-md);font-size:15px;
+  cursor:pointer;font-weight:700;border:1.5px solid var(--border2);
+  background:var(--surface2);color:var(--text2);text-align:center;
+  -webkit-appearance:none;font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+  transition:all .15s;
 }
-@keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-.si { padding: 12px 14px; font-size: 14px; cursor: pointer; color: var(--text-primary); border-bottom: 1px solid var(--border); }
-.si:last-child { border-bottom: none; }
-.si:active { background: var(--surface-2); }
-.si-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+.btn:active{transform:scale(.97);opacity:.8;}
+.btn-primary{
+  flex:2;background:linear-gradient(135deg,#2D78F5,#1A5FD4);
+  color:#fff;border-color:transparent;
+  box-shadow:0 4px 14px rgba(26,95,212,.3);
+}
+.btn-primary:active{box-shadow:0 2px 8px rgba(26,95,212,.2);}
+.btn:disabled{opacity:.4;}
 
-/* ─── BUTTONS ─── */
-.btn-row { display: flex; gap: 10px; margin-top: 1rem; }
-.btn {
-  flex: 1; padding: 15px; border-radius: var(--radius-md);
-  font-size: 15px; cursor: pointer; font-weight: 700;
-  border: 1.5px solid var(--border-strong); background: var(--surface-2);
-  color: var(--text-secondary); text-align: center;
-  -webkit-appearance: none; font-family: 'Noto Sans Thai', -apple-system, sans-serif;
-  transition: all .15s;
+/* ── LOG ── */
+.log-item{padding:14px 1rem;border-bottom:1px solid var(--border);position:relative;transition:background .12s;}
+.log-item:last-child{border-bottom:none;}
+.log-name{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:6px;line-height:1.3;padding-right:130px;}
+.log-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px;}
+.pill{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.pill-gray{background:#F0F2F5;color:#64748B;}
+.pill-blue{background:var(--blue-l);color:var(--blue);}
+.pill-amber{background:var(--amber-l);color:var(--amber);}
+.pill-green{background:var(--green-l);color:var(--green);}
+.pill-red{background:var(--red-l);color:var(--red);}
+.pill-purple{background:var(--purple-l);color:var(--purple);}
+.pill-mono{font-family:'IBM Plex Mono',monospace;}
+.log-date{font-size:11px;color:var(--text4);margin-top:4px;font-family:'IBM Plex Mono',monospace;}
+.log-note{font-size:12px;color:var(--text3);margin-top:3px;}
+.edit-btn{
+  position:absolute;top:14px;right:74px;padding:5px 11px;border-radius:8px;
+  border:1px solid rgba(26,95,212,.2);background:var(--blue-l);
+  font-size:12px;color:var(--blue);cursor:pointer;font-weight:700;font-family:inherit;
 }
-.btn:active { transform: scale(.97); opacity: .8; }
-.btn-primary {
-  flex: 2;
-  background: linear-gradient(135deg, var(--blue-mid) 0%, var(--blue) 100%);
-  color: #fff; border-color: transparent;
-  box-shadow: 0 4px 14px rgba(26,95,212,.3);
-}
-.btn-primary:active { box-shadow: 0 2px 8px rgba(26,95,212,.2); }
-.btn:disabled { opacity: .4; }
-
-/* ─── LOG ITEMS ─── */
-.log-item {
-  padding: 14px 1rem; border-bottom: 1px solid var(--border);
-  position: relative; transition: background .15s;
-}
-.log-item:last-child { border-bottom: none; }
-.log-item:active { background: var(--surface-2); }
-.log-name { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; line-height: 1.3; padding-right: 130px; }
-.log-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; }
-.pill { padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: .1px; }
-.pill-gray { background: #F0F2F5; color: #64748B; }
-.pill-blue { background: var(--blue-light); color: var(--blue); }
-.pill-amber { background: var(--amber-light); color: var(--amber); }
-.pill-green { background: var(--green-light); color: var(--green); }
-.pill-red { background: var(--red-light); color: var(--red); }
-.pill-purple { background: var(--purple-light); color: var(--purple); }
-.pill-mono { font-family: 'IBM Plex Mono', monospace; }
-.log-date { font-size: 11px; color: var(--text-xmuted); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
-.log-note { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-
-.edit-btn {
-  position: absolute; top: 14px; right: 74px;
-  padding: 5px 11px; border-radius: 8px;
-  border: 1px solid rgba(26,95,212,.2); background: var(--blue-light);
-  font-size: 12px; color: var(--blue); cursor: pointer; font-weight: 700;
-  transition: all .15s;
-}
-.del-btn {
-  position: absolute; top: 14px; right: 14px;
-  padding: 5px 10px; border-radius: 8px;
-  border: 1px solid rgba(217,48,37,.15); background: var(--red-light);
-  font-size: 12px; color: var(--red); cursor: pointer; font-weight: 700;
-  transition: all .15s;
-}
-.edit-btn:active, .del-btn:active { transform: scale(.95); }
-
-/* ─── DB BAR ─── */
-.db-bar {
-  display: flex; align-items: center; gap: 8px;
-  background: linear-gradient(135deg, var(--teal-light), #F0FBF7);
-  border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 12px;
-  font-size: 13px; color: var(--teal); font-weight: 600;
-  border: 1px solid rgba(11,158,114,.15);
-}
-.dot-green { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex-shrink: 0; box-shadow: 0 0 0 3px rgba(11,158,114,.2); }
-
-/* ─── STATUS BAR ─── */
-.status-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--surface); border-radius: var(--radius-md);
-  padding: 10px 14px; margin-bottom: 14px; border: 1px solid var(--border);
-  box-shadow: var(--shadow-xs);
-}
-.status-left { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
-.sdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: background .3s; }
-
-/* ─── SECTION TITLE DIVIDER ─── */
-.sec-divider {
-  display: flex; align-items: center; gap: 10px;
-  margin: 16px 0 10px; font-size: 12px; font-weight: 700;
-  color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px;
-}
-.sec-divider::before, .sec-divider::after {
-  content: ''; flex: 1; height: 1px; background: var(--border);
+.del-btn{
+  position:absolute;top:14px;right:14px;padding:5px 10px;border-radius:8px;
+  border:1px solid rgba(217,48,37,.15);background:var(--red-l);
+  font-size:12px;color:var(--red);cursor:pointer;font-weight:700;font-family:inherit;
 }
 
-/* ─── TABLE ─── */
-.sum-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.sum-table th {
-  padding: 9px 10px; font-size: 10px; font-weight: 700;
-  color: var(--text-muted); border-bottom: 1px solid var(--border);
-  text-align: left; background: var(--surface-2);
-  cursor: pointer; user-select: none; white-space: nowrap;
-  text-transform: uppercase; letter-spacing: .4px;
-  transition: background .15s;
+/* ── DB BAR ── */
+.db-bar{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--teal-l),#F0FBF7);
+  border-radius:var(--r-md);padding:10px 14px;margin-bottom:12px;
+  font-size:13px;color:var(--teal);font-weight:600;
+  border:1px solid rgba(11,158,114,.15);
 }
-.sum-table th:hover { background: #EDF2F7; }
-.sum-table th.sort-asc::after { content: ' ↑'; color: var(--blue); }
-.sum-table th.sort-desc::after { content: ' ↓'; color: var(--blue); }
-.sum-table td { padding: 11px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.sum-table tr:last-child td { border-bottom: none; }
-.sum-table tbody tr { cursor: pointer; transition: background .12s; }
-.sum-table tbody tr:hover { background: var(--surface-2); }
-.sum-name { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
-.sum-qty { font-size: 17px; font-weight: 800; text-align: right; letter-spacing: -0.5px; }
-.sum-unit { font-size: 10px; color: var(--text-muted); text-align: right; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
-.exp-warn { background: rgba(217,48,37,.04); border-left: 3px solid var(--red); }
-.exp-caution { background: rgba(192,112,0,.04); border-left: 3px solid #E29000; }
+.dot-green{width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;box-shadow:0 0 0 3px rgba(11,158,114,.2);}
 
-/* ─── STOCK COLUMNS ─── */
-.stock-mini {
-  background: var(--surface); border-radius: var(--radius-sm);
-  border: 1px solid var(--border); padding: 10px; margin-bottom: 6px;
-  cursor: pointer; transition: all .15s;
+/* ── STATUS BAR ── */
+.status-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);border-radius:var(--r-md);
+  padding:10px 14px;margin-bottom:14px;border:1px solid var(--border);box-shadow:var(--sh-xs);
 }
-.stock-mini:active { transform: scale(.97); opacity: .8; }
-.stock-mini-name { font-size: 11px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
-.stock-mini-num { display: flex; align-items: baseline; gap: 3px; margin-top: 5px; }
-.stock-mini-qty { font-size: 18px; font-weight: 800; letter-spacing: -.5px; }
-.stock-mini-unit { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+.status-left{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s;}
 
-/* ─── EXPIRY BUTTONS ─── */
-.exp-range-btn {
-  padding: 6px 14px; border-radius: 20px;
-  border: 1.5px solid var(--border-strong); background: var(--surface-2);
-  font-size: 12px; font-weight: 700; color: var(--text-secondary);
-  cursor: pointer; -webkit-appearance: none;
-  transition: all .15s;
+/* ── TABLE ── */
+.sum-table{width:100%;border-collapse:collapse;font-size:13px;}
+.sum-table th{
+  padding:9px 10px;font-size:10px;font-weight:700;color:var(--text3);
+  border-bottom:1px solid var(--border);text-align:left;background:var(--surface2);
+  cursor:pointer;user-select:none;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px;
 }
-.exp-range-btn.active { background: var(--red-light); color: var(--red); border-color: rgba(217,48,37,.3); }
+.sum-table th:hover{background:#EDF2F7;}
+.sum-table th.sort-asc::after{content:' ↑';color:var(--blue);}
+.sum-table th.sort-desc::after{content:' ↓';color:var(--blue);}
+.sum-table td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.sum-table tr:last-child td{border-bottom:none;}
+.sum-table tbody tr{cursor:pointer;transition:background .12s;}
+.sum-table tbody tr:hover{background:var(--surface2);}
+.sum-name{font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;}
+.sum-qty{font-size:17px;font-weight:700;text-align:right;font-family:'IBM Plex Mono',monospace;}
+.sum-unit{font-size:10px;color:var(--text3);text-align:right;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.exp-warn{background:rgba(217,48,37,.04);border-left:3px solid var(--red);}
+.exp-caution{background:rgba(192,112,0,.04);border-left:3px solid #E29000;}
 
-/* ─── GROUP DRUG LIST ─── */
-.group-hd {
-  padding: 8px 14px; font-size: 11px; font-weight: 800;
-  color: #fff; letter-spacing: .3px; text-transform: uppercase;
+/* ── EXP BTNS ── */
+.exp-range-btn{
+  padding:6px 14px;border-radius:20px;border:1.5px solid var(--border2);
+  background:var(--surface2);font-size:12px;font-weight:700;color:var(--text2);
+  cursor:pointer;-webkit-appearance:none;transition:all .15s;font-family:inherit;
 }
-.group-drug-item {
-  padding: 12px 1rem; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px; cursor: pointer;
-  transition: background .12s;
-}
-.group-drug-item:last-child { border-bottom: none; }
-.group-drug-item:active { background: var(--surface-2); }
-.group-drug-num { font-size: 11px; font-weight: 700; color: var(--text-xmuted); min-width: 22px; font-family: 'IBM Plex Mono', monospace; }
-.group-drug-name { font-size: 14px; font-weight: 700; color: var(--text-primary); flex: 1; line-height: 1.3; }
-.group-drug-exp { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
-.group-drug-arrow { font-size: 16px; color: var(--text-xmuted); }
+.exp-range-btn.active{background:var(--red-l);color:var(--red);border-color:rgba(217,48,37,.3);}
 
-/* ─── PAGINATION ─── */
-.pagination {
-  display: flex; align-items: center; justify-content: center;
-  gap: 8px; padding: 12px; border-top: 1px solid var(--border);
+/* ── GROUP LIST ── */
+.group-hd{padding:8px 14px;font-size:11px;font-weight:800;color:#fff;letter-spacing:.3px;text-transform:uppercase;}
+.group-drug-item{
+  padding:12px 1rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .12s;
 }
-.pg-btn {
-  padding: 6px 14px; border-radius: 8px;
-  border: 1px solid var(--border-strong); background: var(--surface-2);
-  font-size: 13px; font-weight: 700; color: var(--blue); cursor: pointer;
-  -webkit-appearance: none; transition: all .15s;
-}
-.pg-btn:disabled { color: var(--text-xmuted); cursor: default; }
-.pg-info { font-size: 12px; color: var(--text-muted); }
+.group-drug-item:last-child{border-bottom:none;}
+.group-drug-item:active{background:var(--surface2);}
+.group-drug-num{font-size:11px;font-weight:700;color:var(--text4);min-width:22px;font-family:'IBM Plex Mono',monospace;}
+.group-drug-name{font-size:14px;font-weight:700;color:var(--text1);flex:1;line-height:1.3;}
+.group-drug-exp{font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.group-drug-arrow{font-size:16px;color:var(--text4);}
 
-/* ─── HISTORY ─── */
-.hist-item { padding: 12px 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px; }
-.hist-item:last-child { border-bottom: none; }
-.hist-icon {
-  width: 34px; height: 34px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-top:1px solid var(--border);}
+.pg-btn{
+  padding:6px 14px;border-radius:8px;border:1px solid var(--border2);
+  background:var(--surface2);font-size:13px;font-weight:700;color:var(--blue);
+  cursor:pointer;-webkit-appearance:none;transition:all .15s;font-family:inherit;
 }
-.hist-icon.in { background: var(--green-light); }
-.hist-icon.out { background: var(--red-light); }
-.hist-icon.edit { background: var(--blue-light); }
-.hist-icon svg { width: 16px; height: 16px; stroke-width: 2.2; fill: none; }
-.hist-icon.in svg { stroke: var(--green); }
-.hist-icon.out svg { stroke: var(--red); }
-.hist-icon.edit svg { stroke: var(--blue); }
-.hist-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-.hist-detail { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-.hist-time { font-size: 11px; color: var(--text-xmuted); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+.pg-btn:disabled{color:var(--text4);cursor:default;}
+.pg-info{font-size:12px;color:var(--text3);}
 
-/* ─── EMPTY / LOADING ─── */
-.empty { text-align: center; padding: 3rem 1rem; color: var(--text-xmuted); font-size: 14px; }
-.empty-icon { font-size: 32px; margin-bottom: 8px; opacity: .6; }
-.loading {
-  text-align: center; padding: 2rem 1rem; color: var(--text-muted);
-  font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.spin { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+/* ── HISTORY ── */
+.hist-item{padding:12px 1rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;}
+.hist-item:last-child{border-bottom:none;}
+.hist-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hist-icon.in{background:var(--green-l);}.hist-icon.out{background:var(--red-l);}.hist-icon.edit{background:var(--blue-l);}
+.hist-icon svg{width:16px;height:16px;stroke-width:2.2;fill:none;}
+.hist-icon.in svg{stroke:var(--green);}.hist-icon.out svg{stroke:var(--red);}.hist-icon.edit svg{stroke:var(--blue);}
+.hist-title{font-size:13px;font-weight:700;color:var(--text1);}
+.hist-detail{font-size:12px;color:var(--text3);margin-top:2px;}
+.hist-time{font-size:11px;color:var(--text4);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
 
-/* ─── MODALS ─── */
-.modal-bg {
-  display: none; position: fixed; inset: 0;
-  background: rgba(15,25,35,.5); backdrop-filter: blur(4px);
-  z-index: 500; align-items: flex-end; justify-content: center;
-}
-.modal-bg.open { display: flex; animation: fadein .2s ease; }
-@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
-.modal {
-  background: var(--surface);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  width: 100%; max-width: 430px;
-  padding: 1.25rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
-  max-height: 92vh; overflow-y: auto;
-  animation: slideUp .28s cubic-bezier(.34,1.2,.64,1);
-  box-shadow: 0 -8px 40px rgba(0,0,0,.15);
-}
-@keyframes slideUp { from { transform: translateY(30px); opacity: .5; } to { transform: none; opacity: 1; } }
-.modal-handle {
-  width: 36px; height: 4px; background: var(--border-strong);
-  border-radius: 2px; margin: 0 auto 1.25rem;
-}
-.modal-title { font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem; letter-spacing: -.3px; }
+/* ── EMPTY/LOADING ── */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text4);font-size:14px;}
+.empty-icon{font-size:32px;margin-bottom:8px;opacity:.6;}
+.loading{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ─── SCANNER ─── */
-.scanner-modal { display: none; position: fixed; inset: 0; z-index: 600; background: rgba(0,0,0,.95); }
-.scanner-modal.open { display: flex; flex-direction: column; }
-.scanner-top { display: flex; align-items: center; justify-content: space-between; padding: calc(1rem + env(safe-area-inset-top)) 1rem 1rem; }
-.scanner-title { font-size: 16px; font-weight: 700; color: #fff; }
-.scanner-close { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; font-size: 14px; cursor: pointer; }
-.scanner-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
-#scanner-video { width: 100%; max-width: 300px; border-radius: 16px; background: #000; }
-.scanner-frame { position: relative; width: 100%; max-width: 300px; }
-.sc-corner { position: absolute; width: 24px; height: 24px; border-color: #fff; border-style: solid; }
-.sc-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 5px 0 0 0; }
-.sc-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-radius: 0 5px 0 0; }
-.sc-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-radius: 0 0 0 5px; }
-.sc-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 5px 0; }
-.scanner-hint { color: rgba(255,255,255,.6); font-size: 13px; text-align: center; margin-top: 1rem; }
-.scanner-result { margin-top: 1rem; padding: 12px 16px; background: rgba(255,255,255,.08); border-radius: 10px; color: #fff; font-size: 13px; text-align: center; font-family: 'IBM Plex Mono', monospace; }
-.scanner-bottom { padding: 1rem 1rem calc(1.5rem + env(safe-area-inset-bottom)); display: flex; gap: 10px; }
-.sa-btn { flex: 1; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; }
-.sa-cancel { background: rgba(255,255,255,.1); color: #fff; }
-.sa-confirm { background: var(--blue-mid); color: #fff; display: none; }
+/* ── MODALS ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,25,35,.55);backdrop-filter:blur(4px);z-index:500;align-items:flex-end;justify-content:center;}
+.modal-bg.open{display:flex;animation:fadein .2s ease;}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;
+  width:100%;max-width:430px;
+  padding:1.25rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
+  max-height:92vh;overflow-y:auto;
+  animation:slideUp .28s cubic-bezier(.34,1.2,.64,1);
+  box-shadow:0 -8px 40px rgba(0,0,0,.15);
+}
+@keyframes slideUp{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem;}
+.modal-title{font-size:18px;font-weight:700;color:var(--text1);margin-bottom:1rem;letter-spacing:-.3px;}
 
-/* ─── STOCK SEARCH ─── */
-#stock-sbox {
-  position: absolute; top: 100%; left: 0; right: 0; z-index: 300;
-  background: var(--surface); border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg); max-height: 280px; overflow-y: auto;
-  display: none; margin-top: 5px; box-shadow: var(--shadow-lg);
-  -webkit-overflow-scrolling: touch;
-  animation: dropIn .15s ease;
+/* ── SCANNER ── */
+.scanner-modal{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.95);}
+.scanner-modal.open{display:flex;flex-direction:column;}
+.scanner-top{display:flex;align-items:center;justify-content:space-between;padding:calc(1rem + env(safe-area-inset-top)) 1rem 1rem;}
+.scanner-title{font-size:16px;font-weight:700;color:#fff;}
+.scanner-close{padding:8px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:14px;cursor:pointer;font-family:inherit;}
+.scanner-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;}
+#scanner-video{width:100%;max-width:300px;border-radius:16px;background:#000;}
+.scanner-frame{position:relative;width:100%;max-width:300px;}
+.sc-corner{position:absolute;width:24px;height:24px;border-color:#fff;border-style:solid;}
+.sc-tl{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:5px 0 0 0;}
+.sc-tr{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 5px 0 0;}
+.sc-bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px;border-radius:0 0 0 5px;}
+.sc-br{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 5px 0;}
+.scanner-hint{color:rgba(255,255,255,.6);font-size:13px;text-align:center;margin-top:1rem;}
+.scanner-result{margin-top:1rem;padding:12px 16px;background:rgba(255,255,255,.08);border-radius:10px;color:#fff;font-size:13px;text-align:center;font-family:'IBM Plex Mono',monospace;}
+.scanner-bottom{padding:1rem 1rem calc(1.5rem + env(safe-area-inset-bottom));display:flex;gap:10px;}
+.sa-btn{flex:1;padding:14px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:inherit;}
+.sa-cancel{background:rgba(255,255,255,.1);color:#fff;}
+.sa-confirm{background:#2D78F5;color:#fff;display:none;}
+
+/* ── STOCK SEARCH ── */
+#stock-sbox{
+  position:absolute;top:100%;left:0;right:0;z-index:300;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r-lg);max-height:280px;overflow-y:auto;
+  display:none;margin-top:5px;box-shadow:var(--sh-lg);
+  -webkit-overflow-scrolling:touch;animation:dropIn .15s ease;
 }
 
-/* ─── FORM CARD HEADER ─── */
-.card-header {
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-}
-.card-header-icon {
-  width: 32px; height: 32px; border-radius: 9px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.card-header-icon svg { width: 16px; height: 16px; fill: none; stroke-width: 2.2; }
-.chi-blue { background: var(--blue-light); }
-.chi-blue svg { stroke: var(--blue); }
-.chi-amber { background: var(--amber-light); }
-.chi-amber svg { stroke: var(--amber); }
-.card-header-title { font-size: 14px; font-weight: 800; color: var(--text-primary); letter-spacing: -.2px; }
-.card-header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+/* ── CARD HEADER ── */
+.card-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.card-header-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.card-header-icon svg{width:16px;height:16px;fill:none;stroke-width:2.2;}
+.chi-blue{background:var(--blue-l);}
+.chi-blue svg{stroke:var(--blue);}
+.chi-amber{background:var(--amber-l);}
+.chi-amber svg{stroke:var(--amber);}
+.chi-green{background:#E8F8EF;}
+.chi-green svg{stroke:#06C755;}
+.card-header-title{font-size:14px;font-weight:700;color:var(--text1);letter-spacing:-.2px;}
+.card-header-sub{font-size:11px;color:var(--text3);margin-top:1px;}
 
-/* ─── BADGE CHIP ─── */
-.badge-chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;
-}
-.bc-red { background: var(--red-light); color: var(--red); }
-.bc-yellow { background: var(--amber-light); color: var(--amber); }
-.bc-green { background: var(--green-light); color: var(--green); }
+/* ── BADGE CHIP ── */
+.badge-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;}
+.bc-red{background:var(--red-l);color:var(--red);}
+.bc-yellow{background:var(--amber-l);color:var(--amber);}
+.bc-green{background:var(--green-l);color:var(--green);}
 
-/* ─── INFO ROW ─── */
-.d-stock-info {
-  display: none; margin-top: 6px; padding: 9px 12px;
-  background: var(--blue-light); border-radius: var(--radius-sm);
-  font-size: 12px; color: var(--blue); font-weight: 600;
-  border: 1px solid rgba(26,95,212,.15);
+/* ── D-STOCK INFO ── */
+.d-stock-info{display:none;margin-top:6px;padding:9px 12px;background:var(--blue-l);border-radius:var(--r-sm);font-size:12px;color:var(--blue);font-weight:600;border:1px solid rgba(26,95,212,.15);}
+
+/* ── LINE PAGE ── */
+.line-status{
+  display:flex;align-items:center;gap:10px;
+  border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px;
+  font-size:13px;font-weight:600;
+  background:#F0F9F4;border:1px solid rgba(6,199,85,.2);color:#065F46;
+  transition:all .3s;
+}
+.line-log-item{
+  padding:11px 1rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;gap:10px;
+}
+.line-log-item:last-child{border-bottom:none;}
+.line-log-icon{
+  width:30px;height:30px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.lli-ok{background:#DCFCE7;}.lli-err{background:#FEE9E9;}
+.line-preview-card{
+  background:var(--surface);border-radius:14px;overflow:hidden;
+  box-shadow:0 3px 16px rgba(0,0,0,.13);
+}
+.toggle-token-btn{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;
 }
 </style>
 </head>
 <body>
 
-<!-- ── SCANNER ── -->
+<!-- SCANNER -->
 <div class="scanner-modal" id="scanner-modal">
   <div class="scanner-top">
     <span class="scanner-title">สแกน QR / Barcode</span>
@@ -586,7 +466,7 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
   </div>
 </div>
 
-<!-- ── EDIT MODAL ── -->
+<!-- EDIT MODAL -->
 <div class="modal-bg" id="edit-modal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -595,15 +475,12 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
     <input type="hidden" id="edit-original-lot"/>
     <input type="hidden" id="edit-original-date"/>
     <div class="form-group"><label class="form-label">ชื่อยา</label><input class="form-input" id="edit-name" readonly/></div>
-    <div class="form-group"><label class="form-label">LOT Number</label><input class="form-input" id="edit-lot" autocomplete="off"/></div>
+    <div class="form-group"><label class="form-label">LOT Number</label><input class="form-input" id="edit-lot" autocomplete="off" style="font-family:'IBM Plex Mono',monospace;"/></div>
     <div class="form-group"><label class="form-label">วันหมดอายุ</label><input class="form-input" id="edit-exp" type="date"/></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">จำนวน</label><input class="form-input" id="edit-qty" type="number" inputmode="numeric"/></div>
+      <div class="form-group"><label class="form-label">จำนวน</label><input class="form-input" id="edit-qty" type="number" inputmode="numeric" style="font-family:'IBM Plex Mono',monospace;"/></div>
       <div class="form-group"><label class="form-label">หน่วยนับ</label>
-        <select class="form-input" id="edit-unit">
-          <option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option>
-          <option>ซอง</option><option>กล่อง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option>
-        </select>
+        <select class="form-input" id="edit-unit"><option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option><option>ซอง</option><option>กล่อง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option></select>
       </div>
     </div>
     <div class="form-group" id="edit-requester-group" style="display:none;">
@@ -625,7 +502,7 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
   </div>
 </div>
 
-<!-- ── DRUG DETAIL MODAL ── -->
+<!-- DRUG DETAIL MODAL -->
 <div class="modal-bg" id="drug-detail-modal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -636,121 +513,68 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
   </div>
 </div>
 
-<!-- ── APP ── -->
 <div class="app">
   <div class="header">
-    <div class="logo">
-      <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    </div>
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">ระบบบริหารจัดการคลังยา</div>
       <div class="app-sub">PCU สะบ้าย้อย</div>
     </div>
-    <div class="conn-chip">
-      <div class="conn-dot" id="conn-dot"></div>
-      <span id="conn-text">กำลังเชื่อมต่อ</span>
-    </div>
+    <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
   </div>
-
   <div id="alert-box" style="display:none;padding-top:6px;"></div>
 
-  <!-- ════ รับยาเข้า ════ -->
+  <!-- ══ รับยาเข้า ══ -->
   <div class="page active" id="page-receive">
     <div style="height:.75rem;"></div>
-
     <div class="db-bar">
       <div class="dot-green"></div>
       <span>ฐานข้อมูลยา <strong>118 รายการ</strong></span>
       <div style="flex:1;"></div>
       <span id="s-date" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal);font-weight:600;"></span>
     </div>
-
     <div class="stats-grid">
-      <div class="stat-card c-blue">
-        <div class="stat-label">รายการยาในระบบ</div>
-        <div class="stat-value sv-blue">118</div>
-      </div>
-      <div class="stat-card c-teal">
-        <div class="stat-label">รับเข้าทั้งหมด</div>
-        <div class="stat-value sv-teal" id="s-total">—</div>
-      </div>
-      <div class="stat-card c-teal" style="--accent-color:#0B9E72;">
-        <div class="stat-label">รับเข้าวันนี้</div>
-        <div class="stat-value" id="s-today" style="font-size:15px;color:var(--teal);padding-top:4px;">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">สถานะระบบ</div>
-        <div style="font-size:12px;font-weight:700;color:var(--text-muted);padding-top:4px;" id="smsg">โหลด...</div>
-        <div class="sdot" id="sdot" style="background:#FFC107;width:8px;height:8px;border-radius:50%;margin-top:4px;"></div>
-      </div>
+      <div class="stat-card c-blue"><div class="stat-label">ยาในระบบ</div><div class="stat-value sv-blue">118</div></div>
+      <div class="stat-card c-teal"><div class="stat-label">รับเข้าทั้งหมด</div><div class="stat-value sv-teal" id="s-total">—</div></div>
+      <div class="stat-card c-teal"><div class="stat-label">รับเข้าวันนี้</div><div class="stat-value" id="s-today" style="font-size:15px;color:var(--teal);padding-top:4px;">—</div></div>
+      <div class="stat-card"><div class="stat-label">สถานะ</div><div style="font-size:12px;font-weight:700;color:var(--text3);padding-top:4px;" id="smsg">โหลด...</div><div class="sdot" id="sdot" style="background:#FFC107;width:8px;height:8px;border-radius:50%;margin-top:4px;"></div></div>
     </div>
-
     <div class="card">
       <div class="card-header">
-        <div class="card-header-icon chi-blue">
-          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
-        </div>
-        <div>
-          <div class="card-header-title">บันทึกรับยาเข้าคลัง</div>
-          <div class="card-header-sub">กรอกข้อมูลยาที่ได้รับเข้า</div>
-        </div>
+        <div class="card-header-icon chi-blue"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg></div>
+        <div><div class="card-header-title">บันทึกรับยาเข้าคลัง</div><div class="card-header-sub">กรอกข้อมูลยาที่ได้รับเข้า</div></div>
       </div>
       <div class="card-body">
         <div class="suggest-wrap">
-          <div class="form-group">
-            <label class="form-label">ชื่อยา <span class="req">*</span></label>
+          <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
             <div class="input-with-scan">
               <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r')" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
-              <button class="scan-btn" onclick="openScanner('r-name')">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>
-                สแกน
-              </button>
+              <button class="scan-btn" onclick="openScanner('r-name')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>สแกน</button>
             </div>
           </div>
           <div class="sbox" id="sbox-r"></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">รหัสยา</label>
-          <input class="form-input" id="r-code" readonly placeholder="ดึงอัตโนมัติ"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">LOT Number <span class="req">*</span></label>
+        <div class="form-group"><label class="form-label">รหัสยา</label><input class="form-input" id="r-code" readonly placeholder="ดึงอัตโนมัติ" style="font-family:'IBM Plex Mono',monospace;"/></div>
+        <div class="form-group"><label class="form-label">LOT Number <span class="req">*</span></label>
           <div class="input-with-scan">
             <input class="form-input" id="r-lot" placeholder="เช่น LOT2025001" autocomplete="off" autocapitalize="characters" style="font-family:'IBM Plex Mono',monospace;"/>
-            <button class="scan-btn" onclick="openScanner('r-lot')">
-              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>
-              สแกน
-            </button>
+            <button class="scan-btn" onclick="openScanner('r-lot')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>สแกน</button>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">วันหมดอายุ <span class="req">*</span></label>
-          <input class="form-input" id="r-exp" type="date"/>
-        </div>
+        <div class="form-group"><label class="form-label">วันหมดอายุ <span class="req">*</span></label><input class="form-input" id="r-exp" type="date"/></div>
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">หน่วยนับ</label>
-            <select class="form-input" id="r-unit">
-              <option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option>
-              <option>ซอง</option><option>กล่อง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option>
-            </select>
+          <div class="form-group"><label class="form-label">หน่วยนับ</label>
+            <select class="form-input" id="r-unit"><option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option><option>ซอง</option><option>กล่อง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option></select>
           </div>
-          <div class="form-group">
-            <label class="form-label">จำนวน <span class="req">*</span></label>
-            <input class="form-input" id="r-qty" type="number" min="1" placeholder="0" inputmode="numeric" pattern="[0-9]*"/>
-          </div>
+          <div class="form-group"><label class="form-label">จำนวน <span class="req">*</span></label><input class="form-input" id="r-qty" type="number" min="1" placeholder="0" inputmode="numeric" pattern="[0-9]*" style="font-family:'IBM Plex Mono',monospace;"/></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">หมายเหตุ</label>
-          <textarea class="form-input" id="r-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea>
-        </div>
+        <div class="form-group"><label class="form-label">หมายเหตุ</label><textarea class="form-input" id="r-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
         <div class="btn-row">
           <button class="btn" onclick="clearReceiveForm()">ล้าง</button>
           <button class="btn btn-primary" id="save-btn" onclick="receiveStock()">+ บันทึกรับยาเข้า</button>
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="section-hd" style="padding:14px 1rem 10px;">
         <span class="section-title">รายการรับยาเข้าล่าสุด</span>
@@ -760,74 +584,43 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
     </div>
   </div>
 
-  <!-- ════ เบิกยาออก ════ -->
+  <!-- ══ เบิกยาออก ══ -->
   <div class="page" id="page-dispense">
     <div style="height:.75rem;"></div>
     <div class="stats-grid">
-      <div class="stat-card c-amber">
-        <div class="stat-label">เบิกออกวันนี้</div>
-        <div class="stat-value sv-amber" id="d-today">—</div>
-      </div>
-      <div class="stat-card c-amber">
-        <div class="stat-label">เบิกออกทั้งหมด</div>
-        <div class="stat-value sv-amber" id="d-total">—</div>
-      </div>
+      <div class="stat-card c-amber"><div class="stat-label">เบิกออกวันนี้</div><div class="stat-value sv-amber" id="d-today">—</div></div>
+      <div class="stat-card c-amber"><div class="stat-label">เบิกออกทั้งหมด</div><div class="stat-value sv-amber" id="d-total">—</div></div>
     </div>
-
     <div class="card">
       <div class="card-header">
-        <div class="card-header-icon chi-amber">
-          <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
-        </div>
-        <div>
-          <div class="card-header-title">บันทึกเบิกยาออก</div>
-          <div class="card-header-sub">เลือกยาและจำนวนที่ต้องการเบิก</div>
-        </div>
+        <div class="card-header-icon chi-amber"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7 7 7-7"/></svg></div>
+        <div><div class="card-header-title">บันทึกเบิกยาออก</div><div class="card-header-sub">เลือกยาและจำนวนที่ต้องการเบิก</div></div>
       </div>
       <div class="card-body">
         <div class="suggest-wrap">
-          <div class="form-group">
-            <label class="form-label">ชื่อยา <span class="req">*</span></label>
+          <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
             <div class="input-with-scan">
               <input class="form-input" id="d-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-d')" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
-              <button class="scan-btn" onclick="openScanner('d-name')">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>
-                สแกน
-              </button>
+              <button class="scan-btn" onclick="openScanner('d-name')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>สแกน</button>
             </div>
           </div>
           <div class="sbox" id="sbox-d"></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">รหัสยา</label>
-          <input class="form-input" id="d-code" readonly placeholder="ดึงอัตโนมัติ"/>
+        <div class="form-group"><label class="form-label">รหัสยา</label><input class="form-input" id="d-code" readonly placeholder="ดึงอัตโนมัติ" style="font-family:'IBM Plex Mono',monospace;"/></div>
+        <div class="form-group"><label class="form-label">LOT Number <span class="req">*</span></label>
+          <select class="form-input" id="d-lot" style="font-family:'IBM Plex Mono',monospace;font-size:14px;"><option value="">— เลือก LOT —</option></select>
         </div>
-        <div class="form-group">
-          <label class="form-label">LOT Number <span class="req">*</span></label>
-          <select class="form-input" id="d-lot" style="font-family:'IBM Plex Mono',monospace;font-size:14px;">
-            <option value="">— เลือก LOT —</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">วันหมดอายุ</label>
-          <input class="form-input" id="d-exp" readonly placeholder="ดึงจาก LOT ที่เลือก" style="font-family:'IBM Plex Mono',monospace;"/>
-        </div>
+        <div class="form-group"><label class="form-label">วันหมดอายุ</label><input class="form-input" id="d-exp" readonly placeholder="ดึงจาก LOT ที่เลือก" style="font-family:'IBM Plex Mono',monospace;"/></div>
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">หน่วยนับ</label>
-            <select class="form-input" id="d-unit">
-              <option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option>
-              <option>ซอง</option><option>กล่อง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option>
-            </select>
+          <div class="form-group"><label class="form-label">หน่วยนับ</label>
+            <select class="form-input" id="d-unit"><option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option><option>ซอง</option><option>กล่อง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option></select>
           </div>
-          <div class="form-group">
-            <label class="form-label">จำนวนเบิก <span class="req">*</span></label>
-            <select class="form-input" id="d-qty"><option value="">— เลือกจำนวน —</option></select>
+          <div class="form-group"><label class="form-label">จำนวนเบิก <span class="req">*</span></label>
+            <select class="form-input" id="d-qty" style="font-family:'IBM Plex Mono',monospace;"><option value="">— เลือก —</option></select>
             <div id="d-stock-info" class="d-stock-info"></div>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">ชื่อผู้เบิก <span class="req">*</span></label>
+        <div class="form-group"><label class="form-label">ชื่อผู้เบิก <span class="req">*</span></label>
           <select class="form-input" id="d-requester">
             <option value="">— เลือกชื่อผู้เบิก —</option>
             <option>นายวินัสนรรจ์ หมวกเปียะ</option><option>นางสาวสาลูมา โต๊ะหัด</option>
@@ -837,17 +630,13 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
             <option>นางสาวศิริกานต์ รัตนอุบล</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">หมายเหตุ</label>
-          <textarea class="form-input" id="d-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea>
-        </div>
+        <div class="form-group"><label class="form-label">หมายเหตุ</label><textarea class="form-input" id="d-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
         <div class="btn-row">
           <button class="btn" onclick="clearDispenseForm()">ล้าง</button>
-          <button class="btn btn-primary" id="d-save-btn" onclick="dispenseStock()">เบิกยาออก</button>
+          <button class="btn btn-primary" id="d-save-btn" onclick="dispenseStock()" style="background:linear-gradient(135deg,#E84040,#C0392B);">เบิกยาออก</button>
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="section-hd" style="padding:14px 1rem 10px;">
         <span class="section-title">รายการเบิกล่าสุด</span>
@@ -857,7 +646,7 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
     </div>
   </div>
 
-  <!-- ════ คลังยา ════ -->
+  <!-- ══ คลังยา ══ -->
   <div class="page" id="page-stock">
     <div style="height:.75rem;"></div>
     <div style="position:relative;margin-bottom:12px;">
@@ -865,16 +654,9 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
       <div id="stock-sbox"></div>
     </div>
     <div class="stats-grid">
-      <div class="stat-card c-blue">
-        <div class="stat-label">รายการยาทั้งหมด</div>
-        <div class="stat-value sv-blue" id="st-total">—</div>
-      </div>
-      <div class="stat-card c-red">
-        <div class="stat-label">ใกล้หมดอายุ</div>
-        <div class="stat-value sv-red" id="st-expiring">—</div>
-      </div>
+      <div class="stat-card c-blue"><div class="stat-label">รายการยาทั้งหมด</div><div class="stat-value sv-blue" id="st-total">—</div></div>
+      <div class="stat-card c-red"><div class="stat-label">ใกล้หมดอายุ</div><div class="stat-value sv-red" id="st-expiring">—</div></div>
     </div>
-
     <div class="card" style="padding:1rem;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <span class="section-title">ยาใกล้หมดอายุ</span>
@@ -888,15 +670,13 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
       </div>
       <div id="stock-expiring-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
     </div>
-
     <div class="section-hd"><span class="section-title">สรุปยาคงเหลือรายตัว</span></div>
     <div class="card" id="stock-summary-card"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
-
     <div class="section-hd" style="margin-top:4px;"><span class="section-title">แยกกลุ่มตามวันหมดอายุ</span></div>
     <div class="card" id="stock-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
   </div>
 
-  <!-- ════ ประวัติ ════ -->
+  <!-- ══ ประวัติ ══ -->
   <div class="page" id="page-history">
     <div style="height:.75rem;"></div>
     <div class="section-hd">
@@ -904,34 +684,130 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
       <button class="section-action" onclick="clearHistory()">ล้างประวัติ</button>
     </div>
     <div class="card">
-      <div id="history-log">
-        <div class="empty"><div class="empty-icon">🕐</div>ยังไม่มีประวัติในเซสชันนี้</div>
-      </div>
+      <div id="history-log"><div class="empty"><div class="empty-icon">🕐</div>ยังไม่มีประวัติในเซสชันนี้</div></div>
     </div>
   </div>
 
-  <!-- ── BOTTOM NAV ── -->
+  <!-- ══ LINE ══ -->
+  <div class="page" id="page-line">
+    <div style="height:.75rem;"></div>
+    <div class="line-status" id="line-status-bar">
+      <svg width="20" height="20" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="#06C755"/><path d="M24 10C16.268 10 10 15.6 10 22.5c0 5.7 3.79 10.6 9.4 12.7l-.9 3.3c-.1.4.3.7.6.5l4.1-2.7c.6.1 1.2.1 1.8.1 7.73 0 14-5.6 14-12.5C39 15.6 31.73 10 24 10z" fill="white"/></svg>
+      <span id="line-status-text">ยังไม่ได้ตั้งค่า LINE</span>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon chi-green"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        <div><div class="card-header-title">ตั้งค่า LINE Messaging API</div><div class="card-header-sub">แจ้งเตือนอัตโนมัติทุกครั้งที่เบิกยา</div></div>
+      </div>
+      <div class="card-body">
+        <div style="background:var(--blue-l);border:1px solid rgba(26,95,212,.15);border-radius:10px;padding:11px 14px;margin-bottom:14px;font-size:12px;color:var(--blue);line-height:1.7;">
+          <strong>วิธีตั้งค่า:</strong><br>
+          1. สร้าง LINE Official Account → เปิด Messaging API<br>
+          2. คัดลอก <strong>Channel Access Token</strong> จาก LINE Developers Console<br>
+          3. เพิ่ม Bot เข้า Group → คัดลอก <strong>Group ID</strong> (ขึ้นต้น C)<br>
+          4. กด "บันทึก" แล้วกด "ทดสอบส่ง"
+        </div>
+        <div class="form-group">
+          <label class="form-label">Channel Access Token <span class="req">*</span></label>
+          <div style="position:relative;">
+            <input class="form-input" id="line-token" type="password" placeholder="eyJhbGciOiJI..." autocomplete="off" style="padding-right:50px;font-family:'IBM Plex Mono',monospace;font-size:13px;"/>
+            <button class="toggle-token-btn" onclick="toggleTokenVisibility()" id="toggle-token-btn">
+              <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Group ID หรือ User ID <span class="req">*</span></label>
+          <input class="form-input" id="line-to" placeholder="C... หรือ U..." autocomplete="off" style="font-family:'IBM Plex Mono',monospace;font-size:14px;"/>
+          <div style="margin-top:5px;font-size:11px;color:var(--text3);">Group = C... · User = U... · Room = R...</div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:12px 14px;background:var(--surface2);border-radius:var(--r-sm);border:1px solid var(--border2);">
+            <input type="checkbox" id="line-enabled" style="width:18px;height:18px;cursor:pointer;accent-color:#06C755;" onchange="saveLineSettings()"/>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text1);">เปิดแจ้งเตือน LINE</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px;">ส่ง Flex Message ทุกครั้งที่มีการเบิกยา</div>
+            </div>
+          </label>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="testLineMessage()">🔔 ทดสอบส่ง</button>
+          <button class="btn btn-primary" onclick="saveLineSettings()" style="background:linear-gradient(135deg,#06C755,#059646);">บันทึก</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="section-hd"><span class="section-title">ตัวอย่าง Flex Message</span></div>
+    <div style="background:linear-gradient(135deg,#E8F5FF,#E8FFF4);border-radius:var(--r-lg);padding:1rem;margin-bottom:12px;">
+      <div class="line-preview-card">
+        <div style="background:linear-gradient(135deg,#1A5FD4,#0B9E72);padding:14px 16px;display:flex;align-items:center;gap:10px;">
+          <div style="width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;">💊</div>
+          <div><div style="color:#fff;font-size:13px;font-weight:700;">แจ้งเตือนการเบิกยา</div><div style="color:rgba(255,255,255,.65);font-size:11px;margin-top:1px;">PCU สะบ้าย้อย</div></div>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:15px;font-weight:700;color:#0F1923;margin-bottom:2px;">AMOXICILLIN 500 MG./CAPSULES</div>
+          <div style="font-size:11px;color:#94A3B8;margin-bottom:12px;font-family:'IBM Plex Mono',monospace;">รหัส: 1AMO</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+            <div style="background:#FEE9E9;border-radius:9px;padding:10px;">
+              <div style="font-size:10px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:.3px;">จำนวนเบิก</div>
+              <div style="font-size:22px;font-weight:700;color:#D93025;font-family:'IBM Plex Mono',monospace;line-height:1.2;margin-top:4px;">30<span style="font-size:12px;font-weight:600;margin-left:3px;">แคปซูล</span></div>
+            </div>
+            <div style="background:#E6F7F2;border-radius:9px;padding:10px;">
+              <div style="font-size:10px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:.3px;">คงเหลือ</div>
+              <div style="font-size:22px;font-weight:700;color:#0B9E72;font-family:'IBM Plex Mono',monospace;line-height:1.2;margin-top:4px;">120<span style="font-size:12px;font-weight:600;margin-left:3px;">แคปซูล</span></div>
+            </div>
+          </div>
+          <div style="background:#F7F9FC;border-radius:9px;padding:10px;display:flex;flex-direction:column;gap:6px;font-size:12px;">
+            <div style="display:flex;justify-content:space-between;"><span style="color:#94A3B8;font-weight:600;">LOT</span><span style="font-weight:700;font-family:'IBM Plex Mono',monospace;">LOT2025001</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#94A3B8;font-weight:600;">หมดอายุ</span><span style="font-weight:700;color:#C07000;font-family:'IBM Plex Mono',monospace;">31/12/2026</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#94A3B8;font-weight:600;">ผู้เบิก</span><span style="font-weight:700;">นางสาวสาลูมา โต๊ะหัด</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#94A3B8;font-weight:600;">วันที่</span><span style="color:#64748B;font-family:'IBM Plex Mono',monospace;">22/03/2569</span></div>
+          </div>
+        </div>
+        <div style="padding:8px 16px 12px;text-align:center;"><span style="font-size:10px;color:#94A3B8;">ระบบบริหารจัดการคลังยา PCU สะบ้าย้อย</span></div>
+      </div>
+    </div>
+
+    <!-- LINE Log -->
+    <div class="section-hd">
+      <span class="section-title">ประวัติส่ง LINE</span>
+      <button class="section-action" onclick="clearLineLog()">ล้าง</button>
+    </div>
+    <div class="card">
+      <div id="line-log"><div class="empty"><div class="empty-icon">💬</div>ยังไม่มีประวัติส่ง LINE</div></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
   <div class="bottom-nav">
     <button class="nav-item active" onclick="switchTab('receive',this)">
-      <div class="nav-active-bar"></div>
+      <div class="nav-pill"></div>
       <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
       <span class="nav-label">รับยาเข้า</span>
     </button>
     <button class="nav-item" onclick="switchTab('dispense',this)">
-      <div class="nav-active-bar"></div>
+      <div class="nav-pill"></div>
       <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
       <span class="nav-label">เบิกยาออก</span>
     </button>
     <button class="nav-item" onclick="switchTab('stock',this)">
-      <div class="nav-active-bar"></div>
+      <div class="nav-pill"></div>
       <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
       <span class="nav-label">คลังยา</span>
     </button>
     <button class="nav-item" onclick="switchTab('history',this)">
-      <div class="nav-active-bar"></div>
+      <div class="nav-pill"></div>
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span class="nav-label">ประวัติ</span>
       <span class="nav-badge" id="hist-badge" style="display:none;">0</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('line',this)">
+      <div class="nav-pill"></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5C21 16.75 16.75 21 12 21c-.87 0-1.71-.1-2.5-.3L5 22l1.3-4.5A9 9 0 1121 11.5z"/></svg>
+      <span class="nav-label">LINE</span>
+      <div class="nav-line-badge" id="line-badge"></div>
     </button>
   </div>
 </div>
@@ -939,50 +815,18 @@ textarea.form-input { resize: none; line-height: 1.6; font-size: 15px; }
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyvfohKGqK9svtBMg50BcM8LTZVATzZO7SmeGy3v0lXPJAAI6IuyvlU-mPuR1iYDbmY/exec';
-
 const drugDB=[["1000016","ALLOPURINOL 100 มก."],["1000122","Enalapril 5 mg. (E5)/TAB"],["1000184","METFORMIN 500 MG./TAB"],["1000284","Spironolactone 25 MG./TAB กส."],["1019001","GLIPIZIDE 5 MG. /TAB กส."],["110104480112","FOLIC ACID 5MG./TAB"],["1419041","GEMfibrozil 300 MG./CAPSULES"],["1440105","AMLODIPINE 5 MG./TAB"],["1460151","ENALAPRIL 20 MG./TAB"],["1500016","Metoprolol 100 MG./TAB กส."],["1500035","METOCLOPRAMIDE 10 mg TAB"],["1530008","ASPIRIN 81 MG./TAB. กส."],["1ALB","ALBENDAZOLE 200 MG./TAB (San San)"],["1AMIT","AMITRIPTYLINE10 MG./ TAB(HK)"],["1AMO","AMOXICILLIN 500 MG./CAPSULES (องค์การเภสัชMOX)"],["1AMX","Amoxicillin 250 mg./cap (องค์การเภสัชMOX)"],["1BUF","IBUPROFEN 400 MG./TAB(I-Profen)"],["1CAL","CALCIUM 1250 MG. tab.(Cal-star)"],["1CET","PARACETAMOL 500 MG./TAB(Masapara)"],["1DCL","DICLOXACILLIN 250 MG. /CAPSULES"],["1DEXT","DEXTROMETHORPHANE"],["1DIC","DICLOFENAC SODIUM 25 MG./TAB"],["1DIM","DIMENHYDRENATE 50 MG."],["1DOM","DOMPERIDONE10 MG./TAB"],["1FBC","FERROUS FUMARATE 200 MG./TAB กส."],["1GABA","GABAPENTIN 100 mg GPO"],["1HOC","HYOSCINE-N-BUTYLBROMIDE 10 .MG/TAB(VS)"],["1lDC","LIDOCAIN 2 %"],["1LST2","LOSARTAN 50 MG.(Berlin)"],["1MET","METRONIDAZOLE 400 MG./TAB"],["1MTV","MTV (MULTIVITAMIN) TAB กส."],["1NAPRO","NAPROXEN 250 MG TAB(Nasin)"],["1NOC","NORFLOXACIN 400 MG./TAB กส."],["1OME","OMEPRAZOLE 20 MG./CAPSULES"],["1ORS","ORS เด็ก(baby-LyteH)"],["1PARA325","PARACETAMOL 325 MG(AU)"],["1STC","SIMETHICONE 80 MG/TAB"],["1TFD","TRIFERDINE TAB. กส."],["1VIB","VITAMIN B COMPLEX TAB"],["1VIC","VITAMIN C 50 MG CIBIC-50"],["2DOMP","DOMPERIDONE SUSPENSION"],["2MCAR","MIXT.CARMINATIVE"],["2MILK","MILK OF MAGNESIA(GPO)"],["2MTUS","BROWN MIXTURE GPO"],["2MTVS","MULTI VITAMIN SYR.(syn o vits)"],["2ORS","ORS ผู้ใหญ่(T.O.S)"],["2SALB","SALBUTAMOL SYR.(sabumol)"],["2SOAT","BENZYL BENZOATE 30 ML."],["3ALB","ALBENDAZOLE SYR. (FALBEN)"],["3ALM","ALUM MILK GEL(BOWA GEL ED)"],["3AMI","AMOXICILLIN 125 MG. /SYR.(Manmox)"],["3ANAL","ANAGESIC BALM (นีโอติก้า)"],["3AOM","AMMONNIUM CARBONATE SYR ."],["3CALA","CALAMINE LOTION"],["3DCL","DICLOXACILLIN 62.5 MG./SYR."],["3HYO","HYOSCINE 5 MG./SYR."],["3SIM","SIMETHICONE ORAL DROPS 40 MG.(Gas-med)"],["3TET","DIPTHERIA AND TESANUS VACCINE"],["3TRIA002","TA CREAM 0.02%(ไมโครไนซ์ ฟอร์ม)"],["3TRIA01","TA CREAM 0.1% (ไตรโนแมน)"],["3WHFO","WHITFIELD OINTMENT"],["4AMS","AMMONIA 450 ML.(วิทยาศรม)"],["4BEN","BENZYL BENZOAT 450 ML."],["4CET","PARACETAMOL 120 MG./SYR. (THOHO)"],["4CRP","CHLORAMPHENICOL *EYE OINTMENT 1% 5 Gm."],["4CTC","CLOTRIMAZOLE CREAM(Mazole)"],["4DEXA","Dexamethasone inj. 4mg./1ml."],["4GEN","GENTAMYCIN EYE 3 MG. /DROP"],["4HSC","CHLORHEXIDINE(hibi scrub) 450 ML."],["4HSC2","CHLORHEXIDINE 30 ML."],["4OPA","ANTAZOLINE HCI BP (Hista oph)"],["4POV","POVIDONE IODINE 15 ML."],["4SLV","SILVERDERM CREAM 25 G."],["4TRI","TRIAMCINOLONE ORAL"],["5ACH","ALCOHOL 70% 450ml."],["5COL","COLCHICINE 0.6 MG. tab."],["5CPM","CHLORPHENIRAMINE 4 MG./TAB (MALEATE)"],["5HCT","HCTZ-Hydrochlorothiazide 25 MG.TAB กส."],["5NOL","NSS. SODIUM CHLORIDE IRRIGATION 1000 MG."],["5PNL","PROPRANOLOL 10 MG./TAB กส."],["5PVD","POVIDONE-IODINE 450 ML."],["6CPM","CHLORPHENIRAMINE 2 MG./SY (GPO)"],["ACV CREAM","ACYCLOVIR CREAM 1 GM"],["ATO","ATORVASTATIN 40 MG/TAB กส."],["BET-1N","BETAMETHASONE+N cream 5 gm(GPO)"],["BET-SA","BETAMETHASONE+SA cream 5 gm"],["Beta","Betahistine 6 mg.(SPS)"],["BRO TAB","BROMHEXINE HCI 8 MG TAB"],["BROM2","BROMHEXINE SYRUP 60 ML Patar Lab"],["BUD","BUDESONIDE MDI 200 MCG"],["CAP RED","CLOPIDOGREL 75 MG."],["CAR","DOXAZOSIN 2MG./Tab กส."],["Carve","Carvedilol 6.25 mg."],["CEP SYR","CEPHALEXIN 125 MG SYR"],["CHL","Chloramphenicol OINTMENT 1%(ขี้ผึ้ง ยูนีซัน)"],["CPM INJ","CHLORPHENIRAMINE INJ."],["DIMEN INJ","DIMEN INJ"],["DP CRP","DIPOTASSIUM CLORAZEPATE 5 MG CAP"],["FER","Ferrous Fumarate 76 mg./5ml (GPO)"],["FERDEK Syrub","FERROUS FUMARATE 15mg/0.6 ml Syrub"],["FLU125","FLUTICASONE 125 MCG INHALOR"],["FLU20","FLUOXETIN 20 MG/TAB กส.(Pharmaland)"],["FURO","FUROSEMIDE 40 MG TAB กส"],["Griss500","GRISEOFULVIN 500 MG. TAB"],["HY251","Hydralazine 25 mg (APRESZINE)"],["HYZ","HYDROXYZINE 10 mg tab"],["ING TRA","TRAMADOL INJ 50MG/ML"],["ISO","ISOSORBIDE DINITRATE 10 MG/TAB กส."],["KTCNZ","KETOCONAZOLE 200 mg tab กส."],["LORA","LORATADINE 10 mg tab"],["MNDP","MANIDIPINE HYDOCHLORIDE"],["NI20","NIFEDIPINE 20 MG SR/CAP"],["NORET5MG","NORETHISTERONE 5 MG TAB"],["PIO1","PIOGLITAZONE 30 MG./Tab (UTMOS 30)"],["PNSL","PREDNISOLONE 5 MG/TAB"],["POLY E","POLYOPH EYE DROP 5 ml(OPSACIN)"],["PROCT TAB","PROCTOSEDYL SUPPOSITORIES TAB"],["RANI INJ","RANITIDINE INJ"],["SIM3","Simvastatin 40 mg"],["TETRA","0.5%TETRACAINE HCL"],["THE","THEOPHYLLINE 200 MG SR/TAB"],["TOL50","TOLPERISONE HCL 50MG/TAB"],["TRIAM LO1","T.A. LOTION 0.1%(starlone)"]];
 
-let receiveRows=[],dispenseRows=[],historyLog=[];
+let receiveRows=[],dispenseRows=[],historyLog=[],lineLog2=[];
 let editMode='receive';
 let scanTarget='',scanStream=null,scanCanvas=null,scanCtx=null,scanLoop=null,lastScan='';
 let summaryPage=1,summarySort='qty',summarySortDir='asc';
-let _expRangeMonths=1;
-let _allStockItems=[];
+let _expRangeMonths=1,_allStockItems=[];
 
-// Init date
-(()=>{
-  const n=new Date();
-  const d=String(n.getDate()).padStart(2,'0');
-  const m=String(n.getMonth()+1).padStart(2,'0');
-  const y=n.getFullYear();
-  document.getElementById('s-date').textContent=d+'/'+m+'/'+y;
-})();
-
-function todayTH(){
-  const n=new Date();
-  return String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();
-}
-
-function fmtExp(exp){
-  if(!exp||exp==='—') return '—';
-  try{
-    if(exp.includes('/')){const p=exp.split('/');if(p.length===3)return p[0].padStart(2,'0')+'/'+p[1].padStart(2,'0')+'/'+p[2];}
-    if(exp.includes('-')){const p=exp.split('-');if(p.length===3)return p[2]+'/'+p[1]+'/'+p[0];}
-    return exp;
-  }catch(e){return exp;}
-}
-
-function parseExpDate(exp){
-  if(!exp) return null;
-  try{
-    let d,m,y;
-    if(exp.includes('/')){const p=exp.split('/');if(p.length!==3)return null;d=parseInt(p[0]);m=parseInt(p[1])-1;y=parseInt(p[2]);}
-    else if(exp.includes('-')){const p=exp.split('-');if(p.length!==3)return null;y=parseInt(p[0]);m=parseInt(p[1])-1;d=parseInt(p[2]);}
-    else return null;
-    if(isNaN(d)||isNaN(m)||isNaN(y))return null;
-    return new Date(y,m,d,0,0,0,0);
-  }catch(e){return null;}
-}
+(()=>{const n=new Date();document.getElementById('s-date').textContent=String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();})();
+function todayTH(){const n=new Date();return String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();}
+function fmtExp(e){if(!e||e==='—')return '—';try{if(e.includes('/')){const p=e.split('/');if(p.length===3)return p[0].padStart(2,'0')+'/'+p[1].padStart(2,'0')+'/'+p[2];}if(e.includes('-')){const p=e.split('-');if(p.length===3)return p[2]+'/'+p[1]+'/'+p[0];}return e;}catch(x){return e;}}
+function parseExpDate(e){if(!e)return null;try{let d,m,y;if(e.includes('/')){const p=e.split('/');if(p.length!==3)return null;d=parseInt(p[0]);m=parseInt(p[1])-1;y=parseInt(p[2]);}else if(e.includes('-')){const p=e.split('-');if(p.length!==3)return null;y=parseInt(p[0]);m=parseInt(p[1])-1;d=parseInt(p[2]);}else return null;if(isNaN(d)||isNaN(m)||isNaN(y))return null;return new Date(y,m,d,0,0,0,0);}catch(x){return null;}}
 
 function switchTab(tab,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -992,28 +836,25 @@ function switchTab(tab,el){
   if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();}
   if(tab==='stock')loadStock();
   if(tab==='history')renderHistory();
+  if(tab==='line')loadLineSettings();
 }
 
 function showAlert(msg,type){
   const b=document.getElementById('alert-box');
   b.innerHTML=`<div class="alert alert-${type}">${msg}</div>`;
   b.style.display='block';
-  clearTimeout(b._t);
-  b._t=setTimeout(()=>b.style.display='none',5000);
+  clearTimeout(b._t);b._t=setTimeout(()=>b.style.display='none',5000);
 }
-
 function setSheet(s,msg){
   const c={green:'var(--teal)',amber:'#F59E0B',red:'var(--red)'};
   document.getElementById('sdot').style.background=c[s]||c.amber;
   document.getElementById('smsg').textContent=msg;
-  const dot=document.getElementById('conn-dot');
-  const txt=document.getElementById('conn-text');
+  const dot=document.getElementById('conn-dot'),txt=document.getElementById('conn-text');
   if(s==='green'){dot.className='conn-dot ok';txt.textContent='ออนไลน์';}
   else if(s==='red'){dot.className='conn-dot err';txt.textContent='ออฟไลน์';}
   else{dot.className='conn-dot';txt.textContent='กำลังโหลด';}
 }
 
-// ── LOAD DATA ──
 async function loadReceive(){
   setSheet('amber','กำลังโหลด...');
   try{
@@ -1022,17 +863,13 @@ async function loadReceive(){
     if(j.status==='ok'){
       receiveRows=j.rows||[];
       const el=document.getElementById('s-today');
-      if(el) el.textContent=j.todayCount>0?'✓ '+j.todayCount+' รายการ':'—';
+      if(el)el.textContent=j.todayCount>0?'✓ '+j.todayCount+' รายการ':'—';
       document.getElementById('s-total').textContent=j.totalCount;
       setSheet('green','เชื่อมต่อสำเร็จ');
       renderReceiveLog();
     }else throw new Error(j.message);
-  }catch(e){
-    setSheet('red','โหลดไม่สำเร็จ');
-    document.getElementById('receive-log').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ กดรีเฟรช</div>';
-  }
+  }catch(e){setSheet('red','โหลดไม่สำเร็จ');document.getElementById('receive-log').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ กดรีเฟรช</div>';}
 }
-
 async function loadDispense(){
   try{
     const r=await fetch(SCRIPT_URL+'?action=dispense&t='+Date.now(),{redirect:'follow'});
@@ -1045,18 +882,14 @@ async function loadDispense(){
     }
   }catch(e){}
 }
-
 async function loadStock(){
-  ['stock-summary-card','stock-list','stock-expiring-list'].forEach(id=>{
-    document.getElementById(id).innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลด...</div>';
-  });
+  ['stock-summary-card','stock-list','stock-expiring-list'].forEach(id=>document.getElementById(id).innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลด...</div>');
   try{
-    const [rr,dr]=await Promise.all([
+    const[rr,dr]=await Promise.all([
       fetch(SCRIPT_URL+'?t='+Date.now(),{redirect:'follow'}).then(r=>r.json()),
       fetch(SCRIPT_URL+'?action=dispense&t='+Date.now(),{redirect:'follow'}).then(r=>r.json())
     ]);
-    receiveRows=rr.rows||[];
-    dispenseRows=dr.rows||[];
+    receiveRows=rr.rows||[];dispenseRows=dr.rows||[];
     const stockMap={};
     receiveRows.forEach(r=>{
       const k=r.name+'|'+r.lot;
@@ -1065,10 +898,7 @@ async function loadStock(){
       if(r.group)stockMap[k].group=r.group;
       if(r.months)stockMap[k].months=r.months;
     });
-    dispenseRows.forEach(d=>{
-      const k=d.name+'|'+d.lot;
-      if(stockMap[k])stockMap[k].qty-=parseFloat(d.qty)||0;
-    });
+    dispenseRows.forEach(d=>{const k=d.name+'|'+d.lot;if(stockMap[k])stockMap[k].qty-=parseFloat(d.qty)||0;});
     _allStockItems=Object.values(stockMap).filter(i=>i.qty>0);
     const now=new Date();now.setHours(0,0,0,0);
     const red=[],yellow=[],green=[];
@@ -1077,167 +907,99 @@ async function loadStock(){
       if(g==='สีแดง'||g==='แดง')red.push(i);
       else if(g==='สีเหลือง'||g==='เหลือง')yellow.push(i);
       else if(g==='สีเขียว'||g==='เขียว')green.push(i);
-      else{
-        const exp=parseExpDate(i.exp);
-        if(!exp){green.push(i);return;}
-        const months=(exp-now)/(1000*60*60*24*30.4);
-        if(months<=6)red.push(i);else if(months<=12)yellow.push(i);else green.push(i);
-      }
+      else{const exp=parseExpDate(i.exp);if(!exp){green.push(i);return;}const mo=(exp-now)/(1000*60*60*24*30.4);if(mo<=6)red.push(i);else if(mo<=12)yellow.push(i);else green.push(i);}
     });
     document.getElementById('st-total').textContent=_allStockItems.length;
     document.getElementById('st-expiring').textContent=red.length;
-    renderSummaryTable(_allStockItems);
-    renderExpiringList();
-
-    const makeGroupList=(list,bg,label)=>{
+    renderSummaryTable(_allStockItems);renderExpiringList();
+    const makeGL=(list,bg,label)=>{
       if(!list.length)return '';
-      const sorted=[...list].sort((a,b)=>{
-        const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);
-        if(!ea)return 1;if(!eb)return -1;return ea-eb;
-      });
-      return `<div class="group-hd" style="background:${bg};">${label}</div>
-      ${sorted.map((i,idx)=>{
+      const sorted=[...list].sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
+      return `<div class="group-hd" style="background:${bg};">${label}</div>${sorted.map((i,idx)=>{
         const sn=i.name.replace(/'/g,"\\'");
-        return `<div class="group-drug-item" onclick="showDrugDetail('${sn}')">
-          <span class="group-drug-num">${String(idx+1).padStart(2,'0')}</span>
-          <div style="flex:1;">
-            <div class="group-drug-name">${i.name}</div>
-            <div class="group-drug-exp">EXP: ${fmtExp(i.exp)} · คงเหลือ ${Math.round(i.qty)} ${i.unit}</div>
-          </div>
-          <span class="group-drug-arrow">›</span>
-        </div>`;
+        return `<div class="group-drug-item" onclick="showDrugDetail('${sn}')"><span class="group-drug-num">${String(idx+1).padStart(2,'0')}</span><div style="flex:1;"><div class="group-drug-name">${i.name}</div><div class="group-drug-exp">EXP: ${fmtExp(i.exp)} · คงเหลือ ${Math.round(i.qty)} ${i.unit}</div></div><span class="group-drug-arrow">›</span></div>`;
       }).join('')}`;
     };
-    let groupHtml=makeGroupList(red,'#C0392B','🔴 0–6 เดือน');
-    groupHtml+=makeGroupList(yellow,'#A0522D','🟡 6–12 เดือน');
-    groupHtml+=makeGroupList(green,'#1E6B3A','🟢 มากกว่า 12 เดือน');
-    if(!groupHtml)groupHtml='<div class="empty"><div class="empty-icon">📦</div>ไม่พบข้อมูลคลังยา</div>';
-    document.getElementById('stock-list').innerHTML=groupHtml;
+    let g=makeGL(red,'#C0392B','🔴 0–6 เดือน');
+    g+=makeGL(yellow,'#A0522D','🟡 6–12 เดือน');
+    g+=makeGL(green,'#1E6B3A','🟢 มากกว่า 12 เดือน');
+    document.getElementById('stock-list').innerHTML=g||'<div class="empty"><div class="empty-icon">📦</div>ไม่พบข้อมูลคลังยา</div>';
   }catch(e){
     document.getElementById('stock-summary-card').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ</div>';
     document.getElementById('stock-list').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ กดรีเฟรช</div>';
   }
 }
 
-// ── SUMMARY TABLE ──
 function renderSummaryTable(items){
-  const PER_PAGE=5;
-  const nameMap={};
+  const PER=5;
+  const nm={};
   items.forEach(i=>{
-    if(!nameMap[i.name])nameMap[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',earliestExp:null,exp:''};
-    nameMap[i.name].qty+=i.qty;
+    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',earliestExp:null,exp:''};
+    nm[i.name].qty+=i.qty;
     const ed=parseExpDate(i.exp);
-    if(ed&&(!nameMap[i.name].earliestExp||ed<nameMap[i.name].earliestExp)){nameMap[i.name].earliestExp=ed;nameMap[i.name].exp=i.exp;}
-    if(i.group)nameMap[i.name].group=i.group;
+    if(ed&&(!nm[i.name].earliestExp||ed<nm[i.name].earliestExp)){nm[i.name].earliestExp=ed;nm[i.name].exp=i.exp;}
+    if(i.group)nm[i.name].group=i.group;
   });
-  let rows=Object.values(nameMap);
+  let rows=Object.values(nm);
   rows.sort((a,b)=>{
     let va,vb;
-    if(summarySort==='qty'){va=a.qty;vb=b.qty;}
-    else if(summarySort==='name'){va=a.name;vb=b.name;}
+    if(summarySort==='qty'){va=a.qty;vb=b.qty;}else if(summarySort==='name'){va=a.name;vb=b.name;}
     else if(summarySort==='exp'){va=a.earliestExp||new Date(9999,0,1);vb=b.earliestExp||new Date(9999,0,1);}
-    else if(summarySort==='group'){va=a.group||'zzz';vb=b.group||'zzz';}
-    else{va=a.qty;vb=b.qty;}
-    if(va<vb)return summarySortDir==='asc'?-1:1;
-    if(va>vb)return summarySortDir==='asc'?1:-1;
-    return 0;
+    else if(summarySort==='group'){va=a.group||'zzz';vb=b.group||'zzz';}else{va=a.qty;vb=b.qty;}
+    if(va<vb)return summarySortDir==='asc'?-1:1;if(va>vb)return summarySortDir==='asc'?1:-1;return 0;
   });
-  const total=rows.length;
-  const totalPages=Math.max(1,Math.ceil(total/PER_PAGE));
+  const total=rows.length,totalPages=Math.max(1,Math.ceil(total/PER));
   if(summaryPage>totalPages)summaryPage=1;
-  const pageRows=rows.slice((summaryPage-1)*PER_PAGE,summaryPage*PER_PAGE);
-  const thCls=(col)=>summarySort===col?(summarySortDir==='asc'?' sort-asc':' sort-desc'):'';
-
+  const pageRows=rows.slice((summaryPage-1)*PER,summaryPage*PER);
+  const thC=col=>summarySort===col?(summarySortDir==='asc'?' sort-asc':' sort-desc'):'';
   document.getElementById('stock-summary-card').innerHTML=`
-    <table class="sum-table">
-      <thead><tr>
-        <th class="${thCls('name')}" onclick="setSummarySort('name')">ชื่อยา</th>
-        <th class="${thCls('group')}" onclick="setSummarySort('group')">กลุ่ม</th>
-        <th class="${thCls('qty')}" style="text-align:right;" onclick="setSummarySort('qty')">คงเหลือ</th>
-      </tr></thead>
-      <tbody>${pageRows.map(i=>{
-        const g=(i.group||'').trim();
-        const isRed=g==='สีแดง'||g==='แดง';
-        const isYellow=g==='สีเหลือง'||g==='เหลือง';
-        const rowCls=isRed?'exp-warn':isYellow?'exp-caution':'';
-        const qtyColor=isRed?'var(--red)':isYellow?'var(--amber)':'var(--teal)';
-        const chip=isRed?'<span class="badge-chip bc-red">🔴 &lt;6เดือน</span>':isYellow?'<span class="badge-chip bc-yellow">🟡 6-12เดือน</span>':'<span class="badge-chip bc-green">🟢 &gt;12เดือน</span>';
-        const sn=i.name.replace(/'/g,"\\'");
-        return `<tr class="${rowCls}" onclick="showDrugDetail('${sn}')">
-          <td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;">EXP: ${fmtExp(i.exp)}</div></td>
-          <td>${chip}</td>
-          <td><div class="sum-qty" style="color:${qtyColor};">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table>
+    <table class="sum-table"><thead><tr>
+      <th class="${thC('name')}" onclick="setSummarySort('name')">ชื่อยา</th>
+      <th class="${thC('group')}" onclick="setSummarySort('group')">กลุ่ม</th>
+      <th class="${thC('qty')}" style="text-align:right;" onclick="setSummarySort('qty')">คงเหลือ</th>
+    </tr></thead><tbody>${pageRows.map(i=>{
+      const g=(i.group||'').trim();
+      const isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
+      const rc=isR?'exp-warn':isY?'exp-caution':'';
+      const qc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
+      const chip=isR?'<span class="badge-chip bc-red">🔴 &lt;6เดือน</span>':isY?'<span class="badge-chip bc-yellow">🟡 6-12เดือน</span>':'<span class="badge-chip bc-green">🟢 &gt;12เดือน</span>';
+      const sn=i.name.replace(/'/g,"\\'");
+      return `<tr class="${rc}" onclick="showDrugDetail('${sn}')"><td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">EXP: ${fmtExp(i.exp)}</div></td><td>${chip}</td><td><div class="sum-qty" style="color:${qc};">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td></tr>`;
+    }).join('')}</tbody></table>
     <div class="pagination">
       <button class="pg-btn" onclick="goSummaryPage(${summaryPage-1})" ${summaryPage<=1?'disabled':''}>‹</button>
       <span class="pg-info">หน้า ${summaryPage}/${totalPages} · ${total} รายการ</span>
       <button class="pg-btn" onclick="goSummaryPage(${summaryPage+1})" ${summaryPage>=totalPages?'disabled':''}>›</button>
     </div>`;
 }
-
-function setSummarySort(col){
-  if(summarySort===col){summarySortDir=summarySortDir==='asc'?'desc':'asc';}
-  else{summarySort=col;summarySortDir='asc';}
-  summaryPage=1;
-  renderSummaryTable(_allStockItems);
-}
+function setSummarySort(col){if(summarySort===col){summarySortDir=summarySortDir==='asc'?'desc':'asc';}else{summarySort=col;summarySortDir='asc';}summaryPage=1;renderSummaryTable(_allStockItems);}
 function goSummaryPage(p){summaryPage=p;renderSummaryTable(_allStockItems);}
 
-// ── EXPIRING ──
-function setExpRange(btn,months){
-  _expRangeMonths=months;
-  document.querySelectorAll('.exp-range-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderExpiringList();
-}
-
+function setExpRange(btn,months){_expRangeMonths=months;document.querySelectorAll('.exp-range-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderExpiringList();}
 function renderExpiringList(){
-  const el=document.getElementById('stock-expiring-list');
-  if(!el)return;
+  const el=document.getElementById('stock-expiring-list');if(!el)return;
   if(!_allStockItems.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีข้อมูลคลัง กดรีเฟรช</div>';return;}
   const filtered=_allStockItems.filter(i=>{
-    const m=parseFloat(i.months)||null;
-    if(m!==null)return m<=_expRangeMonths;
-    const g=(i.group||'').trim();
-    if(g){const gm=(g==='สีแดง'||g==='แดง')?1:(g==='สีเหลือง'||g==='เหลือง')?7:13;return gm<=_expRangeMonths;}
-    const ed=parseExpDate(i.exp);
-    if(!ed)return false;
-    const now=new Date();now.setHours(0,0,0,0);
-    return (ed-now)/(1000*60*60*24*30.4)<=_expRangeMonths;
-  }).sort((a,b)=>{
-    const ma=parseFloat(a.months)||999,mb=parseFloat(b.months)||999;
-    return ma-mb;
-  });
-  if(!filtered.length){
-    el.innerHTML=`<div style="padding:1rem;text-align:center;font-size:13px;color:var(--teal);font-weight:600;">✓ ไม่มียาหมดอายุภายใน ${_expRangeMonths} เดือน</div>`;
-    return;
-  }
-  el.innerHTML=`<div style="padding:8px 10px 4px;font-size:11px;color:var(--text-muted);">ภายใน <strong style="color:var(--red);">${_expRangeMonths} เดือน</strong> — พบ <strong>${filtered.length}</strong> รายการ</div>
-  <table class="sum-table">
-    <thead><tr><th>ชื่อยา / LOT</th><th>EXP</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
-    <tbody>${filtered.map(i=>{
-      const m=parseFloat(i.months)||null;
-      const g=(i.group||'').trim();
-      const isRed=(m!==null&&m<=6)||(g==='สีแดง'||g==='แดง');
-      const isYellow=(m!==null&&m>6&&m<=12)||(g==='สีเหลือง'||g==='เหลือง');
-      const rowCls=isRed?'exp-warn':isYellow?'exp-caution':'';
-      const c=isRed?'var(--red)':isYellow?'var(--amber)':'var(--teal)';
-      const sn=i.name.replace(/'/g,"\\'");
-      return `<tr class="${rowCls}" onclick="showDrugDetail('${sn}')">
-        <td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;">LOT: ${i.lot}</div></td>
-        <td style="font-size:12px;color:${c};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(i.exp)}</td>
-        <td><div class="sum-qty" style="color:${c};">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td>
-      </tr>`;
-    }).join('')}</tbody>
-  </table>`;
+    const m=parseFloat(i.months)||null;if(m!==null)return m<=_expRangeMonths;
+    const g=(i.group||'').trim();if(g){const gm=(g==='สีแดง'||g==='แดง')?1:(g==='สีเหลือง'||g==='เหลือง')?7:13;return gm<=_expRangeMonths;}
+    const ed=parseExpDate(i.exp);if(!ed)return false;
+    const now=new Date();now.setHours(0,0,0,0);return(ed-now)/(1000*60*60*24*30.4)<=_expRangeMonths;
+  }).sort((a,b)=>(parseFloat(a.months)||999)-(parseFloat(b.months)||999));
+  if(!filtered.length){el.innerHTML=`<div style="padding:1rem;text-align:center;font-size:13px;color:var(--teal);font-weight:600;">✓ ไม่มียาหมดอายุภายใน ${_expRangeMonths} เดือน</div>`;return;}
+  el.innerHTML=`<div style="padding:8px 10px 4px;font-size:11px;color:var(--text3);">ภายใน <strong style="color:var(--red);">${_expRangeMonths} เดือน</strong> — พบ <strong>${filtered.length}</strong> รายการ</div>
+  <table class="sum-table"><thead><tr><th>ชื่อยา / LOT</th><th>EXP</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
+  <tbody>${filtered.map(i=>{
+    const m=parseFloat(i.months)||null,g=(i.group||'').trim();
+    const isR=(m!==null&&m<=6)||(g==='สีแดง'||g==='แดง');
+    const isY=(m!==null&&m>6&&m<=12)||(g==='สีเหลือง'||g==='เหลือง');
+    const rc=isR?'exp-warn':isY?'exp-caution':'';const c=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
+    const sn=i.name.replace(/'/g,"\\'");
+    return `<tr class="${rc}" onclick="showDrugDetail('${sn}')"><td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">LOT: ${i.lot}</div></td><td style="font-size:12px;color:${c};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(i.exp)}</td><td><div class="sum-qty" style="color:${c};">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td></tr>`;
+  }).join('')}</tbody></table>`;
 }
 
-// ── DRUG DETAIL MODAL ──
 function showDrugDetail(name){
-  const modal=document.getElementById('drug-detail-modal');
-  const el=document.getElementById('drug-detail-content');
+  const modal=document.getElementById('drug-detail-modal'),el=document.getElementById('drug-detail-content');
   if(!modal||!el)return;
   const rLots=receiveRows.filter(r=>r.name===name);
   if(!rLots.length){el.innerHTML='<div class="empty">ไม่พบข้อมูลยานี้</div>';modal.classList.add('open');return;}
@@ -1245,67 +1007,33 @@ function showDrugDetail(name){
   const totalDis=dispenseRows.filter(d=>d.name===name).reduce((s,d)=>s+(parseFloat(d.qty)||0),0);
   const left=Math.max(0,Math.round(totalRec-totalDis));
   const lotMap={};
-  rLots.forEach(r=>{
-    if(!lotMap[r.lot])lotMap[r.lot]={lot:r.lot,exp:r.exp,group:r.group||'',months:r.months||'',received:0,dispensed:0,unit:r.unit};
-    lotMap[r.lot].received+=parseFloat(r.qty)||0;
-  });
+  rLots.forEach(r=>{if(!lotMap[r.lot])lotMap[r.lot]={lot:r.lot,exp:r.exp,group:r.group||'',received:0,dispensed:0,unit:r.unit};lotMap[r.lot].received+=parseFloat(r.qty)||0;});
   dispenseRows.filter(d=>d.name===name).forEach(d=>{if(lotMap[d.lot])lotMap[d.lot].dispensed+=parseFloat(d.qty)||0;});
-  const lotItems=Object.values(lotMap).sort((a,b)=>{
-    const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);
-    if(!ea)return 1;if(!eb)return -1;return ea-eb;
-  });
-  const code=rLots[0].code||'';
-  const unit=rLots[0].unit||'';
-  const g=(rLots[0].group||'').trim();
-  const isRed=g==='สีแดง'||g==='แดง';
-  const isYellow=g==='สีเหลือง'||g==='เหลือง';
-  const statusColor=isRed?'var(--red)':isYellow?'var(--amber)':'var(--teal)';
-  const statusLabel=isRed?'🔴 หมดอายุ < 6 เดือน':isYellow?'🟡 หมดอายุ 6–12 เดือน':'🟢 หมดอายุ > 12 เดือน';
-
-  el.innerHTML=`
-    <div style="background:linear-gradient(135deg,var(--blue),#0B7BB5);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;">
-      <div style="font-size:16px;font-weight:800;line-height:1.3;margin-bottom:4px;">${name}</div>
-      <div style="font-size:11px;opacity:.75;font-family:'IBM Plex Mono',monospace;">รหัส: ${code}</div>
-    </div>
-    <div class="stats-grid" style="margin-bottom:12px;">
-      <div class="stat-card" style="--accent-color:${statusColor};">
-        <div class="stat-label">คงเหลือรวม</div>
-        <div class="stat-value" style="color:${statusColor};">${left}</div>
-        <div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:2px;">${unit}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">สถานะ</div>
-        <div style="font-size:12px;font-weight:700;padding-top:4px;line-height:1.4;">${statusLabel}</div>
-      </div>
-    </div>
-    <div style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">รายละเอียดแต่ละ LOT</div>
-    <table class="sum-table">
-      <thead><tr>
-        <th>LOT</th><th>EXP</th>
-        <th style="text-align:right;">รับ</th>
-        <th style="text-align:right;">เบิก</th>
-        <th style="text-align:right;">คงเหลือ</th>
-      </tr></thead>
-      <tbody>${lotItems.map(l=>{
-        const lLeft=Math.max(0,Math.round(l.received-l.dispensed));
-        const lg=(l.group||'').trim();
-        const lRed=lg==='สีแดง'||lg==='แดง';
-        const lYellow=lg==='สีเหลือง'||lg==='เหลือง';
-        const lColor=lRed?'var(--red)':lYellow?'var(--amber)':'var(--teal)';
-        const lCls=lRed?'exp-warn':lYellow?'exp-caution':'';
-        return `<tr class="${lCls}">
-          <td style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;">${l.lot}</td>
-          <td style="font-size:11px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(l.exp)}</td>
-          <td style="text-align:right;font-size:12px;">${Math.round(l.received)}</td>
-          <td style="text-align:right;font-size:12px;color:var(--red);">${Math.round(l.dispensed)}</td>
-          <td style="text-align:right;font-weight:800;font-size:15px;color:${lColor};">${lLeft}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table>`;
+  const lotItems=Object.values(lotMap).sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
+  const code=rLots[0].code||'',unit=rLots[0].unit||'';
+  const g=(rLots[0].group||'').trim(),isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
+  const sc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
+  const sl=isR?'🔴 หมดอายุ < 6 เดือน':isY?'🟡 หมดอายุ 6–12 เดือน':'🟢 หมดอายุ > 12 เดือน';
+  el.innerHTML=`<div style="background:linear-gradient(135deg,#1A5FD4,#0B7BB5);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;">
+    <div style="font-size:16px;font-weight:700;line-height:1.3;margin-bottom:4px;">${name}</div>
+    <div style="font-size:11px;opacity:.7;font-family:'IBM Plex Mono',monospace;">รหัส: ${code}</div>
+  </div>
+  <div class="stats-grid" style="margin-bottom:12px;">
+    <div class="stat-card" style="--ac:${sc};"><div class="stat-label">คงเหลือรวม</div><div class="stat-value" style="color:${sc};">${left}</div><div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:2px;">${unit}</div></div>
+    <div class="stat-card"><div class="stat-label">สถานะ</div><div style="font-size:12px;font-weight:700;padding-top:4px;line-height:1.4;">${sl}</div></div>
+  </div>
+  <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">รายละเอียดแต่ละ LOT</div>
+  <table class="sum-table"><thead><tr><th>LOT</th><th>EXP</th><th style="text-align:right;">รับ</th><th style="text-align:right;">เบิก</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
+  <tbody>${lotItems.map(l=>{
+    const ll=Math.max(0,Math.round(l.received-l.dispensed));
+    const lg=(l.group||'').trim(),lR=lg==='สีแดง'||lg==='แดง',lY=lg==='สีเหลือง'||lg==='เหลือง';
+    const lc=lR?'var(--red)':lY?'var(--amber)':'var(--teal)';
+    const lcl=lR?'exp-warn':lY?'exp-caution':'';
+    return `<tr class="${lcl}"><td style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;">${l.lot}</td><td style="font-size:11px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(l.exp)}</td><td style="text-align:right;font-size:12px;">${Math.round(l.received)}</td><td style="text-align:right;font-size:12px;color:var(--red);">${Math.round(l.dispensed)}</td><td style="text-align:right;font-weight:700;font-size:15px;font-family:'IBM Plex Mono',monospace;color:${lc};">${ll}</td></tr>`;
+  }).join('')}</tbody></table>`;
   modal.classList.add('open');
 }
 
-// ── RENDER LOGS ──
 function renderReceiveLog(){
   const el=document.getElementById('receive-log');
   if(!receiveRows.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ</div>';return;}
@@ -1324,7 +1052,6 @@ function renderReceiveLog(){
       <div class="log-date">${e.date}</div>
     </div>`).join('');
 }
-
 function renderDispenseLog(){
   const el=document.getElementById('dispense-log');
   if(!dispenseRows.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการเบิก</div>';return;}
@@ -1344,7 +1071,6 @@ function renderDispenseLog(){
     </div>`).join('');
 }
 
-// ── EDIT MODAL ──
 function openEditModal(mode,idx){
   editMode=mode;
   const e=mode==='receive'?receiveRows[idx]:dispenseRows[idx];
@@ -1354,11 +1080,7 @@ function openEditModal(mode,idx){
   document.getElementById('edit-modal-title').textContent=mode==='receive'?'แก้ไขรายการรับยา':'แก้ไขรายการเบิกยา';
   document.getElementById('edit-name').value=e.name;
   document.getElementById('edit-lot').value=e.lot;
-  document.getElementById('edit-exp').value=(()=>{
-    if(!e.exp)return '';
-    if(e.exp.includes('/')){const p=e.exp.split('/');return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
-    return e.exp.includes('-')?e.exp:'';
-  })();
+  document.getElementById('edit-exp').value=(()=>{if(!e.exp)return '';if(e.exp.includes('/')){const p=e.exp.split('/');return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}return e.exp.includes('-')?e.exp:'';})();
   document.getElementById('edit-qty').value=e.qty;
   document.getElementById('edit-unit').value=e.unit;
   document.getElementById('edit-note').value=e.note||'';
@@ -1367,45 +1089,26 @@ function openEditModal(mode,idx){
   else rg.style.display='none';
   document.getElementById('edit-modal').classList.add('open');
 }
-
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');}
-
 async function saveEdit(){
   const idx=parseInt(document.getElementById('edit-idx').value);
-  const originalLot=document.getElementById('edit-original-lot').value;
-  const originalDate=document.getElementById('edit-original-date').value;
+  const oLot=document.getElementById('edit-original-lot').value;
+  const oDate=document.getElementById('edit-original-date').value;
   const rows=editMode==='receive'?receiveRows:dispenseRows;
   const e=rows[idx];
   const expRaw=document.getElementById('edit-exp').value;
   const exp=expRaw?expRaw.split('-').reverse().join('/'):'';
-  const newData={
-    ...e,
-    lot:document.getElementById('edit-lot').value,
-    exp:exp,
-    qty:document.getElementById('edit-qty').value,
-    unit:document.getElementById('edit-unit').value,
-    note:document.getElementById('edit-note').value,
-    originalLot:originalLot,
-    originalDate:originalDate,
-    action:editMode==='receive'?'edit_receive':'edit_dispense'
-  };
-  if(editMode==='dispense')newData.requester=document.getElementById('edit-requester').value;
-  closeEditModal();
-  showAlert('กำลังบันทึกทับข้อมูลเดิม...','info');
+  const nd={...e,lot:document.getElementById('edit-lot').value,exp,qty:document.getElementById('edit-qty').value,unit:document.getElementById('edit-unit').value,note:document.getElementById('edit-note').value,originalLot:oLot,originalDate:oDate,action:editMode==='receive'?'edit_receive':'edit_dispense'};
+  if(editMode==='dispense')nd.requester=document.getElementById('edit-requester').value;
+  closeEditModal();showAlert('กำลังบันทึกทับข้อมูลเดิม...','info');
   try{
-    const r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(newData)});
+    const r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(nd)});
     const j=await r.json();
-    if(j.status==='ok'){
-      rows[idx]={...e,...newData};
-      if(editMode==='receive')renderReceiveLog();else renderDispenseLog();
-      addHistory('edit',`แก้ไข: ${e.name}`,`LOT: ${newData.lot} | ${newData.qty} ${newData.unit}`);
-      showAlert(`แก้ไข "${e.name}" เรียบร้อย`,'success');
-      setTimeout(()=>editMode==='receive'?loadReceive():loadDispense(),2000);
-    }else{showAlert('บันทึกไม่สำเร็จ: '+(j.message||''),'danger');}
-  }catch(err){showAlert('เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่','danger');}
+    if(j.status==='ok'){rows[idx]={...e,...nd};if(editMode==='receive')renderReceiveLog();else renderDispenseLog();addHistory('edit',`แก้ไข: ${e.name}`,`LOT: ${nd.lot} | ${nd.qty} ${nd.unit}`);showAlert(`แก้ไข "${e.name}" เรียบร้อย`,'success');setTimeout(()=>editMode==='receive'?loadReceive():loadDispense(),2000);}
+    else showAlert('บันทึกไม่สำเร็จ: '+(j.message||''),'danger');
+  }catch(err){showAlert('เชื่อมต่อไม่สำเร็จ','danger');}
 }
 
-// ── SEARCH ──
 function searchDrug(val,boxId){
   const box=document.getElementById(boxId);
   if(!val.trim()){box.style.display='none';return;}
@@ -1415,46 +1118,29 @@ function searchDrug(val,boxId){
   box.innerHTML=hits.map(d=>`<div class="si" ontouchstart="" onclick='pickDrug("${d[1].replace(/"/g,'\\"')}","${d[0].replace(/"/g,'\\"')}","${boxId}")'><div>${d[1]}</div><div class="si-sub">${d[0]}</div></div>`).join('');
   box.style.display='block';
 }
-
 function pickDrug(name,code,boxId){
-  const isD=boxId==='sbox-d';
-  const pfx=isD?'d':'r';
+  const isD=boxId==='sbox-d',pfx=isD?'d':'r';
   document.getElementById(pfx+'-name').value=name;
   document.getElementById(pfx+'-code').value=code;
   document.getElementById(boxId).style.display='none';
-  if(isD)populateLotOptions(name);
-  else setTimeout(()=>document.getElementById('r-lot').focus(),100);
+  if(isD)populateLotOptions(name);else setTimeout(()=>document.getElementById('r-lot').focus(),100);
 }
-
 function calcStock(name,lot){
   const recv=receiveRows.filter(r=>r.name===name&&r.lot===lot).reduce((s,r)=>s+(parseFloat(r.qty)||0),0);
   const disp=dispenseRows.filter(d=>d.name===name&&d.lot===lot).reduce((s,d)=>s+(parseFloat(d.qty)||0),0);
   return Math.max(0,Math.round(recv-disp));
 }
-
 function populateQtyOptions(stock){
-  const sel=document.getElementById('d-qty');
-  const info=document.getElementById('d-stock-info');
+  const sel=document.getElementById('d-qty'),info=document.getElementById('d-stock-info');
   sel.innerHTML='<option value="">— เลือกจำนวน —</option>';
-  if(stock<=0){
-    sel.innerHTML='<option value="">ยาหมดคลัง</option>';
-    info.textContent='คงเหลือ 0 — ไม่สามารถเบิกได้';
-    info.style.background='var(--red-light)';info.style.color='var(--red)';info.style.display='block';
-    return;
-  }
+  if(stock<=0){sel.innerHTML='<option value="">ยาหมดคลัง</option>';info.textContent='คงเหลือ 0 — ไม่สามารถเบิกได้';info.style.background='var(--red-l)';info.style.color='var(--red)';info.style.display='block';return;}
   for(let i=1;i<=stock;i++)sel.innerHTML+=`<option value="${i}">${i}</option>`;
-  info.textContent=`คงเหลือในคลัง: ${stock} ${document.getElementById('d-unit').value}`;
-  info.style.background='var(--blue-light)';info.style.color='var(--blue)';info.style.display='block';
+  info.textContent=`คงเหลือในคลัง: ${stock}`;info.style.background='var(--blue-l)';info.style.color='var(--blue)';info.style.display='block';
 }
-
 function populateLotOptions(name){
-  const sel=document.getElementById('d-lot');
-  const lots=receiveRows.filter(r=>r.name===name);
+  const sel=document.getElementById('d-lot'),lots=receiveRows.filter(r=>r.name===name);
   sel.innerHTML='<option value="">— เลือก LOT —</option>';
-  lots.forEach(r=>{
-    const s=calcStock(name,r.lot);
-    sel.innerHTML+=`<option value="${r.lot}" data-exp="${r.exp}" data-stock="${s}">${r.lot} (คงเหลือ: ${s})</option>`;
-  });
+  lots.forEach(r=>{const s=calcStock(name,r.lot);sel.innerHTML+=`<option value="${r.lot}" data-exp="${r.exp}" data-stock="${s}">${r.lot} (คงเหลือ: ${s})</option>`;});
   document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';
   document.getElementById('d-stock-info').style.display='none';
   sel.onchange=()=>{
@@ -1462,7 +1148,7 @@ function populateLotOptions(name){
     document.getElementById('d-exp').value=opt?opt.dataset.exp||'':'';
     const u=lots.find(r=>r.lot===sel.value);
     if(u){const s=document.getElementById('d-unit');for(let i=0;i<s.options.length;i++)if(s.options[i].value===u.unit){s.selectedIndex=i;break;}}
-    if(sel.value){const stock=parseInt(opt.dataset.stock)||0;populateQtyOptions(stock);}
+    if(sel.value){populateQtyOptions(parseInt(opt.dataset.stock)||0);}
     else{document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';document.getElementById('d-stock-info').style.display='none';}
   };
 }
@@ -1504,7 +1190,6 @@ async function receiveStock(){
   }catch(e){setSheet('red','บันทึกไม่สำเร็จ');showAlert('ส่งข้อมูลไม่สำเร็จ','danger');}
   btn.textContent='+ บันทึกรับยาเข้า';btn.disabled=false;
 }
-
 function clearReceiveForm(){
   ['r-name','r-code','r-lot','r-qty','r-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('r-exp').value='';
@@ -1524,6 +1209,7 @@ async function dispenseStock(){
   if(!lot){showAlert('กรุณาเลือก LOT Number','danger');return;}
   if(qty<=0){showAlert('กรุณาระบุจำนวน','danger');return;}
   if(!requester){showAlert('กรุณาระบุชื่อผู้เบิก','danger');return;}
+  const stockLeft=calcStock(name,lot)-qty;
   const entry={name,code,lot,exp,unit,qty,requester,note,date:todayTH(),action:'dispense'};
   const btn=document.getElementById('d-save-btn');
   btn.textContent='กำลังบันทึก...';btn.disabled=true;
@@ -1533,52 +1219,33 @@ async function dispenseStock(){
     showAlert(`✓ เบิกยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} โดย ${requester}`,'success');
     addHistory('out',`เบิกยาออก: ${name}`,`LOT: ${lot} | ${qty} ${unit} | ผู้เบิก: ${requester}`);
     setTimeout(()=>loadDispense(),1500);
+    sendLineFlexDispense({name,code,lot,exp,unit,qty,requester,note,date:todayTH(),stockLeft:Math.max(0,stockLeft)});
   }catch(e){showAlert('ส่งข้อมูลไม่สำเร็จ','danger');}
   btn.textContent='เบิกยาออก';btn.disabled=false;
 }
-
 function clearDispenseForm(){
   ['d-name','d-code','d-note'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('d-exp').value='';
-  document.getElementById('d-requester').value='';
+  document.getElementById('d-exp').value='';document.getElementById('d-requester').value='';
   document.getElementById('d-lot').innerHTML='<option value="">— เลือก LOT —</option>';
   document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';
   const info=document.getElementById('d-stock-info');if(info)info.style.display='none';
   document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');
 }
 
-// ── HISTORY ──
 function addHistory(type,msg,detail){
   const time=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
   historyLog.unshift({type,msg,detail,time});
   const badge=document.getElementById('hist-badge');
   badge.style.display='block';badge.textContent=historyLog.length;
 }
-
 function renderHistory(){
   const el=document.getElementById('history-log');
   if(!historyLog.length){el.innerHTML='<div class="empty"><div class="empty-icon">🕐</div>ยังไม่มีประวัติในเซสชันนี้</div>';return;}
-  const icons={
-    in:'<path d="M12 5v14M5 12l7-7 7 7"/>',
-    out:'<path d="M12 19V5M5 12l7 7 7-7"/>',
-    edit:'<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>'
-  };
-  el.innerHTML=historyLog.map(h=>`
-    <div class="hist-item">
-      <div class="hist-icon ${h.type}">
-        <svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor">${icons[h.type]||icons.edit}</svg>
-      </div>
-      <div style="flex:1;">
-        <div class="hist-title">${h.msg}</div>
-        <div class="hist-detail">${h.detail}</div>
-        <div class="hist-time">${h.time}</div>
-      </div>
-    </div>`).join('');
+  const icons={in:'<path d="M12 5v14M5 12l7-7 7 7"/>',out:'<path d="M12 19V5M5 12l7 7 7-7"/>',edit:'<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>'};
+  el.innerHTML=historyLog.map(h=>`<div class="hist-item"><div class="hist-icon ${h.type}"><svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor">${icons[h.type]||icons.edit}</svg></div><div style="flex:1;"><div class="hist-title">${h.msg}</div><div class="hist-detail">${h.detail}</div><div class="hist-time">${h.time}</div></div></div>`).join('');
 }
-
 function clearHistory(){historyLog=[];document.getElementById('hist-badge').style.display='none';renderHistory();}
 
-// ── SCANNER ──
 async function openScanner(targetId){
   scanTarget=targetId;lastScan='';
   document.getElementById('scanner-result').textContent='รอการสแกน...';
@@ -1599,103 +1266,210 @@ async function openScanner(targetId){
     },200);
   }catch(e){document.getElementById('scanner-result').textContent='ไม่สามารถเปิดกล้องได้: '+e.message;}
 }
-
 function onScanned(val){
-  clearInterval(scanLoop);
-  if(scanStream)scanStream.getTracks().forEach(t=>t.stop());
+  clearInterval(scanLoop);if(scanStream)scanStream.getTracks().forEach(t=>t.stop());
   document.getElementById('scanner-result').textContent='สแกนได้: '+val;
   document.getElementById('sa-confirm').style.display='block';
   applyScanned(val);setTimeout(()=>closeScanner(),400);
 }
-
 function applyScanned(val){
-  const el=document.getElementById(scanTarget);
-  if(!el)return;
+  const el=document.getElementById(scanTarget);if(!el)return;
   if(scanTarget==='r-name'||scanTarget==='d-name'){
-    el.value=val;
-    const boxId=scanTarget==='r-name'?'sbox-r':'sbox-d';
+    el.value=val;const boxId=scanTarget==='r-name'?'sbox-r':'sbox-d';
     searchDrug(val,boxId);
     const m=drugDB.find(d=>d[0].toLowerCase()===val.toLowerCase()||d[1].toLowerCase()===val.toLowerCase());
-    if(m)pickDrug(m[1],m[0],boxId);
-    else showAlert('ไม่พบยารหัส "'+val+'" ในฐานข้อมูล','warning');
+    if(m)pickDrug(m[1],m[0],boxId);else showAlert('ไม่พบยารหัส "'+val+'" ในฐานข้อมูล','warning');
   }else{el.value=val;if(scanTarget==='r-lot')showAlert('LOT: '+val+' กรอกเรียบร้อย','success');}
 }
-
 function confirmScan(){applyScanned(lastScan);closeScanner();}
 function closeScanner(){
-  clearInterval(scanLoop);
-  if(scanStream)scanStream.getTracks().forEach(t=>t.stop());
-  scanStream=null;
-  const v=document.getElementById('scanner-video');if(v)v.srcObject=null;
+  clearInterval(scanLoop);if(scanStream)scanStream.getTracks().forEach(t=>t.stop());
+  scanStream=null;const v=document.getElementById('scanner-video');if(v)v.srcObject=null;
   document.getElementById('scanner-modal').classList.remove('open');
 }
 
-// ── DELETE ──
 function confirmDelete(mode,idx){
-  const rows=mode==='receive'?receiveRows:dispenseRows;
-  const e=rows[idx];
+  const rows=mode==='receive'?receiveRows:dispenseRows,e=rows[idx];
   if(!confirm(`ลบรายการ "${e.name}"\nLOT: ${e.lot} | วันที่: ${e.date}\n\nการลบไม่สามารถกู้คืนได้`))return;
   deleteRow(mode,idx);
 }
-
 async function deleteRow(mode,idx){
-  const rows=mode==='receive'?receiveRows:dispenseRows;
-  const e=rows[idx];
+  const rows=mode==='receive'?receiveRows:dispenseRows,e=rows[idx];
   const payload={name:e.name,lot:e.lot,date:e.date,action:mode==='receive'?'delete_receive':'delete_dispense'};
   showAlert('กำลังลบข้อมูล...','info');
   try{
     const r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const j=await r.json();
-    if(j.status==='ok'){
-      rows.splice(idx,1);
-      if(mode==='receive')renderReceiveLog();else renderDispenseLog();
-      addHistory('edit',`ลบรายการ: ${e.name}`,`LOT: ${e.lot} | ${e.date}`);
-      showAlert(`ลบ "${e.name}" เรียบร้อย`,'success');
-    }else{showAlert('ลบไม่สำเร็จ: '+(j.message||'ไม่พบข้อมูลใน Sheet'),'danger');}
-  }catch(err){showAlert('เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่','danger');}
+    if(j.status==='ok'){rows.splice(idx,1);if(mode==='receive')renderReceiveLog();else renderDispenseLog();addHistory('edit',`ลบรายการ: ${e.name}`,`LOT: ${e.lot} | ${e.date}`);showAlert(`ลบ "${e.name}" เรียบร้อย`,'success');}
+    else showAlert('ลบไม่สำเร็จ: '+(j.message||'ไม่พบข้อมูลใน Sheet'),'danger');
+  }catch(err){showAlert('เชื่อมต่อไม่สำเร็จ','danger');}
 }
 
-// ── STOCK SEARCH ──
 function searchStock(val){
   const box=document.getElementById('stock-sbox');
   if(!val.trim()){box.style.display='none';return;}
-  const q=val.toLowerCase();
-  const nameMap={};
-  _allStockItems.forEach(i=>{
-    if(!nameMap[i.name])nameMap[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||''};
-    nameMap[i.name].qty+=i.qty;
-  });
-  const matches=Object.values(nameMap).filter(i=>i.name.toLowerCase().includes(q)||i.code.toLowerCase().includes(q)).slice(0,12);
-  if(!matches.length){
-    box.innerHTML='<div style="padding:14px;font-size:13px;color:var(--text-xmuted);text-align:center;">ไม่พบยาที่ค้นหา</div>';
-    box.style.display='block';return;
-  }
+  const q=val.toLowerCase(),nm={};
+  _allStockItems.forEach(i=>{if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||''};nm[i.name].qty+=i.qty;});
+  const matches=Object.values(nm).filter(i=>i.name.toLowerCase().includes(q)||i.code.toLowerCase().includes(q)).slice(0,12);
+  if(!matches.length){box.innerHTML='<div style="padding:14px;font-size:13px;color:var(--text4);text-align:center;">ไม่พบยาที่ค้นหา</div>';box.style.display='block';return;}
   box.innerHTML=matches.map(i=>{
-    const g=(i.group||'').trim();
-    const isRed=g==='สีแดง'||g==='แดง';
-    const isYellow=g==='สีเหลือง'||g==='เหลือง';
-    const dot=isRed?'🔴':isYellow?'🟡':'🟢';
-    const qtyColor=isRed?'var(--red)':isYellow?'var(--amber)':'var(--teal)';
-    const sn=i.name.replace(/'/g,"\'");
+    const g=(i.group||'').trim(),isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
+    const dot=isR?'🔴':isY?'🟡':'🟢',qc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
+    const sn=i.name.replace(/'/g,"\\'");
     return `<div ontouchstart="" onclick="pickStockDrug('${sn}')" style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;">
-      <div style="flex:1;">
-        <div style="font-size:14px;font-weight:700;color:var(--text-primary);line-height:1.3;">${i.name}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;">${i.code} ${dot}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:17px;font-weight:800;color:${qtyColor};letter-spacing:-.5px;">${Math.round(i.qty)}</div>
-        <div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">${i.unit}</div>
-      </div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:var(--text1);line-height:1.3;">${i.name}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;">${i.code} ${dot}</div></div>
+      <div style="text-align:right;flex-shrink:0;"><div style="font-size:17px;font-weight:700;color:${qc};font-family:'IBM Plex Mono',monospace;">${Math.round(i.qty)}</div><div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;">${i.unit}</div></div>
     </div>`;
   }).join('');
   box.style.display='block';
 }
+function pickStockDrug(name){document.getElementById('stock-search').value=name;document.getElementById('stock-sbox').style.display='none';showDrugDetail(name);}
 
-function pickStockDrug(name){
-  document.getElementById('stock-search').value=name;
-  document.getElementById('stock-sbox').style.display='none';
-  showDrugDetail(name);
+// ══ LINE ══════════════════════════════════════════════════════
+function loadLineSettings(){
+  const token=localStorage.getItem('line_token')||'';
+  const to=localStorage.getItem('line_to')||'';
+  const enabled=localStorage.getItem('line_enabled')==='true';
+  if(document.getElementById('line-token'))document.getElementById('line-token').value=token;
+  if(document.getElementById('line-to'))document.getElementById('line-to').value=to;
+  if(document.getElementById('line-enabled'))document.getElementById('line-enabled').checked=enabled;
+  updateLineStatusBar();renderLineLog();
 }
+function saveLineSettings(){
+  const token=(document.getElementById('line-token').value||'').trim();
+  const to=(document.getElementById('line-to').value||'').trim();
+  const enabled=document.getElementById('line-enabled').checked;
+  if(token)localStorage.setItem('line_token',token);
+  if(to)localStorage.setItem('line_to',to);
+  localStorage.setItem('line_enabled',String(enabled));
+  updateLineStatusBar();
+  showAlert(enabled?'✓ บันทึกและเปิดแจ้งเตือน LINE แล้ว':'บันทึกการตั้งค่า LINE แล้ว (แจ้งเตือนปิดอยู่)','success');
+}
+function updateLineStatusBar(){
+  const token=localStorage.getItem('line_token')||'';
+  const to=localStorage.getItem('line_to')||'';
+  const enabled=localStorage.getItem('line_enabled')==='true';
+  const bar=document.getElementById('line-status-bar'),txt=document.getElementById('line-status-text'),badge=document.getElementById('line-badge');
+  if(!bar||!txt)return;
+  if(token&&to&&enabled){
+    bar.style.background='linear-gradient(135deg,#DCFCE7,#D1FAE5)';bar.style.borderColor='rgba(6,199,85,.25)';bar.style.color='#065F46';
+    txt.textContent='✓ เปิดใช้งาน — ส่ง Flex Message ทุกครั้งที่เบิกยา';
+    if(badge){badge.style.display='block';}
+  }else if(token&&to){
+    bar.style.background='var(--amber-l)';bar.style.borderColor='rgba(192,112,0,.2)';bar.style.color='var(--amber)';
+    txt.textContent='⚠ ตั้งค่าไว้แล้วแต่ยังไม่เปิดแจ้งเตือน';
+    if(badge)badge.style.display='none';
+  }else{
+    bar.style.background='var(--surface2)';bar.style.borderColor='var(--border2)';bar.style.color='var(--text3)';
+    txt.textContent='ยังไม่ได้ตั้งค่า LINE';
+    if(badge)badge.style.display='none';
+  }
+}
+function toggleTokenVisibility(){
+  const inp=document.getElementById('line-token'),ico=document.getElementById('eye-icon');if(!inp)return;
+  if(inp.type==='password'){inp.type='text';if(ico)ico.innerHTML='<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';}
+  else{inp.type='password';if(ico)ico.innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';}
+}
+function buildFlexMessage(d){
+  const sc=d.stockLeft<=10?'#D93025':d.stockLeft<=30?'#C07000':'#0B9E72';
+  const sb=d.stockLeft<=10?'#FEE9E9':d.stockLeft<=30?'#FFF3DC':'#E6F7F2';
+  const expStr=fmtExp(d.exp)||'—';
+  const noteRow=d.note?[{type:'box',layout:'horizontal',paddingTop:'6px',contents:[{type:'text',text:'หมายเหตุ',size:'xxs',color:'#94A3B8',flex:2,weight:'bold'},{type:'text',text:d.note,size:'xxs',color:'#475569',flex:4,align:'end',wrap:true}]}]:[];
+  return{type:'flex',altText:`💊 เบิกยา: ${d.name} | ${d.qty} ${d.unit} | ผู้เบิก: ${d.requester}`,contents:{type:'bubble',size:'kilo',
+    header:{type:'box',layout:'horizontal',backgroundColor:'#1A5FD4',paddingAll:'14px',spacing:'md',contents:[
+      {type:'box',layout:'vertical',width:'36px',height:'36px',backgroundColor:'rgba(255,255,255,0.15)',cornerRadius:'9px',justifyContent:'center',alignItems:'center',contents:[{type:'text',text:'💊',size:'lg',align:'center',gravity:'center'}]},
+      {type:'box',layout:'vertical',flex:1,paddingStart:'4px',justifyContent:'center',contents:[
+        {type:'text',text:'แจ้งเตือนการเบิกยา',color:'#FFFFFF',size:'sm',weight:'bold'},
+        {type:'text',text:'PCU สะบ้าย้อย',color:'rgba(255,255,255,0.6)',size:'xxs',margin:'xs'}
+      ]}
+    ]},
+    body:{type:'box',layout:'vertical',paddingAll:'14px',spacing:'none',contents:[
+      {type:'text',text:d.name,weight:'bold',size:'md',color:'#0F1923',wrap:true},
+      {type:'text',text:`รหัส: ${d.code||'—'}`,size:'xxs',color:'#94A3B8',margin:'xs'},
+      {type:'separator',margin:'md'},
+      {type:'box',layout:'horizontal',margin:'md',spacing:'sm',contents:[
+        {type:'box',layout:'vertical',flex:1,backgroundColor:'#FEE9E9',cornerRadius:'9px',paddingAll:'11px',contents:[
+          {type:'text',text:'จำนวนเบิก',size:'xxs',color:'#94A3B8',weight:'bold'},
+          {type:'box',layout:'baseline',spacing:'xs',margin:'sm',contents:[
+            {type:'text',text:String(d.qty),size:'xxl',weight:'bold',color:'#D93025',flex:0},
+            {type:'text',text:d.unit,size:'xxs',color:'#B91C1C',flex:0,margin:'sm',gravity:'bottom'}
+          ]}
+        ]},
+        {type:'box',layout:'vertical',flex:1,backgroundColor:sb,cornerRadius:'9px',paddingAll:'11px',contents:[
+          {type:'text',text:'คงเหลือ',size:'xxs',color:'#94A3B8',weight:'bold'},
+          {type:'box',layout:'baseline',spacing:'xs',margin:'sm',contents:[
+            {type:'text',text:String(d.stockLeft),size:'xxl',weight:'bold',color:sc,flex:0},
+            {type:'text',text:d.unit,size:'xxs',color:sc,flex:0,margin:'sm',gravity:'bottom'}
+          ]}
+        ]}
+      ]},
+      {type:'box',layout:'vertical',margin:'md',spacing:'sm',paddingAll:'11px',backgroundColor:'#F8FAFC',cornerRadius:'9px',contents:[
+        {type:'box',layout:'horizontal',contents:[{type:'text',text:'LOT',size:'xxs',color:'#94A3B8',flex:2,weight:'bold'},{type:'text',text:d.lot,size:'xs',color:'#1E293B',flex:4,align:'end',weight:'bold'}]},
+        {type:'box',layout:'horizontal',paddingTop:'5px',contents:[{type:'text',text:'หมดอายุ',size:'xxs',color:'#94A3B8',flex:2,weight:'bold'},{type:'text',text:expStr,size:'xs',color:'#C07000',flex:4,align:'end',weight:'bold'}]},
+        {type:'box',layout:'horizontal',paddingTop:'5px',contents:[{type:'text',text:'ผู้เบิก',size:'xxs',color:'#94A3B8',flex:2,weight:'bold'},{type:'text',text:d.requester,size:'xs',color:'#1E293B',flex:4,align:'end',weight:'bold',wrap:true}]},
+        {type:'box',layout:'horizontal',paddingTop:'5px',contents:[{type:'text',text:'วันที่',size:'xxs',color:'#94A3B8',flex:2,weight:'bold'},{type:'text',text:d.date,size:'xs',color:'#64748B',flex:4,align:'end'}]},
+        ...noteRow
+      ]}
+    ]},
+    footer:{type:'box',layout:'horizontal',paddingAll:'10px',contents:[{type:'text',text:'ระบบบริหารจัดการคลังยา PCU สะบ้าย้อย',size:'xxs',color:'#94A3B8',align:'center',flex:1,wrap:true}]}
+  }};
+}
+async function sendLineFlexDispense(data){
+  const token=(localStorage.getItem('line_token')||'').trim();
+  const to=(localStorage.getItem('line_to')||'').trim();
+  const enabled=localStorage.getItem('line_enabled')==='true';
+  if(!enabled||!token||!to)return;
+  const payload={action:'send_line',line_token:token,line_to:to,flex:JSON.stringify(buildFlexMessage(data))};
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    addLineLog('ok',data.name,data.qty,data.unit,data.requester,'ส่งถึง Apps Script แล้ว ✓');
+    showAlert('📱 ส่งแจ้งเตือน LINE เรียบร้อย ✓','success');
+  }catch(e){
+    addLineLog('err',data.name,data.qty,data.unit,data.requester,'fetch ไม่สำเร็จ: '+e.message);
+  }
+}
+async function testLineMessage(){
+  const token=(document.getElementById('line-token').value||'').trim();
+  const to=(document.getElementById('line-to').value||'').trim();
+  if(!token){showAlert('กรุณากรอก Channel Access Token','danger');return;}
+  if(!to){showAlert('กรุณากรอก Group ID หรือ User ID','danger');return;}
+  const prev={t:localStorage.getItem('line_token'),id:localStorage.getItem('line_to'),on:localStorage.getItem('line_enabled')};
+  localStorage.setItem('line_token',token);localStorage.setItem('line_to',to);localStorage.setItem('line_enabled','true');
+  showAlert('📤 กำลังส่งข้อความทดสอบ...','info');
+  await sendLineFlexDispense({name:'[ทดสอบ] PARACETAMOL 500 MG./TAB',code:'1CET',lot:'TEST001',exp:'31/12/2027',unit:'เม็ด',qty:30,requester:'ทดสอบระบบ',note:'ทดสอบจากระบบ PCU สะบ้าย้อย',date:todayTH(),stockLeft:120});
+  if(prev.t!==null)localStorage.setItem('line_token',prev.t);
+  if(prev.id!==null)localStorage.setItem('line_to',prev.id);
+  if(prev.on!==null)localStorage.setItem('line_enabled',prev.on);
+}
+function addLineLog(status,name,qty,unit,requester,msg){
+  const time=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  lineLog2.unshift({status,name,qty,unit,requester,msg,time});
+  if(document.getElementById('page-line').classList.contains('active'))renderLineLog();
+}
+function renderLineLog(){
+  const el=document.getElementById('line-log');if(!el)return;
+  if(!lineLog2.length){el.innerHTML='<div class="empty"><div class="empty-icon">💬</div>ยังไม่มีประวัติส่ง LINE</div>';return;}
+  el.innerHTML=lineLog2.slice(0,30).map(l=>`
+    <div class="line-log-item">
+      <div class="line-log-icon ${l.status==='ok'?'lli-ok':'lli-err'}">${l.status==='ok'?'✓':'✕'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.name}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;">${l.qty} ${l.unit} · ${l.requester}</div>
+        <div style="font-size:11px;font-weight:600;margin-top:3px;color:${l.status==='ok'?'var(--teal)':'var(--red)'};">${l.msg}</div>
+        <div style="font-size:10px;color:var(--text4);margin-top:2px;font-family:'IBM Plex Mono',monospace;">${l.time}</div>
+      </div>
+    </div>`).join('');
+}
+function clearLineLog(){lineLog2=[];renderLineLog();}
+
+// init LINE badge
+(()=>{
+  const t=localStorage.getItem('line_token')||'';
+  const id=localStorage.getItem('line_to')||'';
+  const on=localStorage.getItem('line_enabled')==='true';
+  if(t&&id&&on){const b=document.getElementById('line-badge');if(b)b.style.display='block';}
+})();
 
 loadReceive();
 </script>
