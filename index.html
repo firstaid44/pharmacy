@@ -441,11 +441,181 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   position:absolute;right:12px;top:50%;transform:translateY(-50%);
   background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;
 }
+
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  position:fixed;inset:0;z-index:1000;
+  background:linear-gradient(160deg,#0F1923 0%,#1A3A5C 50%,#0B2F1E 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+  font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+}
+#login-screen.hidden{display:none;}
+.login-logo{
+  width:72px;height:72px;
+  background:linear-gradient(140deg,#1A5FD4,#0B9E72);
+  border-radius:22px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 32px rgba(26,95,212,.4);margin-bottom:1.25rem;
+}
+.login-logo svg{width:36px;height:36px;stroke:#fff;fill:none;stroke-width:2.2;}
+.login-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.4px;margin-bottom:4px;text-align:center;}
+.login-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:2rem;text-align:center;}
+.login-card{
+  background:rgba(255,255,255,.06);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  padding:1.5rem;width:100%;max-width:340px;
+}
+/* user selector */
+.user-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem;}
+.user-btn{
+  padding:10px 8px;border-radius:12px;border:1.5px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);cursor:pointer;text-align:center;
+  color:rgba(255,255,255,.7);font-size:12px;font-weight:600;
+  font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+  transition:all .15s;line-height:1.3;
+}
+.user-btn:active,.user-btn.selected{
+  background:rgba(26,95,212,.35);border-color:rgba(74,158,255,.6);
+  color:#fff;box-shadow:0 0 0 2px rgba(74,158,255,.25);
+}
+.user-btn.selected .user-initial{background:var(--blue);}
+.user-initial{
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 5px;font-size:13px;font-weight:700;color:#fff;
+  transition:background .15s;
+}
+/* PIN pad */
+.pin-label{font-size:12px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;text-align:center;}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:1.25rem;}
+.pin-dot{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.25);background:transparent;
+  transition:all .15s;
+}
+.pin-dot.filled{background:#4A9EFF;border-color:#4A9EFF;box-shadow:0 0 8px rgba(74,158,255,.5);}
+.pin-dot.error{background:#E84040;border-color:#E84040;animation:shake .4s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.num-btn{
+  padding:16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.07);color:#fff;font-size:20px;font-weight:600;
+  cursor:pointer;text-align:center;
+  font-family:'IBM Plex Mono',monospace;
+  -webkit-appearance:none;transition:all .12s;
+}
+.num-btn:active{background:rgba(74,158,255,.3);border-color:rgba(74,158,255,.5);transform:scale(.93);}
+.num-btn.del{font-size:18px;color:rgba(255,255,255,.6);}
+.num-btn.empty{visibility:hidden;}
+.login-err{
+  font-size:13px;color:#FF6B6B;text-align:center;
+  font-weight:600;min-height:20px;margin-top:10px;
+  animation:alertIn .25s ease;
+}
+
+/* ── TOP USER CHIP (when logged in) ── */
+.user-chip{
+  display:flex;align-items:center;gap:7px;cursor:pointer;
+  padding:4px 10px 4px 6px;border-radius:20px;
+  background:var(--surface2);border:1px solid var(--border);
+  transition:all .15s;
+}
+.user-chip:active{opacity:.7;}
+.user-avatar{
+  width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,#1A5FD4,#0B9E72);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.user-name-short{font-size:12px;font-weight:600;color:var(--text1);max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── ADMIN PANEL ── */
+.admin-modal-bg{display:none;position:fixed;inset:0;background:rgba(15,25,35,.6);backdrop-filter:blur(4px);z-index:600;align-items:flex-end;justify-content:center;}
+.admin-modal-bg.open{display:flex;animation:fadein .2s ease;}
+.admin-panel{
+  background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;
+  width:100%;max-width:430px;
+  padding:1.25rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
+  max-height:85vh;overflow-y:auto;
+  animation:slideUp .25s cubic-bezier(.34,1.2,.64,1);
+  box-shadow:0 -8px 40px rgba(0,0,0,.15);
+}
+.user-row{
+  display:flex;align-items:center;gap:12px;padding:11px 0;
+  border-bottom:1px solid var(--border);
+}
+.user-row:last-child{border-bottom:none;}
+.user-row-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1A5FD4,#0B9E72);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-row-name{font-size:14px;font-weight:700;color:var(--text1);flex:1;}
+.user-row-role{font-size:11px;color:var(--text3);margin-top:1px;}
+.reset-pin-btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(192,112,0,.2);background:var(--amber-l);font-size:12px;color:var(--amber);cursor:pointer;font-weight:700;font-family:inherit;}
 </style>
 </head>
 <body>
 
-<!-- SCANNER -->
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login-screen">
+  <div class="login-logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+  <div class="login-title">ระบบบริหารจัดการคลังยา</div>
+  <div class="login-sub">PCU สะบ้าย้อย</div>
+  <div class="login-card">
+    <!-- Step 1: เลือกชื่อ -->
+    <div id="step-user">
+      <div class="pin-label" style="margin-bottom:12px;">เลือกชื่อของคุณ</div>
+      <div class="user-grid" id="user-grid"></div>
+    </div>
+    <!-- Step 2: กด PIN -->
+    <div id="step-pin" style="display:none;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;">
+        <button onclick="backToUserSelect()" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:20px;padding:0;line-height:1;">‹</button>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff;" id="pin-greeting">สวัสดี!</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5);">กรอก PIN 4 หลัก</div>
+        </div>
+      </div>
+      <div class="pin-dots" id="pin-dots">
+        <div class="pin-dot"></div><div class="pin-dot"></div>
+        <div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div class="numpad">
+        <button class="num-btn" onclick="pinPress('1')">1</button>
+        <button class="num-btn" onclick="pinPress('2')">2</button>
+        <button class="num-btn" onclick="pinPress('3')">3</button>
+        <button class="num-btn" onclick="pinPress('4')">4</button>
+        <button class="num-btn" onclick="pinPress('5')">5</button>
+        <button class="num-btn" onclick="pinPress('6')">6</button>
+        <button class="num-btn" onclick="pinPress('7')">7</button>
+        <button class="num-btn" onclick="pinPress('8')">8</button>
+        <button class="num-btn" onclick="pinPress('9')">9</button>
+        <button class="num-btn empty"></button>
+        <button class="num-btn" onclick="pinPress('0')">0</button>
+        <button class="num-btn del" onclick="pinDel()">⌫</button>
+      </div>
+      <div class="login-err" id="login-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN PANEL ══ -->
+<div class="admin-modal-bg" id="admin-modal">
+  <div class="admin-panel">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div class="modal-title" style="margin-bottom:0;">จัดการผู้ใช้งาน</div>
+      <button onclick="closeAdminPanel()" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:0;">✕</button>
+    </div>
+    <div style="background:var(--amber-l);border:1px solid rgba(192,112,0,.2);border-radius:10px;padding:10px 13px;margin-bottom:1rem;font-size:12px;color:var(--amber);font-weight:600;">
+      🔐 Admin สามารถรีเซ็ต PIN ของผู้ใช้ทุกคนได้
+    </div>
+    <div id="admin-user-list"></div>
+    <div class="btn-row" style="margin-top:1rem;">
+      <button class="btn" onclick="logoutAll()">ออกจากระบบทุกคน</button>
+      <button class="btn btn-primary" onclick="closeAdminPanel()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="scanner-modal" id="scanner-modal">
   <div class="scanner-top">
     <span class="scanner-title">สแกน QR / Barcode</span>
@@ -517,10 +687,14 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   <div class="header">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
-      <div class="app-title">ระบบบริหารจัดการคลังยา</div>
-      <div class="app-sub">PCU สะบ้าย้อย</div>
+      <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
+      <div class="app-sub">ระบบบริหารจัดการยา</div>
     </div>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
+    <div class="user-chip" id="header-user-chip" onclick="openUserMenu()" style="display:none;">
+      <div class="user-avatar" id="header-avatar">?</div>
+      <div class="user-name-short" id="header-name">—</div>
+    </div>
   </div>
   <div id="alert-box" style="display:none;padding-top:6px;"></div>
 
@@ -1203,7 +1377,8 @@ async function dispenseStock(){
   const exp=document.getElementById('d-exp').value;
   const unit=document.getElementById('d-unit').value;
   const qty=parseInt(document.getElementById('d-qty').value)||0;
-  const requester=document.getElementById('d-requester').value;
+  // ใช้ currentUser ถ้ายังไม่ได้เลือก
+  const requester=document.getElementById('d-requester').value||(currentUser?currentUser.name:'');
   const note=document.getElementById('d-note').value.trim();
   if(!name){showAlert('กรุณาเลือกชื่อยา','danger');return;}
   if(!lot){showAlert('กรุณาเลือก LOT Number','danger');return;}
@@ -1463,6 +1638,266 @@ function renderLineLog(){
 }
 function clearLineLog(){lineLog2=[];renderLineLog();}
 
+
+// ══ LOGIN SYSTEM ══════════════════════════════════════════════
+const USERS=[
+  {id:'winas',    name:'นายวินัสนรรจ์ หมวกเปียะ',   short:'วินัสนรรจ์',  initial:'ว'},
+  {id:'saluma',   name:'นางสาวสาลูมา โต๊ะหัด',      short:'สาลูมา',     initial:'ส'},
+  {id:'phuang',   name:'นางสาวพวงผกา หลำหวัง',      short:'พวงผกา',     initial:'พ'},
+  {id:'hamida',   name:'นางสาวฮามีดะห์ กามิง',       short:'ฮามีดะห์',   initial:'ฮ'},
+  {id:'sawit',    name:'นางสาวสาวิตรี หมัดชูดชู',    short:'สาวิตรี',    initial:'ส'},
+  {id:'yusra',    name:'นางสาวยุสรอ หะยีอูมา',       short:'ยุสรอ',      initial:'ย'},
+  {id:'nurma',    name:'นางสาวนุรมา หมันหลิน',       short:'นุรมา',      initial:'น'},
+  {id:'thanayong',name:'นายธนายง ขุนฤทธิ์',          short:'ธนายง',      initial:'ธ'},
+  {id:'sirikan',  name:'นางสาวศิริกานต์ รัตนอุบล',   short:'ศิริกานต์',  initial:'ศ'},
+];
+// Admin ใช้ PIN ตั้งต้น 1234 (reset ได้ใน admin panel)
+// User ทั่วไป: PIN ตั้งต้น 0000 (ต้องเปลี่ยนเมื่อ login ครั้งแรก)
+const DEFAULT_PIN='0000';
+const ADMIN_ID='winas'; // คนแรกเป็น admin
+const SESSION_HOURS=8;  // session หมดอายุ 8 ชม.
+
+let currentUser=null; // {id,name,short,initial}
+let _pinBuffer='';
+let _pinTarget=''; // 'login' | 'change'
+let _changePinStep=0; // 0=new, 1=confirm
+let _newPinTemp='';
+
+function getPinKey(userId){return 'pin_'+userId;}
+function getPin(userId){return localStorage.getItem(getPinKey(userId))||DEFAULT_PIN;}
+function setPin(userId,pin){localStorage.setItem(getPinKey(userId),pin);}
+
+function getSession(){
+  try{
+    const s=JSON.parse(localStorage.getItem('session')||'null');
+    if(!s)return null;
+    if(Date.now()>s.exp)return null;
+    return s;
+  }catch(e){return null;}
+}
+function saveSession(userId){
+  const exp=Date.now()+SESSION_HOURS*60*60*1000;
+  localStorage.setItem('session',JSON.stringify({userId,exp}));
+}
+function clearSession(){localStorage.removeItem('session');}
+
+// ── INIT LOGIN ────────────────────────────────────────────────
+function initLogin(){
+  // check existing session
+  const sess=getSession();
+  if(sess){
+    const u=USERS.find(u=>u.id===sess.userId);
+    if(u){doLoginSuccess(u);return;}
+  }
+  // render user grid
+  const grid=document.getElementById('user-grid');
+  if(grid){
+    grid.innerHTML=USERS.map(u=>`
+      <button class="user-btn" onclick="selectUser('${u.id}')">
+        <div class="user-initial">${u.initial}</div>
+        ${u.short}
+      </button>`).join('');
+  }
+  document.getElementById('login-screen').classList.remove('hidden');
+}
+
+function selectUser(userId){
+  const u=USERS.find(x=>x.id===userId);
+  if(!u)return;
+  currentUser=u;
+  _pinBuffer='';
+  _pinTarget='login';
+  document.getElementById('pin-greeting').textContent='สวัสดี, '+u.short;
+  document.getElementById('step-user').style.display='none';
+  document.getElementById('step-pin').style.display='block';
+  document.getElementById('login-err').textContent='';
+  updatePinDots();
+}
+
+function backToUserSelect(){
+  _pinBuffer='';currentUser=null;
+  document.getElementById('step-user').style.display='block';
+  document.getElementById('step-pin').style.display='none';
+  document.getElementById('login-err').textContent='';
+}
+
+function pinPress(d){
+  if(_pinBuffer.length>=4)return;
+  _pinBuffer+=d;
+  updatePinDots();
+  if(_pinBuffer.length===4)setTimeout(()=>checkPin(),120);
+}
+function pinDel(){
+  _pinBuffer=_pinBuffer.slice(0,-1);
+  updatePinDots();
+}
+function updatePinDots(){
+  const dots=document.querySelectorAll('#pin-dots .pin-dot');
+  dots.forEach((dot,i)=>{
+    dot.classList.remove('filled','error');
+    if(i<_pinBuffer.length)dot.classList.add('filled');
+  });
+}
+function pinError(msg){
+  const dots=document.querySelectorAll('#pin-dots .pin-dot');
+  dots.forEach(d=>{d.classList.remove('filled');d.classList.add('error');});
+  document.getElementById('login-err').textContent=msg;
+  setTimeout(()=>{
+    dots.forEach(d=>d.classList.remove('error'));
+    _pinBuffer='';updatePinDots();
+  },700);
+}
+
+function checkPin(){
+  if(_pinTarget==='login'){
+    const stored=getPin(currentUser.id);
+    if(_pinBuffer===stored){
+      // check first time (default PIN)
+      if(stored===DEFAULT_PIN){
+        // force change PIN
+        document.getElementById('login-err').textContent='';
+        showChangePinUI();
+      }else{
+        doLoginSuccess(currentUser);
+      }
+    }else{
+      pinError('PIN ไม่ถูกต้อง ลองใหม่อีกครั้ง');
+    }
+  }else if(_pinTarget==='change'){
+    if(_changePinStep===0){
+      _newPinTemp=_pinBuffer;
+      _changePinStep=1;
+      _pinBuffer='';
+      document.getElementById('pin-greeting').textContent='ยืนยัน PIN ใหม่อีกครั้ง';
+      document.getElementById('login-err').textContent='';
+      updatePinDots();
+    }else{
+      if(_pinBuffer===_newPinTemp){
+        setPin(currentUser.id,_pinBuffer);
+        document.getElementById('login-err').textContent='';
+        doLoginSuccess(currentUser);
+      }else{
+        _changePinStep=0;_newPinTemp='';
+        pinError('PIN ไม่ตรงกัน ลองใหม่');
+        setTimeout(()=>{
+          document.getElementById('pin-greeting').textContent='ตั้ง PIN ใหม่ 4 หลัก';
+        },800);
+      }
+    }
+  }
+}
+
+function showChangePinUI(){
+  _pinTarget='change';_changePinStep=0;_newPinTemp='';_pinBuffer='';
+  document.getElementById('pin-greeting').textContent='ตั้ง PIN ใหม่ 4 หลัก';
+  document.getElementById('login-err').textContent='ครั้งแรก — กรุณาตั้ง PIN ใหม่ให้ตัวเอง';
+  updatePinDots();
+}
+
+function doLoginSuccess(user){
+  currentUser=user;
+  saveSession(user.id);
+  // hide login screen
+  document.getElementById('login-screen').classList.add('hidden');
+  // show user chip in header
+  const chip=document.getElementById('header-user-chip');
+  const avatar=document.getElementById('header-avatar');
+  const nameEl=document.getElementById('header-name');
+  if(chip){chip.style.display='flex';}
+  if(avatar)avatar.textContent=user.initial;
+  if(nameEl)nameEl.textContent=user.short;
+  // hide conn-chip, show user-chip
+  const connChip=document.querySelector('.conn-chip');
+  if(connChip)connChip.style.display='none';
+  // auto-fill requester in dispense
+  autoFillRequester(user.name);
+  // load data
+  loadReceive();
+}
+
+function autoFillRequester(name){
+  const sel=document.getElementById('d-requester');
+  if(!sel)return;
+  for(let i=0;i<sel.options.length;i++){
+    if(sel.options[i].value===name){sel.selectedIndex=i;break;}
+  }
+}
+
+function logout(){
+  clearSession();
+  currentUser=null;
+  // show login screen
+  _pinBuffer='';_pinTarget='login';
+  document.getElementById('step-user').style.display='block';
+  document.getElementById('step-pin').style.display='none';
+  document.getElementById('login-err').textContent='';
+  const grid=document.getElementById('user-grid');
+  if(grid){
+    grid.innerHTML=USERS.map(u=>`
+      <button class="user-btn" onclick="selectUser('${u.id}')">
+        <div class="user-initial">${u.initial}</div>
+        ${u.short}
+      </button>`).join('');
+  }
+  document.getElementById('login-screen').classList.remove('hidden');
+  // hide user chip
+  const chip=document.getElementById('header-user-chip');
+  if(chip)chip.style.display='none';
+  const connChip=document.querySelector('.conn-chip');
+  if(connChip)connChip.style.display='flex';
+}
+
+// ── ADMIN PANEL ───────────────────────────────────────────────
+function openUserMenu(){
+  const isAdmin=currentUser&&currentUser.id===ADMIN_ID;
+  if(isAdmin){
+    openAdminPanel();
+  }else{
+    // non-admin: simple menu
+    const choice=confirm(`ออกจากระบบ (${currentUser?currentUser.short:''})?\nกด OK เพื่อออก`);
+    if(choice)logout();
+  }
+}
+
+function openAdminPanel(){
+  const el=document.getElementById('admin-user-list');
+  if(el){
+    el.innerHTML=USERS.map(u=>{
+      const hasCustomPin=localStorage.getItem(getPinKey(u.id))&&getPin(u.id)!==DEFAULT_PIN;
+      return `<div class="user-row">
+        <div class="user-row-avatar">${u.initial}</div>
+        <div style="flex:1;">
+          <div class="user-row-name">${u.name}</div>
+          <div class="user-row-role">${hasCustomPin?'✓ ตั้ง PIN แล้ว':'⚠ ยังใช้ PIN ตั้งต้น'} ${u.id===ADMIN_ID?'· Admin':''}</div>
+        </div>
+        <button class="reset-pin-btn" onclick="resetUserPin('${u.id}','${u.short}')">รีเซ็ต PIN</button>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('admin-modal').classList.add('open');
+}
+
+function closeAdminPanel(){document.getElementById('admin-modal').classList.remove('open');}
+
+function resetUserPin(userId,name){
+  if(!confirm(`รีเซ็ต PIN ของ ${name} กลับเป็น PIN ตั้งต้น?\nผู้ใช้จะต้องตั้ง PIN ใหม่เมื่อ Login ครั้งถัดไป`))return;
+  localStorage.removeItem(getPinKey(userId));
+  // clear their session if active
+  const sess=getSession();
+  if(sess&&sess.userId===userId)clearSession();
+  openAdminPanel(); // refresh list
+  showAlert(`รีเซ็ต PIN ของ ${name} เรียบร้อย`,'success');
+}
+
+function logoutAll(){
+  if(!confirm('ออกจากระบบผู้ใช้ทั้งหมด?'))return;
+  clearSession();
+  closeAdminPanel();
+  logout();
+}
+
+// override openUserMenu (function hoisting issue fix — use single def below)
+// ── START ─────────────────────────────────────────────────────
 // init LINE badge
 (()=>{
   const t=localStorage.getItem('line_token')||'';
@@ -1470,8 +1905,8 @@ function clearLineLog(){lineLog2=[];renderLineLog();}
   const on=localStorage.getItem('line_enabled')==='true';
   if(t&&id&&on){const b=document.getElementById('line-badge');if(b)b.style.display='block';}
 })();
+initLogin();
 
-loadReceive();
 </script>
 </body>
 </html>
