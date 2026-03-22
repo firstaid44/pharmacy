@@ -48,14 +48,13 @@ body::before{
   border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;
 }
 .logo{
-  width:52px;height:52px;background:linear-gradient(140deg,#1A5FD4,#0B9E72);
-  border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  width:38px;height:38px;background:linear-gradient(140deg,#1A5FD4,#0B9E72);
+  border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
   box-shadow:0 4px 12px rgba(26,95,212,.28);
 }
-.logo svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2.2;}
-.app-title{font-size:15px;font-weight:700;color:#FFFFFF;letter-spacing:-.3px;}
-.app-sub{font-size:11px;color:#FFFFFF;margin-top:1px;font-weight:400;}
-
+.logo svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;}
+.app-title{font-size:15px;font-weight:700;color:var(--text1);letter-spacing:-.3px;}
+.app-sub{font-size:11px;color:var(--text3);margin-top:1px;font-weight:400;}
 .conn-chip{
   display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;
   background:var(--surface2);border:1px solid var(--border);
@@ -721,6 +720,56 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   letter-spacing:.2px;
 }
 
+/* ── QUICK SCAN BUTTON (no login) ── */
+.ls-quick-scan-wrap{
+  width:100%;max-width:380px;
+  margin-top:1.25rem;
+  position:relative;z-index:10;
+}
+.ls-divider{
+  display:flex;align-items:center;gap:10px;margin-bottom:1rem;
+}
+.ls-divider::before,.ls-divider::after{
+  content:'';flex:1;height:1px;background:rgba(255,255,255,.1);
+}
+.ls-divider-text{
+  font-size:10px;color:rgba(255,255,255,.25);font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;
+}
+.ls-qr-btn{
+  width:100%;padding:15px 20px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  background:transparent;
+  border:1.5px solid rgba(255,255,255,.12);
+  cursor:pointer;color:rgba(255,255,255,.6);
+  font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+  font-size:14px;font-weight:600;
+  transition:all .18s;-webkit-appearance:none;
+  position:relative;overflow:hidden;
+}
+.ls-qr-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(6,199,85,.12),rgba(26,95,212,.08));
+  opacity:0;transition:opacity .2s;
+}
+.ls-qr-btn:active{transform:scale(.975);}
+.ls-qr-btn:active::before{opacity:1;}
+.ls-qr-btn svg{
+  width:20px;height:20px;stroke:rgba(255,255,255,.5);fill:none;stroke-width:2;flex-shrink:0;
+  transition:stroke .2s;
+}
+.ls-qr-btn:active svg{stroke:#06C755;}
+.ls-qr-btn-pulse{
+  width:8px;height:8px;border-radius:50%;background:#06C755;flex-shrink:0;
+  box-shadow:0 0 0 0 rgba(6,199,85,.5);
+  animation:qrPulse 2s ease-in-out infinite;
+}
+@keyframes qrPulse{
+  0%{box-shadow:0 0 0 0 rgba(6,199,85,.6);}
+  70%{box-shadow:0 0 0 8px rgba(6,199,85,.0);}
+  100%{box-shadow:0 0 0 0 rgba(6,199,85,.0);}
+}
+
 /* ── TOP USER CHIP (when logged in) ── */
 .user-chip{
   display:flex;align-items:center;gap:7px;cursor:pointer;
@@ -863,6 +912,24 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         </button>
       </div>
 
+      <!-- Quick Scan (no login) -->
+      <div class="ls-quick-scan-wrap">
+        <div class="ls-divider">
+          <span class="ls-divider-text">หรือ</span>
+        </div>
+        <button class="ls-qr-btn" onclick="quickScanDispense()" type="button">
+          <span class="ls-qr-btn-pulse"></span>
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="3" height="3"/>
+            <rect x="18" y="18" width="3" height="3"/>
+          </svg>
+          สแกน QR Code เบิกยาคลัง
+        </button>
+      </div>
+
     </div>
 
     <!-- ── STEP 2: PIN ── -->
@@ -996,8 +1063,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   <div class="header">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
-      <div class="app-title">ระบบบริหารจัดการ</div>
-      <div class="app-sub">PCU สะบ้าย้อย</div>
+      <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
+      <div class="app-sub">ระบบบริหารจัดการยา</div>
     </div>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
     <div class="user-chip" id="header-user-chip" onclick="openUserMenu()" style="display:none;">
@@ -2374,6 +2441,125 @@ async function exportInventory(){
   }finally{
     if(btn){btn.textContent='⬆ ส่งออกคงคลัง';btn.disabled=false;}
   }
+}
+
+// ══ QUICK SCAN MODE (no login) ═══════════════════════════════
+let _quickScanMode=false; // true = locked to dispense tab only
+
+function quickScanDispense(){
+  _quickScanMode=true;
+  // ซ่อน login screen
+  document.getElementById('login-screen').classList.add('hidden');
+  // โหลดข้อมูลที่จำเป็น
+  loadReceive();
+  loadDispense();
+  // ไปที่แท็บเบิกยาออกทันที
+  const dispenseBtn=document.querySelector('.nav-item:nth-child(2)');
+  if(dispenseBtn)switchTab('dispense',dispenseBtn);
+  // lock nav — ซ่อน/disable แท็บอื่น
+  _applyNavLock();
+  // แสดง banner
+  _showQuickScanBanner();
+  // เปิดสแกนเนอร์ทันที (d-name field)
+  setTimeout(()=>openScanner('d-name'),400);
+}
+
+function _applyNavLock(){
+  // ทำให้แท็บอื่น (ไม่ใช่ dispense) กดไม่ได้
+  document.querySelectorAll('.nav-item').forEach((btn,i)=>{
+    if(i===1){
+      // dispense tab (index 1) — ยังใช้งานได้
+      btn.style.opacity='1';
+      btn.style.pointerEvents='auto';
+    }else{
+      btn.style.opacity='.2';
+      btn.style.pointerEvents='none';
+    }
+  });
+}
+
+function _removeNavLock(){
+  document.querySelectorAll('.nav-item').forEach(btn=>{
+    btn.style.opacity='';
+    btn.style.pointerEvents='';
+  });
+}
+
+function _showQuickScanBanner(){
+  // สร้าง banner แจ้งเตือนโหมด quick scan
+  const existing=document.getElementById('qs-banner');
+  if(existing)existing.remove();
+  const banner=document.createElement('div');
+  banner.id='qs-banner';
+  banner.style.cssText=`
+    position:fixed;top:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:430px;
+    background:linear-gradient(135deg,#065F46,#047857);
+    color:#fff;padding:10px 16px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    z-index:300;font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+    font-size:12px;font-weight:700;
+    padding-top:calc(10px + env(safe-area-inset-top));
+    box-shadow:0 2px 12px rgba(0,0,0,.2);
+  `;
+  banner.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="3" height="3"/>
+        <rect x="18" y="18" width="3" height="3"/>
+      </svg>
+      <span>โหมดสแกน QR — เฉพาะแท็บเบิกยา</span>
+    </div>
+    <button onclick="exitQuickScanMode()" style="
+      background:rgba(255,255,255,.2);border:none;border-radius:8px;
+      color:#fff;font-size:11px;font-weight:700;padding:5px 10px;
+      cursor:pointer;font-family:inherit;white-space:nowrap;
+    ">✕ ออก</button>
+  `;
+  document.body.appendChild(banner);
+  // เลื่อน header ลงมาให้หลีกทาง banner
+  const header=document.querySelector('.header');
+  if(header)header.style.top='calc(34px + env(safe-area-inset-top))';
+}
+
+function _removeQuickScanBanner(){
+  const b=document.getElementById('qs-banner');
+  if(b)b.remove();
+  const header=document.querySelector('.header');
+  if(header)header.style.top='';
+}
+
+function exitQuickScanMode(){
+  _quickScanMode=false;
+  _removeNavLock();
+  _removeQuickScanBanner();
+  // กลับหน้า login
+  document.getElementById('login-screen').classList.remove('hidden');
+  // reset step
+  document.getElementById('step-user').style.display='block';
+  document.getElementById('step-pin').style.display='none';
+  _renderDropdown();
+  _resetTrigger();
+  window._pendingUserId=null;
+  // hide user chip
+  const chip=document.getElementById('header-user-chip');
+  if(chip)chip.style.display='none';
+  const connChip=document.querySelector('.conn-chip');
+  if(connChip)connChip.style.display='flex';
+}
+
+// Override switchTab เพื่อ block ถ้าอยู่ใน quick scan mode
+const _origSwitchTab=switchTab;
+function switchTab(tab,el){
+  if(_quickScanMode&&tab!=='dispense'){
+    // แสดงแจ้งเตือนสั้นๆ
+    showAlert('โหมดสแกน QR — สามารถใช้เฉพาะแท็บ "เบิกยาออก" เท่านั้น','warning');
+    return;
+  }
+  _origSwitchTab(tab,el);
 }
 
 // ── START ─────────────────────────────────────────────────────
