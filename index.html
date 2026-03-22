@@ -525,7 +525,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 /* ── DROPDOWN USER SELECT ── */
 .ls-select-wrap{
   width:100%;max-width:380px;
-  position:relative;z-index:10;
+  position:relative;z-index:50;
 }
 .ls-select-label{
   font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
@@ -724,7 +724,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .ls-quick-scan-wrap{
   width:100%;max-width:380px;
   margin-top:1.25rem;
-  position:relative;z-index:10;
+  position:relative;z-index:1;
 }
 .ls-divider{
   display:flex;align-items:center;gap:10px;margin-bottom:1rem;
@@ -737,26 +737,20 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;
 }
 .ls-qr-btn{
-  width:100%;padding:15px 20px;border-radius:16px;
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  background:transparent;
-  border:1.5px solid rgba(255,255,255,.12);
-  cursor:pointer;color:rgba(255,255,255,.6);
+  width:100%;padding:16px 20px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  background:linear-gradient(135deg,rgba(6,199,85,.18),rgba(4,120,87,.22));
+  border:1.5px solid rgba(6,199,85,.35);
+  cursor:pointer;color:#A7F3D0;
   font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
-  font-size:14px;font-weight:600;
+  font-size:14px;font-weight:700;
   transition:all .18s;-webkit-appearance:none;
   position:relative;overflow:hidden;
+  box-shadow:0 4px 20px rgba(6,199,85,.15);
 }
-.ls-qr-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(6,199,85,.12),rgba(26,95,212,.08));
-  opacity:0;transition:opacity .2s;
-}
-.ls-qr-btn:active{transform:scale(.975);}
-.ls-qr-btn:active::before{opacity:1;}
+.ls-qr-btn:active{transform:scale(.975);box-shadow:0 2px 8px rgba(6,199,85,.1);}
 .ls-qr-btn svg{
-  width:20px;height:20px;stroke:rgba(255,255,255,.5);fill:none;stroke-width:2;flex-shrink:0;
-  transition:stroke .2s;
+  width:20px;height:20px;stroke:#6EE7B7;fill:none;stroke-width:2;flex-shrink:0;
 }
 .ls-qr-btn:active svg{stroke:#06C755;}
 .ls-qr-btn-pulse{
@@ -890,7 +884,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         <div class="ls-sub">PCU สะบ้าย้อย</div>
       </div>
 
-      <!-- Dropdown select -->
+      <!-- Dropdown select — wrapper มี z-index สูงให้ dropdown ลอยเหนือทุกอย่าง -->
       <div class="ls-select-wrap">
         <span class="ls-select-label">ผู้ใช้งาน</span>
         <div class="ls-select-box" id="user-grid">
@@ -905,6 +899,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
               <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
           </button>
+          <!-- dropdown ลอยออก ไม่กดทับ QR button -->
           <div class="ls-dropdown" id="ls-dropdown"></div>
         </div>
         <button class="ls-confirm-btn" id="ls-confirm-btn" onclick="confirmUserSelect()" type="button">
@@ -912,10 +907,10 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         </button>
       </div>
 
-      <!-- Quick Scan (no login) -->
+      <!-- Quick Scan (no login) — อยู่นอก ls-select-wrap เพื่อไม่ถูก dropdown ทับ -->
       <div class="ls-quick-scan-wrap">
         <div class="ls-divider">
-          <span class="ls-divider-text">หรือ</span>
+          <span class="ls-divider-text">หรือเบิกด่วน</span>
         </div>
         <button class="ls-qr-btn" onclick="quickScanDispense()" type="button">
           <span class="ls-qr-btn-pulse"></span>
@@ -1063,8 +1058,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   <div class="header">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
-      <div class="app-title">ระบบบริหารจัดการคลังยา</div>
-      <div class="app-sub">PCU สะบ้าย้อย</div>
+      <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
+      <div class="app-sub">ระบบบริหารจัดการยา</div>
     </div>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
     <div class="user-chip" id="header-user-chip" onclick="openUserMenu()" style="display:none;">
@@ -2460,6 +2455,8 @@ function quickScanDispense(){
   _applyNavLock();
   // แสดง banner
   _showQuickScanBanner();
+  // เปิดกล้องสแกน QR ทันที (หลัง UI render เสร็จ)
+  setTimeout(()=>openScanner('d-name'),350);
 }
 
 // ไปแท็บ dispense โดยตรง ไม่ผ่าน switchTab (หลีกเลี่ยง recursive)
