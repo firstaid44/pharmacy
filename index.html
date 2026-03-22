@@ -70,46 +70,78 @@ body::before{
 .bottom-nav{
   position:fixed;bottom:0;left:50%;transform:translateX(-50%);
   width:100%;max-width:430px;
-  background:rgba(15,25,35,.92);
-  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border-top:1px solid rgba(255,255,255,.08);
+  background:rgba(10,18,28,.96);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border-top:1px solid rgba(255,255,255,.07);
   display:grid;grid-template-columns:repeat(5,1fr);
   padding-bottom:env(safe-area-inset-bottom);z-index:200;
-  box-shadow:0 -8px 32px rgba(0,0,0,.25);
+  box-shadow:0 -4px 24px rgba(0,0,0,.35);
 }
 .nav-item{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:10px 2px 9px;cursor:pointer;gap:4px;
+  padding:9px 4px 8px;cursor:pointer;gap:3px;
   -webkit-appearance:none;background:transparent;border:none;
-  color:rgba(255,255,255,.38);position:relative;transition:color .2s;
+  color:rgba(255,255,255,.32);position:relative;
+  transition:color .2s;
 }
-.nav-item.active{color:#FFFFFF;}
-.nav-item svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
-.nav-item.active svg{transform:translateY(-2px);}
-.nav-label{font-size:9.5px;font-weight:600;letter-spacing:.3px;transition:color .2s;}
+.nav-item.active{color:#fff;}
+/* icon wrap — active ได้ bg pill */
+.nav-icon-wrap{
+  width:42px;height:28px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;transition:background .22s,transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-item.active .nav-icon-wrap{
+  background:rgba(74,158,255,.18);
+  transform:translateY(-1px);
+}
+.nav-item:nth-child(2).active .nav-icon-wrap{background:rgba(251,113,60,.18);}
+.nav-item:nth-child(3).active .nav-icon-wrap{background:rgba(16,185,129,.18);}
+.nav-item:nth-child(4).active .nav-icon-wrap{background:rgba(168,85,247,.18);}
+.nav-item:nth-child(5).active .nav-icon-wrap{background:rgba(6,199,85,.18);}
+.nav-item svg{
+  width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;
+  transition:filter .2s;
+}
+/* active glow per tab */
+.nav-item.active svg{filter:drop-shadow(0 0 5px rgba(74,158,255,.7));}
+.nav-item:nth-child(2).active svg{filter:drop-shadow(0 0 5px rgba(251,113,60,.8));}
+.nav-item:nth-child(3).active svg{filter:drop-shadow(0 0 5px rgba(16,185,129,.7));}
+.nav-item:nth-child(4).active svg{filter:drop-shadow(0 0 5px rgba(168,85,247,.7));}
+.nav-item:nth-child(5).active svg{filter:drop-shadow(0 0 5px rgba(6,199,85,.8));}
+/* active label color per tab */
+.nav-item.active .nav-label{color:#4A9EFF;}
+.nav-item:nth-child(2).active .nav-label{color:#FB713C;}
+.nav-item:nth-child(3).active .nav-label{color:#10B981;}
+.nav-item:nth-child(4).active .nav-label{color:#A855F7;}
+.nav-item:nth-child(5).active .nav-label{color:#06C755;}
+.nav-label{
+  font-size:9px;font-weight:700;letter-spacing:.2px;
+  color:rgba(255,255,255,.32);transition:color .2s;
+  white-space:nowrap;
+}
 /* pill indicator */
 .nav-pill{
-  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-  width:0;height:3px;border-radius:3px 3px 0 0;
-  background:linear-gradient(90deg,#4A9EFF,#06C755);
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:0;height:2.5px;border-radius:0 0 3px 3px;
   transition:width .28s cubic-bezier(.34,1.56,.64,1);
 }
-.nav-item.active .nav-pill{width:32px;}
-/* active icon glow */
-.nav-item.active svg{filter:drop-shadow(0 0 6px rgba(74,158,255,.6));}
-.nav-item:nth-child(2).active svg{filter:drop-shadow(0 0 6px rgba(255,120,80,.6));}
-.nav-item:nth-child(3).active svg{filter:drop-shadow(0 0 6px rgba(74,158,255,.5));}
-.nav-item:nth-child(5).active svg{filter:drop-shadow(0 0 6px rgba(6,199,85,.7));}
+.nav-item.active .nav-pill{width:28px;}
+.nav-item:nth-child(1).active .nav-pill{background:#4A9EFF;}
+.nav-item:nth-child(2).active .nav-pill{background:#FB713C;}
+.nav-item:nth-child(3).active .nav-pill{background:#10B981;}
+.nav-item:nth-child(4).active .nav-pill{background:#A855F7;}
+.nav-item:nth-child(5).active .nav-pill{background:#06C755;}
 .nav-badge{
   background:var(--red);color:#fff;border-radius:10px;
   font-size:9px;font-weight:700;padding:1px 5px;min-width:16px;text-align:center;
-  position:absolute;top:7px;right:calc(50% - 22px);
-  border:1.5px solid rgba(15,25,35,.9);
+  position:absolute;top:4px;right:calc(50% - 24px);
+  border:1.5px solid rgba(10,18,28,.96);
 }
 .nav-line-badge{
-  position:absolute;top:7px;right:calc(50% - 22px);
+  position:absolute;top:4px;right:calc(50% - 24px);
   width:8px;height:8px;border-radius:50%;background:#06C755;
-  border:1.5px solid rgba(15,25,35,.9);display:none;
+  border:1.5px solid rgba(10,18,28,.96);display:none;
   box-shadow:0 0 0 2px rgba(6,199,85,.3);
 }
 
@@ -1084,7 +1116,11 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
     <div class="stats-grid">
       <div class="stat-card c-blue"><div class="stat-label">ยาในระบบ</div><div class="stat-value sv-blue">118</div></div>
       <div class="stat-card c-teal"><div class="stat-label">รับเข้าทั้งหมด</div><div class="stat-value sv-teal" id="s-total">—</div></div>
-      <div class="stat-card c-teal"><div class="stat-label">รับเข้าวันนี้</div><div class="stat-value" id="s-today" style="font-size:15px;color:var(--teal);padding-top:4px;">—</div></div>
+      <div class="stat-card c-teal" onclick="showTodayDetail('receive')" style="cursor:pointer;">
+        <div class="stat-label">รับเข้าวันนี้</div>
+        <div class="stat-value" id="s-today" style="font-size:15px;color:var(--teal);padding-top:4px;">—</div>
+        <div style="font-size:9px;color:var(--teal);opacity:.7;margin-top:4px;">กดดูรายละเอียด</div>
+      </div>
       <div class="stat-card"><div class="stat-label">สถานะ</div><div style="font-size:12px;font-weight:700;color:var(--text3);padding-top:4px;" id="smsg">โหลด...</div><div class="sdot" id="sdot" style="background:#FFC107;width:8px;height:8px;border-radius:50%;margin-top:4px;"></div></div>
     </div>
     <div class="card">
@@ -1136,7 +1172,11 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   <div class="page" id="page-dispense">
     <div style="height:.75rem;"></div>
     <div class="stats-grid">
-      <div class="stat-card c-amber"><div class="stat-label">เบิกออกวันนี้</div><div class="stat-value sv-amber" id="d-today">—</div></div>
+      <div class="stat-card c-amber" onclick="showTodayDetail('dispense')" style="cursor:pointer;">
+        <div class="stat-label">เบิกออกวันนี้</div>
+        <div class="stat-value sv-amber" id="d-today">—</div>
+        <div style="font-size:9px;color:var(--amber);opacity:.7;margin-top:4px;">กดดูรายละเอียด</div>
+      </div>
       <div class="stat-card c-amber"><div class="stat-label">เบิกออกทั้งหมด</div><div class="stat-value sv-amber" id="d-total">—</div></div>
     </div>
     <div class="card">
@@ -1333,30 +1373,65 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 
   <!-- BOTTOM NAV -->
   <div class="bottom-nav">
+    <!-- รับยาเข้า: tray + arrow down into box -->
     <button class="nav-item active" onclick="switchTab('receive',this)">
       <div class="nav-pill"></div>
-      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+      <div class="nav-icon-wrap">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v11"/>
+          <path d="M8 10l4 4 4-4"/>
+          <path d="M3 15v2a2 2 0 002 2h14a2 2 0 002-2v-2"/>
+        </svg>
+      </div>
       <span class="nav-label">รับยาเข้า</span>
     </button>
+    <!-- เบิกยาออก: tray + arrow up from box -->
     <button class="nav-item" onclick="switchTab('dispense',this)">
       <div class="nav-pill"></div>
-      <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+      <div class="nav-icon-wrap">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 21V10"/>
+          <path d="M8 14l4-4 4 4"/>
+          <path d="M3 15v2a2 2 0 002 2h14a2 2 0 002-2v-2"/>
+        </svg>
+      </div>
       <span class="nav-label">เบิกยาออก</span>
     </button>
+    <!-- คลังยา: ชั้นวาง/กล่อง 3 ชั้น -->
     <button class="nav-item" onclick="switchTab('stock',this)">
       <div class="nav-pill"></div>
-      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+      <div class="nav-icon-wrap">
+        <svg viewBox="0 0 24 24">
+          <rect x="2" y="3" width="20" height="4" rx="1.5"/>
+          <rect x="2" y="10" width="20" height="4" rx="1.5"/>
+          <rect x="2" y="17" width="20" height="4" rx="1.5"/>
+        </svg>
+      </div>
       <span class="nav-label">คลังยา</span>
     </button>
+    <!-- ประวัติ: นาฬิกา + เส้นรายการ -->
     <button class="nav-item" onclick="switchTab('history',this)">
       <div class="nav-pill"></div>
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <div class="nav-icon-wrap">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9"/>
+          <polyline points="12 7 12 12 15.5 14.5"/>
+        </svg>
+      </div>
       <span class="nav-label">ประวัติ</span>
       <span class="nav-badge" id="hist-badge" style="display:none;">0</span>
     </button>
+    <!-- LINE: chat bubble สไตล์ LINE -->
     <button class="nav-item" onclick="switchTab('line',this)">
       <div class="nav-pill"></div>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5C21 16.75 16.75 21 12 21c-.87 0-1.71-.1-2.5-.3L5 22l1.3-4.5A9 9 0 1121 11.5z"/></svg>
+      <div class="nav-icon-wrap">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 10.5C20 15 16.4 18.7 12 18.7c-.7 0-1.4-.08-2.05-.24L5.5 19.5l1.1-3.7A8 8 0 014 10.5C4 6.36 7.58 3 12 3s8 3.36 8 7.5z"/>
+          <line x1="8.5" y1="10.5" x2="8.5" y2="10.51" stroke-linecap="round" stroke-width="2.5"/>
+          <line x1="12" y1="10.5" x2="12" y2="10.51" stroke-linecap="round" stroke-width="2.5"/>
+          <line x1="15.5" y1="10.5" x2="15.5" y2="10.51" stroke-linecap="round" stroke-width="2.5"/>
+        </svg>
+      </div>
       <span class="nav-label">LINE</span>
       <div class="nav-line-badge" id="line-badge"></div>
     </button>
@@ -2418,6 +2493,76 @@ function clearAllPins(){
   showAlert('ล้าง PIN ทั้งหมดแล้ว — PIN ตั้งต้นคือ 1234','success');
 }
 
+// ══ TODAY DETAIL MODAL ════════════════════════════════════════
+function showTodayDetail(mode){
+  const todayStr=todayTH();
+  const rows=mode==='receive'
+    ? receiveRows.filter(r=>fmtDate(r.date)===todayStr)
+    : dispenseRows.filter(r=>fmtDate(r.date)===todayStr);
+  const modal=document.getElementById('drug-detail-modal');
+  const el=document.getElementById('drug-detail-content');
+  if(!modal||!el)return;
+  const isRecv=mode==='receive';
+  const accent=isRecv?'#0B9E72':'#C07000';
+  const icon=isRecv?'📥':'📤';
+  const title=isRecv?'รับยาเข้าวันนี้':'เบิกยาออกวันนี้';
+  if(!rows.length){
+    el.innerHTML=`<div style="background:linear-gradient(135deg,${accent},${accent}CC);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:28px;">${icon}</div>
+      <div><div style="font-size:16px;font-weight:700;">${title}</div>
+      <div style="font-size:12px;opacity:.8;margin-top:2px;">${todayStr}</div></div></div>
+      <div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการวันนี้</div>`;
+    modal.classList.add('open');return;
+  }
+  const totalQty=rows.reduce((s,r)=>s+(parseFloat(r.qty)||0),0);
+  const drugCount=new Set(rows.map(r=>r.name)).size;
+  const rows_html=rows.map(e=>{
+    if(isRecv){
+      return `<div style="padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:6px;">${e.name}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;">
+          <span class="pill pill-gray pill-mono">${e.code||'—'}</span>
+          <span class="pill pill-blue pill-mono">LOT: ${e.lot}</span>
+          <span class="pill pill-amber pill-mono">EXP: ${fmtExp(e.exp)}</span>
+          <span class="pill pill-green">${e.qty} ${e.unit}</span>
+        </div>${e.note?`<div style="font-size:11px;color:var(--text3);margin-top:4px;">${e.note}</div>`:''}
+      </div>`;
+    }else{
+      return `<div style="padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:6px;">${e.name}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;">
+          <span class="pill pill-gray pill-mono">${e.code||'—'}</span>
+          <span class="pill pill-blue pill-mono">LOT: ${e.lot}</span>
+          <span class="pill pill-red">${e.qty} ${e.unit}</span>
+          <span class="pill pill-purple">👤 ${e.requester||'—'}</span>
+        </div>${e.note?`<div style="font-size:11px;color:var(--text3);margin-top:4px;">${e.note}</div>`:''}
+      </div>`;
+    }
+  }).join('');
+  el.innerHTML=`
+    <div style="background:linear-gradient(135deg,${accent},${accent}CC);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <div style="font-size:28px;">${icon}</div>
+        <div><div style="font-size:16px;font-weight:700;">${title}</div>
+        <div style="font-size:12px;opacity:.8;margin-top:2px;">${todayStr}</div></div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div style="background:rgba(255,255,255,.18);border-radius:10px;padding:8px 14px;flex:1;text-align:center;">
+          <div style="font-size:22px;font-weight:700;line-height:1;">${rows.length}</div>
+          <div style="font-size:10px;opacity:.8;margin-top:2px;">รายการ</div></div>
+        <div style="background:rgba(255,255,255,.18);border-radius:10px;padding:8px 14px;flex:1;text-align:center;">
+          <div style="font-size:22px;font-weight:700;line-height:1;">${drugCount}</div>
+          <div style="font-size:10px;opacity:.8;margin-top:2px;">ชนิดยา</div></div>
+        <div style="background:rgba(255,255,255,.18);border-radius:10px;padding:8px 14px;flex:1;text-align:center;">
+          <div style="font-size:22px;font-weight:700;line-height:1;">${Math.round(totalQty)}</div>
+          <div style="font-size:10px;opacity:.8;margin-top:2px;">หน่วยรวม</div></div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">รายการทั้งหมด</div>
+    <div>${rows_html}</div>`;
+  modal.classList.add('open');
+}
+
 // ══ EXPIRING DETAIL MODAL ════════════════════════════════════
 function showExpiringDetail(){
   if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
@@ -2466,7 +2611,7 @@ function showExpiringDetail(){
           return `<tr class="exp-warn" onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),200)">
             <td><div class="sum-name" style="font-size:12px;">${i.name}</div>
             <div style="font-size:11px;color:${c};font-weight:700;margin-top:2px;">${tag}</div></td>
-            <td style="font-size:12px;color:${c};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${i.exp}</td>
+            <td style="font-size:12px;color:${c};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(i.exp)}</td>
             <td><div class="sum-qty" style="color:${c};font-size:16px;">${Math.round(i.qty)}</div>
             <div class="sum-unit">${i.unit}</div></td>
           </tr>`;
@@ -2519,7 +2664,7 @@ function showExpiringDetail(){
         return `<tr class="exp-warn" style="cursor:pointer;" onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),220)">
           <td><div class="sum-name" style="font-size:12px;">${i.name}</div>
           <div style="font-size:11px;color:${clr};font-weight:700;margin-top:2px;">${tag}</div></td>
-          <td style="font-size:11px;color:${clr};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${i.exp}</td>
+          <td style="font-size:11px;color:${clr};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(i.exp)}</td>
           <td><div class="sum-qty" style="color:${clr};font-size:16px;">${Math.round(i.qty)}</div>
           <div class="sum-unit">${i.unit}</div></td>
         </tr>`;
