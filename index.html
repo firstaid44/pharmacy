@@ -1148,7 +1148,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         <div class="suggest-wrap">
           <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
             <div class="input-with-scan">
-              <input class="form-input" id="d-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-d')" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+              <input class="form-input" id="d-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDispenseDrug(this.value)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
               <button class="scan-btn" onclick="openScanner('d-name')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>สแกน</button>
             </div>
           </div>
@@ -1203,7 +1203,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
     </div>
     <div class="stats-grid">
       <div class="stat-card c-blue"><div class="stat-label">รายการยาทั้งหมด</div><div class="stat-value sv-blue" id="st-total">—</div></div>
-      <div class="stat-card c-red"><div class="stat-label">ใกล้หมดอายุ</div><div class="stat-value sv-red" id="st-expiring">—</div></div>
+      <div class="stat-card c-red" onclick="showExpiringDetail()" style="cursor:pointer;" title="คลิกเพื่อดูรายละเอียด"><div class="stat-label">ใกล้หมดอายุ <span style='font-size:9px;'>⤵</span></div><div class="stat-value sv-red" id="st-expiring">—</div><div style="font-size:9px;color:var(--red);opacity:.7;margin-top:4px;">กดดูรายละเอียด</div></div>
     </div>
     <div class="card" style="padding:1rem;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -1464,8 +1464,11 @@ async function loadReceive(){
     const j=await r.json();
     if(j.status==='ok'){
       receiveRows=j.rows||[];
+      // นับวันนี้จาก rows โดยตรง (format-safe)
+      const todayStr=todayTH();
+      const todayCount=receiveRows.filter(r=>fmtDate(r.date)===todayStr).length;
       const el=document.getElementById('s-today');
-      if(el)el.textContent=j.todayCount>0?'✓ '+j.todayCount+' รายการ':'—';
+      if(el)el.textContent=todayCount>0?'✓ '+todayCount+' รายการ':'—';
       document.getElementById('s-total').textContent=j.totalCount;
       setSheet('green','เชื่อมต่อสำเร็จ');
       renderReceiveLog();
@@ -1478,7 +1481,10 @@ async function loadDispense(){
     const j=await r.json();
     if(j.status==='ok'){
       dispenseRows=j.rows||[];
-      document.getElementById('d-today').textContent=j.todayCount;
+      // นับวันนี้จาก rows โดยตรง (format-safe)
+      const todayStr=todayTH();
+      const dTodayCount=dispenseRows.filter(r=>fmtDate(r.date)===todayStr).length;
+      document.getElementById('d-today').textContent=dTodayCount;
       document.getElementById('d-total').textContent=j.totalCount;
       renderDispenseLog();
     }
@@ -1495,7 +1501,7 @@ async function loadStock(){
     const stockMap={};
     receiveRows.forEach(r=>{
       const k=r.name+'|'+r.lot;
-      if(!stockMap[k])stockMap[k]={name:r.name,code:r.code,lot:r.lot,exp:r.exp,unit:r.unit,qty:0,group:r.group||'',months:r.months||''};
+      if(!stockMap[k])stockMap[k]={name:r.name,code:r.code,lot:r.lot,exp:fmtExp(r.exp),unit:r.unit,qty:0,group:r.group||'',months:r.months||''};
       stockMap[k].qty+=parseFloat(r.qty)||0;
       if(r.group)stockMap[k].group=r.group;
       if(r.months)stockMap[k].months=r.months;
@@ -1538,8 +1544,9 @@ function renderSummaryTable(items){
   items.forEach(i=>{
     if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',earliestExp:null,exp:''};
     nm[i.name].qty+=i.qty;
-    const ed=parseExpDate(i.exp);
-    if(ed&&(!nm[i.name].earliestExp||ed<nm[i.name].earliestExp)){nm[i.name].earliestExp=ed;nm[i.name].exp=i.exp;}
+    const cleanExp=fmtExp(i.exp); // แปลง format ก่อน parse
+    const ed=parseExpDate(cleanExp);
+    if(ed&&(!nm[i.name].earliestExp||ed<nm[i.name].earliestExp)){nm[i.name].earliestExp=ed;nm[i.name].exp=cleanExp;}
     if(i.group)nm[i.name].group=i.group;
   });
   let rows=Object.values(nm);
@@ -2409,6 +2416,145 @@ function clearAllPins(){
   USERS.forEach(u=>localStorage.removeItem(getPinKey(u.id)));
   clearSession();
   showAlert('ล้าง PIN ทั้งหมดแล้ว — PIN ตั้งต้นคือ 1234','success');
+}
+
+// ══ EXPIRING DETAIL MODAL ════════════════════════════════════
+function showExpiringDetail(){
+  if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
+  // รวม lot ทุก lot ต่อยา แล้วเอา exp ที่ใกล้สุด
+  const nm={};
+  _allStockItems.forEach(i=>{
+    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',earliestExp:null,exp:''};
+    nm[i.name].qty+=i.qty;
+    const ed=parseExpDate(i.exp);
+    if(ed&&(!nm[i.name].earliestExp||ed<nm[i.name].earliestExp)){nm[i.name].earliestExp=ed;nm[i.name].exp=i.exp;}
+    if(i.group)nm[i.name].group=i.group;
+  });
+  const now=new Date();now.setHours(0,0,0,0);
+  // กรองเฉพาะ ≤ 6 เดือน (กลุ่มแดง)
+  const expList=Object.values(nm).filter(i=>{
+    const g=(i.group||'').trim();
+    if(g==='สีแดง'||g==='แดง')return true;
+    if(!i.earliestExp)return false;
+    return(i.earliestExp-now)/(1000*60*60*24*30.4)<=6;
+  }).sort((a,b)=>(a.earliestExp||new Date(9999,0))-( b.earliestExp||new Date(9999,0)));
+
+  const modal=document.getElementById('drug-detail-modal');
+  const el=document.getElementById('drug-detail-content');
+  if(!modal||!el)return;
+
+  el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#C0392B,#E74C3C);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:28px;">⏰</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;">ยาใกล้หมดอายุ (≤ 6 เดือน)</div>
+        <div style="font-size:12px;opacity:.8;margin-top:2px;">พบ ${expList.length} รายการ</div>
+      </div>
+    </div>
+    <table class="sum-table">
+      <thead><tr>
+        <th onclick="void(0)">ชื่อยา</th>
+        <th onclick="void(0)">EXP</th>
+        <th style="text-align:right;" onclick="void(0)">คงเหลือ</th>
+      </tr></thead>
+      <tbody>
+        ${expList.map(i=>{
+          const sn=i.name.replace(/'/g,"\'");
+          const mo=i.earliestExp?Math.round((i.earliestExp-now)/(1000*60*60*24*30.4)):999;
+          const c=mo<=0?'var(--red)':mo<=3?'#DC2626':mo<=6?'#D97706':'var(--teal)';
+          const tag=mo<=0?'⛔ หมดแล้ว':mo<=3?`🔴 ${mo} เดือน`:`🟠 ${mo} เดือน`;
+          return `<tr class="exp-warn" onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),200)">
+            <td><div class="sum-name" style="font-size:12px;">${i.name}</div>
+            <div style="font-size:11px;color:${c};font-weight:700;margin-top:2px;">${tag}</div></td>
+            <td style="font-size:12px;color:${c};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${i.exp}</td>
+            <td><div class="sum-qty" style="color:${c};font-size:16px;">${Math.round(i.qty)}</div>
+            <div class="sum-unit">${i.unit}</div></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+  modal.classList.add('open');
+}
+
+// ══ EXPIRING DETAIL MODAL ════════════════════════════════════
+function showExpiringDetail(){
+  if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
+  const nm={};
+  _allStockItems.forEach(i=>{
+    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',earliestExp:null,exp:''};
+    nm[i.name].qty+=i.qty;
+    const ed=parseExpDate(i.exp);
+    if(ed&&(!nm[i.name].earliestExp||ed<nm[i.name].earliestExp)){nm[i.name].earliestExp=ed;nm[i.name].exp=i.exp;}
+    if(i.group)nm[i.name].group=i.group;
+  });
+  const now=new Date();now.setHours(0,0,0,0);
+  const expList=Object.values(nm).filter(i=>{
+    const g=(i.group||'').trim();
+    if(g==='สีแดง'||g==='แดง')return true;
+    if(!i.earliestExp)return false;
+    return(i.earliestExp-now)/(1000*60*60*24*30.4)<=6;
+  }).sort((a,b)=>(a.earliestExp||new Date(9999,0))-(b.earliestExp||new Date(9999,0)));
+
+  const modal=document.getElementById('drug-detail-modal');
+  const el=document.getElementById('drug-detail-content');
+  if(!modal||!el)return;
+  el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#C0392B,#E74C3C);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:28px;">⏰</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;">ยาใกล้หมดอายุ (≤ 6 เดือน)</div>
+        <div style="font-size:12px;opacity:.8;margin-top:2px;">พบ ${expList.length} รายการ</div>
+      </div>
+    </div>
+    <table class="sum-table">
+      <thead><tr>
+        <th>ชื่อยา</th><th>EXP</th><th style="text-align:right;">คงเหลือ</th>
+      </tr></thead>
+      <tbody>${expList.map(i=>{
+        const sn=i.name.replace(/'/g,"\\'");
+        const mo=i.earliestExp?Math.round((i.earliestExp-now)/(1000*60*60*24*30.4)):999;
+        const clr=mo<=0?'var(--red)':mo<=3?'#DC2626':'#D97706';
+        const tag=mo<=0?'⛔ หมดแล้ว':mo<=3?`🔴 ${mo} เดือน`:`🟠 ${mo} เดือน`;
+        return `<tr class="exp-warn" style="cursor:pointer;" onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),220)">
+          <td><div class="sum-name" style="font-size:12px;">${i.name}</div>
+          <div style="font-size:11px;color:${clr};font-weight:700;margin-top:2px;">${tag}</div></td>
+          <td style="font-size:11px;color:${clr};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${i.exp}</td>
+          <td><div class="sum-qty" style="color:${clr};font-size:16px;">${Math.round(i.qty)}</div>
+          <div class="sum-unit">${i.unit}</div></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  modal.classList.add('open');
+}
+
+// ══ DISPENSE SEARCH จากคลัง ═══════════════════════════════════
+function searchDispenseDrug(val){
+  const box=document.getElementById('sbox-d');
+  if(!val.trim()){box.style.display='none';return;}
+  const q=val.toLowerCase();
+  // สร้าง map ชื่อยาที่มีในคลัง (qty > 0)
+  const inStock={};
+  _allStockItems.forEach(i=>{
+    if(!inStock[i.name])inStock[i.name]={name:i.name,code:i.code,qty:0,unit:i.unit};
+    inStock[i.name].qty+=i.qty;
+  });
+  // กรองตาม query
+  const hits=Object.values(inStock)
+    .filter(i=>i.qty>0&&(i.name.toLowerCase().includes(q)||i.code.toLowerCase().includes(q)))
+    .slice(0,12);
+  // fallback: ถ้าไม่มีในคลัง ให้ค้นจาก drugDB แทน
+  const fallback=hits.length===0;
+  const show=fallback
+    ? drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q)).slice(0,10)
+        .map(d=>({name:d[1],code:d[0],qty:null,unit:''}))
+    : hits;
+  if(!show.length){box.style.display='none';return;}
+  box.innerHTML=show.map(d=>{
+    const qty=d.qty!==null?` <span style="font-size:10px;color:var(--teal);font-weight:700;">(คงเหลือ ${Math.round(d.qty)} ${d.unit})</span>`:'';
+    return `<div class="si" ontouchstart="" onclick='pickDrug("${d.name.replace(/"/g,'\\"')}","${d.code.replace(/"/g,'\\"')}","sbox-d")'><div>${d.name}${qty}</div><div class="si-sub">${d.code}</div></div>`;
+  }).join('');
+  box.style.display='block';
 }
 
 // ══ EXPORT INVENTORY TO GOOGLE SHEET ══════════════════════════
