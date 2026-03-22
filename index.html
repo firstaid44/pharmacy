@@ -442,75 +442,230 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;
 }
 
-/* ── LOGIN SCREEN ── */
+/* ══ LOGIN SCREEN — v3 ══════════════════════════════════════ */
 #login-screen{
-  position:fixed;inset:0;z-index:1000;
-  background:linear-gradient(160deg,#0F1923 0%,#1A3A5C 50%,#0B2F1E 100%);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+  position:fixed;inset:0;z-index:1000;overflow:hidden;
+  display:flex;flex-direction:column;
   font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+  background:#060D18;
 }
 #login-screen.hidden{display:none;}
-.login-logo{
-  width:72px;height:72px;
-  background:linear-gradient(140deg,#1A5FD4,#0B9E72);
-  border-radius:22px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 8px 32px rgba(26,95,212,.4);margin-bottom:1.25rem;
+
+/* animated mesh background */
+#login-screen::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% -30%, rgba(26,95,212,.55) 0%,transparent 55%),
+    radial-gradient(ellipse 70% 50% at -20% 80%, rgba(11,158,114,.3) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 110% 60%, rgba(107,63,196,.2) 0%,transparent 50%);
+  animation:bgPulse 8s ease-in-out infinite alternate;
 }
-.login-logo svg{width:36px;height:36px;stroke:#fff;fill:none;stroke-width:2.2;}
-.login-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.4px;margin-bottom:4px;text-align:center;}
-.login-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:2rem;text-align:center;}
-.login-card{
-  background:rgba(255,255,255,.06);backdrop-filter:blur(20px);
-  border:1px solid rgba(255,255,255,.1);border-radius:20px;
-  padding:1.5rem;width:100%;max-width:340px;
+@keyframes bgPulse{
+  0%{opacity:.8;}
+  100%{opacity:1;}
 }
-/* user selector */
-.user-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem;}
+/* grid lines overlay */
+#login-screen::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+
+/* ── STEP CONTAINER ── */
+.ls-steps{
+  flex:1;display:flex;flex-direction:column;
+  overflow:hidden;position:relative;z-index:2;
+}
+
+/* ── STEP 1: USER SELECT ── */
+#step-user{
+  flex:1;display:flex;flex-direction:column;
+  padding:0 0 calc(env(safe-area-inset-bottom)+1rem);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  animation:stepIn .35s cubic-bezier(.34,1.2,.64,1);
+}
+/* ── STEP 2: PIN ── */
+#step-pin{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:1rem 1.5rem calc(env(safe-area-inset-bottom)+1.5rem);
+  animation:stepIn .35s cubic-bezier(.34,1.2,.64,1);
+}
+@keyframes stepIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+
+/* ── TOP BRAND BAR ── */
+.ls-brand{
+  padding:calc(env(safe-area-inset-top)+1.25rem) 1.5rem 1.25rem;
+  display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  flex-shrink:0;
+}
+.ls-logo-wrap{
+  width:46px;height:46px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,#1A5FD4,#0B9E72);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 20px rgba(26,95,212,.5);
+  animation:logoPop .55s cubic-bezier(.34,1.6,.64,1) both;
+}
+@keyframes logoPop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+.ls-logo-wrap svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.3;}
+.ls-brand-text{}
+.ls-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.3px;line-height:1.2;}
+.ls-sub{font-size:11px;color:rgba(255,255,255,.35);font-weight:500;margin-top:2px;}
+
+/* ── USER LIST HEADER ── */
+.ls-list-head{
+  padding:1.25rem 1.5rem .6rem;
+}
+.ls-list-head-title{
+  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,255,255,.3);
+}
+
+/* ── USER ITEMS ── */
+.user-list{
+  padding:0 1rem;
+  display:flex;flex-direction:column;gap:6px;
+}
 .user-btn{
-  padding:10px 8px;border-radius:12px;border:1.5px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.05);cursor:pointer;text-align:center;
-  color:rgba(255,255,255,.7);font-size:12px;font-weight:600;
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border-radius:18px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.04);
+  cursor:pointer;text-align:left;width:100%;color:#fff;
   font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
-  transition:all .15s;line-height:1.3;
+  transition:background .15s,border-color .15s,transform .1s;
+  -webkit-appearance:none;
+  position:relative;overflow:hidden;
 }
-.user-btn:active,.user-btn.selected{
-  background:rgba(26,95,212,.35);border-color:rgba(74,158,255,.6);
-  color:#fff;box-shadow:0 0 0 2px rgba(74,158,255,.25);
+.user-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(26,95,212,.15),rgba(11,158,114,.1));
+  opacity:0;transition:opacity .2s;
 }
-.user-btn.selected .user-initial{background:var(--blue);}
+.user-btn:active{transform:scale(.975);}
+.user-btn:active::before{opacity:1;}
 .user-initial{
-  width:30px;height:30px;border-radius:50%;
-  background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;
-  margin:0 auto 5px;font-size:13px;font-weight:700;color:#fff;
-  transition:background .15s;
+  width:42px;height:42px;border-radius:13px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:700;color:#fff;
+  position:relative;
 }
-/* PIN pad */
-.pin-label{font-size:12px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;text-align:center;}
-.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:1.25rem;}
+/* unique gradient per initial letter */
+.ui-a{background:linear-gradient(135deg,#1A5FD4,#2D8EF5);}
+.ui-b{background:linear-gradient(135deg,#0B9E72,#07C985);}
+.ui-c{background:linear-gradient(135deg,#8B5CF6,#A78BFA);}
+.ui-d{background:linear-gradient(135deg,#F59E0B,#FCD34D);}
+.ui-e{background:linear-gradient(135deg,#EF4444,#F87171);}
+.ui-f{background:linear-gradient(135deg,#06B6D4,#67E8F9);}
+/* fallback */
+.ui-default{background:linear-gradient(135deg,#374151,#6B7280);}
+
+.user-btn-info{flex:1;min-width:0;}
+.user-btn-name{
+  font-size:14px;font-weight:700;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.user-btn-role{
+  font-size:11px;color:rgba(255,255,255,.38);margin-top:3px;
+  display:flex;align-items:center;gap:5px;
+}
+.user-btn-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:rgba(255,255,255,.2);flex-shrink:0;
+}
+.user-btn-chevron{
+  width:24px;height:24px;border-radius:8px;flex-shrink:0;
+  background:rgba(255,255,255,.05);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:rgba(255,255,255,.25);
+  transition:background .15s,color .15s;
+}
+.user-btn:active .user-btn-chevron{background:rgba(74,158,255,.2);color:#4A9EFF;}
+
+/* ── PIN SCREEN ── */
+.pin-back-row{
+  width:100%;display:flex;align-items:center;margin-bottom:1.75rem;
+}
+.pin-back-btn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:7px 13px;
+  color:rgba(255,255,255,.7);cursor:pointer;font-size:13px;font-weight:600;
+  font-family:inherit;transition:all .15s;
+}
+.pin-back-btn:active{background:rgba(255,255,255,.14);}
+
+.pin-avatar-wrap{
+  width:72px;height:72px;border-radius:22px;
+  background:linear-gradient(135deg,#1A5FD4,#0B9E72);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:700;color:#fff;
+  box-shadow:0 8px 32px rgba(26,95,212,.4),0 0 0 1px rgba(255,255,255,.1);
+  margin-bottom:1rem;
+  animation:avatarIn .4s cubic-bezier(.34,1.6,.64,1);
+}
+@keyframes avatarIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+.pin-name{
+  font-size:20px;font-weight:700;color:#fff;letter-spacing:-.4px;
+  text-align:center;margin-bottom:4px;
+}
+.pin-hint{
+  font-size:12px;color:rgba(255,255,255,.4);text-align:center;
+  margin-bottom:2rem;font-weight:500;
+}
+.pin-hint strong{color:rgba(255,255,255,.7);font-weight:700;}
+
+/* PIN dots */
+.pin-dots{
+  display:flex;justify-content:center;gap:16px;margin-bottom:2rem;
+}
 .pin-dot{
-  width:14px;height:14px;border-radius:50%;
-  border:2px solid rgba(255,255,255,.25);background:transparent;
-  transition:all .15s;
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.18);background:transparent;
+  transition:all .2s cubic-bezier(.34,1.4,.64,1);
 }
-.pin-dot.filled{background:#4A9EFF;border-color:#4A9EFF;box-shadow:0 0 8px rgba(74,158,255,.5);}
-.pin-dot.error{background:#E84040;border-color:#E84040;animation:shake .4s ease;}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.pin-dot.filled{
+  background:#4A9EFF;border-color:#4A9EFF;
+  box-shadow:0 0 16px rgba(74,158,255,.7);
+  transform:scale(1.15);
+}
+.pin-dot.error{
+  background:#FF4444;border-color:#FF4444;
+  box-shadow:0 0 16px rgba(255,68,68,.6);
+  animation:shake .4s ease;
+}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* Numpad */
+.numpad{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;width:100%;max-width:290px;
+}
 .num-btn{
-  padding:16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.07);color:#fff;font-size:20px;font-weight:600;
-  cursor:pointer;text-align:center;
+  aspect-ratio:1;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.07);
+  color:#fff;font-size:22px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
   font-family:'IBM Plex Mono',monospace;
   -webkit-appearance:none;transition:all .12s;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
 }
-.num-btn:active{background:rgba(74,158,255,.3);border-color:rgba(74,158,255,.5);transform:scale(.93);}
-.num-btn.del{font-size:18px;color:rgba(255,255,255,.6);}
+.num-btn:active{
+  background:rgba(74,158,255,.3);
+  border-color:rgba(74,158,255,.6);
+  transform:scale(.88);
+  box-shadow:0 0 20px rgba(74,158,255,.4);
+}
+.num-btn.del{font-size:20px;color:rgba(255,255,255,.5);}
 .num-btn.empty{visibility:hidden;}
 .login-err{
-  font-size:13px;color:#FF6B6B;text-align:center;
-  font-weight:600;min-height:20px;margin-top:10px;
-  animation:alertIn .25s ease;
+  font-size:13px;color:#FF7070;text-align:center;
+  font-weight:700;min-height:22px;margin-top:16px;
+  letter-spacing:.2px;
 }
 
 /* ── TOP USER CHIP (when logged in) ── */
@@ -553,30 +708,52 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 </head>
 <body>
 
-<!-- ══ LOGIN SCREEN ══ -->
+<!-- ══ LOGIN SCREEN v3 ══ -->
 <div id="login-screen">
-  <div class="login-logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
-  <div class="login-title">ระบบบริหารจัดการคลังยา</div>
-  <div class="login-sub">PCU สะบ้าย้อย</div>
-  <div class="login-card">
-    <!-- Step 1: เลือกชื่อ -->
+  <div class="ls-steps">
+
+    <!-- ── STEP 1: เลือกชื่อ ── -->
     <div id="step-user">
-      <div class="pin-label" style="margin-bottom:12px;">เลือกชื่อของคุณ</div>
-      <div class="user-grid" id="user-grid"></div>
-    </div>
-    <!-- Step 2: กด PIN -->
-    <div id="step-pin" style="display:none;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;">
-        <button onclick="backToUserSelect()" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:20px;padding:0;line-height:1;">‹</button>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#fff;" id="pin-greeting">สวัสดี!</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.5);">กรอก PIN 4 หลัก</div>
+      <!-- Brand bar -->
+      <div class="ls-brand">
+        <div class="ls-logo-wrap">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <div class="ls-brand-text">
+          <div class="ls-title">คลังยา PCU สะบ้าย้อย</div>
+          <div class="ls-sub">ระบบบริหารจัดการยา</div>
         </div>
       </div>
-      <div class="pin-dots" id="pin-dots">
-        <div class="pin-dot"></div><div class="pin-dot"></div>
-        <div class="pin-dot"></div><div class="pin-dot"></div>
+      <!-- List header -->
+      <div class="ls-list-head">
+        <div class="ls-list-head-title">เลือกชื่อผู้ใช้งาน</div>
       </div>
+      <!-- User list -->
+      <div class="user-list" id="user-grid"></div>
+      <!-- bottom padding -->
+      <div style="height:1rem;"></div>
+    </div>
+
+    <!-- ── STEP 2: PIN ── -->
+    <div id="step-pin" style="display:none;">
+      <!-- back button -->
+      <div class="pin-back-row">
+        <button class="pin-back-btn" onclick="backToUserSelect()">
+          <span style="font-size:16px;line-height:1;">‹</span> เลือกใหม่
+        </button>
+      </div>
+      <!-- avatar -->
+      <div class="pin-avatar-wrap" id="pin-avatar">?</div>
+      <div class="pin-name" id="pin-greeting">สวัสดี</div>
+      <div class="pin-hint" id="pin-hint">กรอก<strong>ปี พ.ศ. เกิด</strong> 4 หลัก</div>
+      <!-- dots -->
+      <div class="pin-dots" id="pin-dots">
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+      </div>
+      <!-- numpad -->
       <div class="numpad">
         <button class="num-btn" onclick="pinPress('1')">1</button>
         <button class="num-btn" onclick="pinPress('2')">2</button>
@@ -592,10 +769,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         <button class="num-btn del" onclick="pinDel()">⌫</button>
       </div>
       <div class="login-err" id="login-err"></div>
-      <div style="margin-top:16px;text-align:center;">
-        <button onclick="clearAllPins()" style="background:none;border:none;color:rgba(255,255,255,.3);font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;">ล้างข้อมูล PIN ทั้งหมด (รีเซ็ต)</button>
-      </div>
     </div>
+
   </div>
 </div>
 
@@ -1665,22 +1840,22 @@ function clearLineLog(){lineLog2=[];renderLineLog();}
 
 
 // ══ LOGIN SYSTEM ══════════════════════════════════════════════
+// PIN = ปี พ.ศ. เกิด (4 หลัก) — ตายตัว ไม่เปลี่ยน
 const USERS=[
-  {id:'winas',    name:'นายวินัสนรรจ์ หมวกเปียะ',   short:'วินัสนรรจ์',  initial:'ว'},
-  {id:'saluma',   name:'นางสาวสาลูมา โต๊ะหัด',      short:'สาลูมา',     initial:'ส'},
-  {id:'phuang',   name:'นางสาวพวงผกา หลำหวัง',      short:'พวงผกา',     initial:'พ'},
-  {id:'hamida',   name:'นางสาวฮามีดะห์ กามิง',       short:'ฮามีดะห์',   initial:'ฮ'},
-  {id:'sawit',    name:'นางสาวสาวิตรี หมัดชูดชู',    short:'สาวิตรี',    initial:'ส'},
-  {id:'yusra',    name:'นางสาวยุสรอ หะยีอูมา',       short:'ยุสรอ',      initial:'ย'},
-  {id:'nurma',    name:'นางสาวนุรมา หมันหลิน',       short:'นุรมา',      initial:'น'},
-  {id:'thanayong',name:'นายธนายง ขุนฤทธิ์',          short:'ธนายง',      initial:'ธ'},
-  {id:'sirikan',  name:'นางสาวศิริกานต์ รัตนอุบล',   short:'ศิริกานต์',  initial:'ศ'},
+  {id:'winas',    name:'นายวินัสนรรจ์ หมวกเปียะ',   short:'วินัสนรรจ์',  initial:'ว', prefix:'นาย',     pin:'2529'},
+  {id:'saluma',   name:'นางสาวสาลูมา โต๊ะหัด',      short:'สาลูมา',     initial:'ส', prefix:'นางสาว',  pin:'2531'},
+  {id:'phuang',   name:'นางสาวพวงผกา หลำหวัง',      short:'พวงผกา',     initial:'พ', prefix:'นางสาว',  pin:'2531'},
+  {id:'hamida',   name:'นางสาวฮามีดะห์ กามิง',       short:'ฮามีดะห์',   initial:'ฮ', prefix:'นางสาว',  pin:'2530'},
+  {id:'sawit',    name:'นางสาวสาวิตรี หมัดชูดชู',    short:'สาวิตรี',    initial:'ส', prefix:'นางสาว',  pin:'2540'},
+  {id:'yusra',    name:'นางสาวยุสรอ หะยีอูมา',       short:'ยุสรอ',      initial:'ย', prefix:'นางสาว',  pin:'2539'},
+  {id:'nurma',    name:'นางสาวนุรมา หมันหลิน',       short:'นุรมา',      initial:'น', prefix:'นางสาว',  pin:'2544'},
+  {id:'thanayong',name:'นายธนายง ขุนฤทธิ์',          short:'ธนายง',      initial:'ธ', prefix:'นาย',     pin:'2524'},
+  {id:'sirikan',  name:'นางสาวศิริกานต์ รัตนอุบล',   short:'ศิริกานต์',  initial:'ศ', prefix:'นางสาว',  pin:'2543'},
 ];
-// Admin ใช้ PIN ตั้งต้น 1234 (reset ได้ใน admin panel)
-// User ทั่วไป: PIN ตั้งต้น 0000 (ต้องเปลี่ยนเมื่อ login ครั้งแรก)
-const DEFAULT_PIN='1234';
-const ADMIN_ID='winas'; // คนแรกเป็น admin
-const SESSION_HOURS=8;  // session หมดอายุ 8 ชม.
+// PIN = ปี พ.ศ. เกิด — ตายตัว ไม่สามารถเปลี่ยนได้
+const DEFAULT_PIN=null; // ไม่ใช้แล้ว — ดึงจาก USERS[].pin
+const ADMIN_ID='winas';
+const SESSION_HOURS=8;
 
 let currentUser=null; // {id,name,short,initial}
 let _pinBuffer='';
@@ -1689,8 +1864,12 @@ let _changePinStep=0; // 0=new, 1=confirm
 let _newPinTemp='';
 
 function getPinKey(userId){return 'pin_'+userId;}
-function getPin(userId){return localStorage.getItem(getPinKey(userId))||DEFAULT_PIN;}
-function setPin(userId,pin){localStorage.setItem(getPinKey(userId),pin);}
+// PIN = ปี พ.ศ. เกิด จาก USERS array — ไม่เปลี่ยน
+function getPin(userId){
+  const u=USERS.find(x=>x.id===userId);
+  return u?u.pin:'0000';
+}
+function setPin(userId,pin){/* PIN ตายตัว — ไม่บันทึก */}
 
 function getSession(){
   try{
@@ -1714,13 +1893,20 @@ function initLogin(){
     const u=USERS.find(u=>u.id===sess.userId);
     if(u){doLoginSuccess(u);return;}
   }
-  // render user grid
+  // render user list v3
+  const _uiColors=['ui-a','ui-b','ui-c','ui-d','ui-e','ui-f'];
   const grid=document.getElementById('user-grid');
   if(grid){
-    grid.innerHTML=USERS.map(u=>`
+    grid.innerHTML=USERS.map((u,i)=>`
       <button class="user-btn" onclick="selectUser('${u.id}')">
-        <div class="user-initial">${u.initial}</div>
-        ${u.short}
+        <div class="user-initial ${_uiColors[i%_uiColors.length]}">${u.initial}</div>
+        <div class="user-btn-info">
+          <div class="user-btn-name">${u.short}</div>
+          <div class="user-btn-role">
+            <span class="user-btn-dot"></span>${u.prefix||''}
+          </div>
+        </div>
+        <div class="user-btn-chevron">›</div>
       </button>`).join('');
   }
   document.getElementById('login-screen').classList.remove('hidden');
@@ -1732,9 +1918,18 @@ function selectUser(userId){
   currentUser=u;
   _pinBuffer='';
   _pinTarget='login';
-  document.getElementById('pin-greeting').textContent='สวัสดี, '+u.short;
+  // อัปเดต PIN panel
+  document.getElementById('pin-greeting').textContent=u.short;
+  document.getElementById('pin-hint').innerHTML='กรอก<strong style="color:rgba(255,255,255,.8)">ปี พ.ศ. เกิด</strong> 4 หลัก';
+  const av=document.getElementById('pin-avatar');
+  if(av){
+    av.textContent=u.initial;
+    const idx=USERS.indexOf(u);
+    const cols=['ui-a','ui-b','ui-c','ui-d','ui-e','ui-f'];
+    av.className='pin-avatar-wrap '+cols[idx%cols.length];
+  }
   document.getElementById('step-user').style.display='none';
-  document.getElementById('step-pin').style.display='block';
+  document.getElementById('step-pin').style.display='flex';
   document.getElementById('login-err').textContent='';
   updatePinDots();
 }
@@ -1744,6 +1939,7 @@ function backToUserSelect(){
   document.getElementById('step-user').style.display='block';
   document.getElementById('step-pin').style.display='none';
   document.getElementById('login-err').textContent='';
+  updatePinDots();
 }
 
 function pinPress(d){
@@ -1774,50 +1970,17 @@ function pinError(msg){
 }
 
 function checkPin(){
-  if(_pinTarget==='login'){
-    const stored=getPin(currentUser.id);
-    if(_pinBuffer===stored){
-      // check first time (default PIN)
-      if(stored===DEFAULT_PIN){
-        // force change PIN
-        document.getElementById('login-err').textContent='';
-        showChangePinUI();
-      }else{
-        doLoginSuccess(currentUser);
-      }
-    }else{
-      pinError('PIN ไม่ถูกต้อง ลองใหม่อีกครั้ง');
-    }
-  }else if(_pinTarget==='change'){
-    if(_changePinStep===0){
-      _newPinTemp=_pinBuffer;
-      _changePinStep=1;
-      _pinBuffer='';
-      document.getElementById('pin-greeting').textContent='ยืนยัน PIN ใหม่อีกครั้ง';
-      document.getElementById('login-err').textContent='';
-      updatePinDots();
-    }else{
-      if(_pinBuffer===_newPinTemp){
-        setPin(currentUser.id,_pinBuffer);
-        document.getElementById('login-err').textContent='';
-        doLoginSuccess(currentUser);
-      }else{
-        _changePinStep=0;_newPinTemp='';
-        pinError('PIN ไม่ตรงกัน ลองใหม่');
-        setTimeout(()=>{
-          document.getElementById('pin-greeting').textContent='ตั้ง PIN ใหม่ 4 หลัก';
-        },800);
-      }
-    }
+  // PIN = ปี พ.ศ. เกิด — ตายตัว
+  const stored=getPin(currentUser.id);
+  if(_pinBuffer===stored){
+    document.getElementById('login-err').textContent='';
+    doLoginSuccess(currentUser);
+  }else{
+    pinError('ปี พ.ศ. เกิดไม่ถูกต้อง ลองใหม่');
   }
 }
 
-function showChangePinUI(){
-  _pinTarget='change';_changePinStep=0;_newPinTemp='';_pinBuffer='';
-  document.getElementById('pin-greeting').textContent='ตั้ง PIN ใหม่ 4 หลัก';
-  document.getElementById('login-err').textContent='ครั้งแรก — กรุณาตั้ง PIN ใหม่ให้ตัวเอง (จะใช้แทน 1234)';
-  updatePinDots();
-}
+function showChangePinUI(){/* PIN ตายตัว — ไม่ใช้ */}
 
 function doLoginSuccess(user){
   currentUser=user;
@@ -1858,10 +2021,14 @@ function logout(){
   document.getElementById('login-err').textContent='';
   const grid=document.getElementById('user-grid');
   if(grid){
-    grid.innerHTML=USERS.map(u=>`
+    grid.innerHTML=USERS.map((u,i)=>`
       <button class="user-btn" onclick="selectUser('${u.id}')">
-        <div class="user-initial">${u.initial}</div>
-        ${u.short}
+        <div class="user-initial ${['ui-a','ui-b','ui-c','ui-d','ui-e','ui-f'][i%6]}">${u.initial}</div>
+        <div class="user-btn-info">
+          <div class="user-btn-name">${u.short}</div>
+          <div class="user-btn-role"><span class="user-btn-dot"></span>${u.prefix||''}</div>
+        </div>
+        <div class="user-btn-chevron">›</div>
       </button>`).join('');
   }
   document.getElementById('login-screen').classList.remove('hidden');
