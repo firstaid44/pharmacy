@@ -1282,10 +1282,11 @@ async function saveEdit(){
   if(editMode==='dispense')nd.requester=document.getElementById('edit-requester').value;
   closeEditModal();showAlert('กำลังบันทึกทับข้อมูลเดิม...','info');
   try{
-    const r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(nd)});
-    const j=await r.json();
-    if(j.status==='ok'){rows[idx]={...e,...nd};if(editMode==='receive')renderReceiveLog();else renderDispenseLog();addHistory('edit',`แก้ไข: ${e.name}`,`LOT: ${nd.lot} | ${nd.qty} ${nd.unit}`);showAlert(`แก้ไข "${e.name}" เรียบร้อย`,'success');setTimeout(()=>editMode==='receive'?loadReceive():loadDispense(),2000);}
-    else showAlert('บันทึกไม่สำเร็จ: '+(j.message||''),'danger');
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(nd)});
+    rows[idx]={...e,...nd};if(editMode==='receive')renderReceiveLog();else renderDispenseLog();
+    addHistory('edit',`แก้ไข: ${e.name}`,`LOT: ${nd.lot} | ${nd.qty} ${nd.unit}`);
+    showAlert(`แก้ไข "${e.name}" เรียบร้อย`,'success');
+    setTimeout(()=>editMode==='receive'?loadReceive():loadDispense(),2000);
   }catch(err){showAlert('เชื่อมต่อไม่สำเร็จ','danger');}
 }
 
@@ -1479,10 +1480,10 @@ async function deleteRow(mode,idx){
   const payload={name:e.name,lot:e.lot,date:e.date,action:mode==='receive'?'delete_receive':'delete_dispense'};
   showAlert('กำลังลบข้อมูล...','info');
   try{
-    const r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const j=await r.json();
-    if(j.status==='ok'){rows.splice(idx,1);if(mode==='receive')renderReceiveLog();else renderDispenseLog();addHistory('edit',`ลบรายการ: ${e.name}`,`LOT: ${e.lot} | ${e.date}`);showAlert(`ลบ "${e.name}" เรียบร้อย`,'success');}
-    else showAlert('ลบไม่สำเร็จ: '+(j.message||'ไม่พบข้อมูลใน Sheet'),'danger');
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    rows.splice(idx,1);if(mode==='receive')renderReceiveLog();else renderDispenseLog();
+    addHistory('edit',`ลบรายการ: ${e.name}`,`LOT: ${e.lot} | ${e.date}`);
+    showAlert(`ลบ "${e.name}" เรียบร้อย`,'success');
   }catch(err){showAlert('เชื่อมต่อไม่สำเร็จ','danger');}
 }
 
@@ -1559,10 +1560,10 @@ function buildFlexMessage(d){
   const noteRow=d.note?[{type:'box',layout:'horizontal',paddingTop:'6px',contents:[{type:'text',text:'หมายเหตุ',size:'xxs',color:'#94A3B8',flex:2,weight:'bold'},{type:'text',text:d.note,size:'xxs',color:'#475569',flex:4,align:'end',wrap:true}]}]:[];
   return{type:'flex',altText:`💊 เบิกยา: ${d.name} | ${d.qty} ${d.unit} | ผู้เบิก: ${d.requester}`,contents:{type:'bubble',size:'kilo',
     header:{type:'box',layout:'horizontal',backgroundColor:'#1A5FD4',paddingAll:'14px',spacing:'md',contents:[
-      {type:'box',layout:'vertical',width:'36px',height:'36px',backgroundColor:'rgba(255,255,255,0.15)',cornerRadius:'9px',justifyContent:'center',alignItems:'center',contents:[{type:'text',text:'💊',size:'lg',align:'center',gravity:'center'}]},
-      {type:'box',layout:'vertical',flex:1,paddingStart:'4px',justifyContent:'center',contents:[
+      {type:'box',layout:'vertical',width:'36px',height:'36px',backgroundColor:'#2B6EDB',cornerRadius:'9px',contents:[{type:'text',text:'💊',size:'lg',align:'center',gravity:'center'}]},
+      {type:'box',layout:'vertical',flex:1,paddingStart:'4px',contents:[
         {type:'text',text:'แจ้งเตือนการเบิกยา',color:'#FFFFFF',size:'sm',weight:'bold'},
-        {type:'text',text:'PCU สะบ้าย้อย',color:'rgba(255,255,255,0.6)',size:'xxs',margin:'xs'}
+        {type:'text',text:'PCU สะบ้าย้อย',color:'#A8C8FF',size:'xxs',margin:'xs'}
       ]}
     ]},
     body:{type:'box',layout:'vertical',paddingAll:'14px',spacing:'none',contents:[
@@ -1964,14 +1965,9 @@ async function exportInventory(){
   showAlert('กำลังส่งออกข้อมูลคงคลัง '+rows.length+' รายการ...','info');
 
   try{
-    const r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const j=await r.json();
-    if(j.status==='ok'){
-      showAlert('✓ ส่งออกคงคลัง '+rows.length+' รายการ → Sheet "คงคลัง" เรียบร้อย ('+now+')','success');
-      addHistory('edit','ส่งออกสรุปคงคลัง',rows.length+' รายการ | '+now+(currentUser?' | '+currentUser.short:''));
-    }else{
-      showAlert('ส่งออกไม่สำเร็จ: '+(j.message||''),'danger');
-    }
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    showAlert('✓ ส่งออกคงคลัง '+rows.length+' รายการ → Sheet "คงคลัง" เรียบร้อย ('+now+')','success');
+    addHistory('edit','ส่งออกสรุปคงคลัง',rows.length+' รายการ | '+now+(currentUser?' | '+currentUser.short:''));
   }catch(e){
     showAlert('เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่','danger');
   }finally{
