@@ -1260,7 +1260,9 @@ function openEditModal(mode,idx){
   document.getElementById('edit-modal-title').textContent=mode==='receive'?'แก้ไขรายการรับยา':'แก้ไขรายการเบิกยา';
   document.getElementById('edit-name').value=e.name;
   document.getElementById('edit-lot').value=e.lot;
-  document.getElementById('edit-exp').value=(()=>{if(!e.exp)return '';if(e.exp.includes('/')){const p=e.exp.split('/');return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}return e.exp.includes('-')?e.exp:'';})();
+  const expInput=document.getElementById('edit-exp');
+  expInput.dataset.original=e.exp||'';
+  expInput.value=parseExpToInputVal(e.exp||'');
   document.getElementById('edit-qty').value=e.qty;
   document.getElementById('edit-unit').value=e.unit;
   document.getElementById('edit-note').value=e.note||'';
@@ -1276,8 +1278,16 @@ async function saveEdit(){
   const oDate=document.getElementById('edit-original-date').value;
   const rows=editMode==='receive'?receiveRows:dispenseRows;
   const e=rows[idx];
-  const expRaw=document.getElementById('edit-exp').value;
-  const exp=expRaw?expRaw.split('-').reverse().join('/'):'';
+  const expInput=document.getElementById('edit-exp');
+  let expVal=expInput.value;
+  // ถ้าช่องวันหมดอายุว่าง → ดึงค่าเดิมกลับมา
+  if(!expVal){
+    const origExp=expInput.dataset.original||e.exp||'';
+    expVal=parseExpToInputVal(origExp);
+    if(!expVal){showAlert('กรุณาระบุวันหมดอายุ','danger');return;}
+    expInput.value=expVal;
+  }
+  const exp=expVal.split('-').reverse().join('/');
   const nd={...e,lot:document.getElementById('edit-lot').value,exp,qty:document.getElementById('edit-qty').value,unit:document.getElementById('edit-unit').value,note:document.getElementById('edit-note').value,originalLot:oLot,originalDate:oDate,action:editMode==='receive'?'edit_receive':'edit_dispense'};
   if(editMode==='dispense')nd.requester=document.getElementById('edit-requester').value;
   closeEditModal();showAlert('กำลังบันทึกทับข้อมูลเดิม...','info');
@@ -1288,6 +1298,14 @@ async function saveEdit(){
     showAlert(`แก้ไข "${e.name}" เรียบร้อย`,'success');
     setTimeout(()=>editMode==='receive'?loadReceive():loadDispense(),2000);
   }catch(err){showAlert('เชื่อมต่อไม่สำเร็จ','danger');}
+}
+// แปลงค่า exp ทุกรูปแบบ → yyyy-MM-dd สำหรับ input[type=date]
+function parseExpToInputVal(raw){
+  if(!raw||raw==='—'||raw==='-')return '';
+  if(raw.includes('/')){const p=raw.split('/');if(p.length===3&&p[2].length===4)return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw;
+  try{const dt=new Date(raw);if(!isNaN(dt.getTime()))return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}catch(x){}
+  return '';
 }
 
 function searchDrug(val,boxId){
