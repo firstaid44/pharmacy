@@ -44,8 +44,8 @@ body::before{
 /* ── HEADER ── */
 .header{
 background:rgba(255,255,255,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-padding:calc(.875rem + env(safe-area-inset-top)) 1rem .875rem;
-display:flex;align-items:center;gap:12px;
+padding:calc(.75rem + env(safe-area-inset-top)) 1rem .75rem;
+display:flex;align-items:center;gap:10px;
 border-bottom:1px solid var(–border);position:sticky;top:0;z-index:200;
 }
 .logo{
@@ -54,12 +54,14 @@ border-radius:12px;display:flex;align-items:center;justify-content:center;flex-s
 box-shadow:0 4px 12px rgba(26,95,212,.28);
 }
 .logo svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;}
-.app-title{font-size:15px;font-weight:700;color:var(–text1);letter-spacing:-.3px;}
-.app-sub{font-size:11px;color:var(–text3);margin-top:1px;font-weight:400;}
+.header-text{flex:1;min-width:0;}
+.app-title{font-size:13px;font-weight:700;color:var(–text1);letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.app-sub{font-size:10px;color:var(–text3);margin-top:1px;font-weight:400;}
 .conn-chip{
 display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;
 background:var(–surface2);border:1px solid var(–border);
 font-size:11px;font-weight:600;color:var(–text2);white-space:nowrap;transition:all .3s;
+flex-shrink:0;
 }
 .conn-dot{width:7px;height:7px;border-radius:50%;background:#FFC107;flex-shrink:0;transition:background .3s;}
 .conn-dot.ok{background:var(–teal);box-shadow:0 0 0 3px rgba(11,158,114,.15);}
@@ -771,6 +773,7 @@ display:flex;align-items:center;gap:7px;cursor:pointer;
 padding:4px 10px 4px 6px;border-radius:20px;
 background:var(–surface2);border:1px solid var(–border);
 transition:all .15s;
+flex-shrink:0;margin-left:auto;
 }
 .user-chip:active{opacity:.7;}
 .user-avatar{
@@ -1069,7 +1072,7 @@ border-bottom:1px solid var(–border);
       <div class="app-sub">ระบบบริหารจัดการยา</div>
     </div>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
-    <div class="user-chip" id="header-user-chip" onclick="openUserMenu()" style="display:none;">
+    <div class="user-chip" id="header-user-chip" onclick="openUserMenu()" style="display:none;margin-left:auto;">
       <div class="user-avatar" id="header-avatar">?</div>
       <div class="user-name-short" id="header-name">—</div>
     </div>
