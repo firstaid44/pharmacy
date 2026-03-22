@@ -445,7 +445,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 /* ══ LOGIN SCREEN — v3 ══════════════════════════════════════ */
 #login-screen{
   position:fixed;inset:0;z-index:1000;overflow:hidden;
-  display:flex;flex-direction:column;
+  display:flex;flex-direction:column;align-items:center;
   font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
   background:#060D18;
 }
@@ -475,14 +475,17 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 
 /* ── STEP CONTAINER ── */
 .ls-steps{
-  flex:1;display:flex;flex-direction:column;
+  flex:1;display:flex;flex-direction:column;align-items:center;
   overflow:hidden;position:relative;z-index:2;
+  width:100%;
 }
 
 /* ── STEP 1: USER SELECT ── */
 #step-user{
+  width:100%;max-width:420px;
   flex:1;display:flex;flex-direction:column;
-  padding:0 0 calc(env(safe-area-inset-bottom)+1rem);
+  align-items:center;justify-content:center;
+  padding:calc(env(safe-area-inset-top)+1rem) 1.5rem calc(env(safe-area-inset-bottom)+1.5rem);
   overflow-y:auto;-webkit-overflow-scrolling:touch;
   animation:stepIn .35s cubic-bezier(.34,1.2,.64,1);
 }
@@ -495,29 +498,33 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 }
 @keyframes stepIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
 
-/* ── TOP BRAND BAR ── */
-.ls-brand{
-  padding:calc(env(safe-area-inset-top)+1.25rem) 1.5rem 1.25rem;
-  display:flex;align-items:center;gap:14px;
-  border-bottom:1px solid rgba(255,255,255,.05);
-  flex-shrink:0;
-}
-.ls-logo-wrap{
-  width:46px;height:46px;border-radius:14px;flex-shrink:0;
-  background:linear-gradient(135deg,#1A5FD4,#0B9E72);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 20px rgba(26,95,212,.5);
+/* ── CENTER LOGO BLOCK ── */
+.ls-center-logo{
+  display:flex;flex-direction:column;align-items:center;
+  margin-bottom:2rem;
   animation:logoPop .55s cubic-bezier(.34,1.6,.64,1) both;
 }
-@keyframes logoPop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
-.ls-logo-wrap svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.3;}
-.ls-brand-text{}
-.ls-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.3px;line-height:1.2;}
-.ls-sub{font-size:11px;color:rgba(255,255,255,.35);font-weight:500;margin-top:2px;}
+@keyframes logoPop{from{opacity:0;transform:scale(.7) translateY(-16px)}to{opacity:1;transform:none}}
+
+/* pill logo SVG wrapper */
+.ls-pill-logo{
+  width:120px;height:120px;
+  margin-bottom:1.1rem;
+  filter:drop-shadow(0 8px 24px rgba(26,95,212,.45));
+}
+
+.ls-title{
+  font-size:20px;font-weight:800;color:#fff;
+  letter-spacing:-.4px;line-height:1.25;text-align:center;
+}
+.ls-sub{
+  font-size:13px;color:rgba(255,255,255,.5);
+  font-weight:500;margin-top:4px;text-align:center;
+}
 
 /* ── DROPDOWN USER SELECT ── */
 .ls-select-wrap{
-  padding:1.5rem 1.25rem 0;
+  width:100%;max-width:380px;
   position:relative;z-index:10;
 }
 .ls-select-label{
@@ -759,22 +766,84 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 
     <!-- ── STEP 1: เลือกชื่อ ── -->
     <div id="step-user">
-      <!-- Brand bar -->
-      <div class="ls-brand">
-        <div class="ls-logo-wrap">
-          <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        </div>
-        <div class="ls-brand-text">
-          <div class="ls-title">ระบบบริหารจัดการคลังยา</div>
-          <div class="ls-sub">PCU สะบ้าย้อย</div>
-        </div>
+
+      <!-- Center Logo Block -->
+      <div class="ls-center-logo">
+        <!-- Pill Logo SVG (inspired by capsule drug icon) -->
+        <svg class="ls-pill-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Shadow/glow -->
+          <ellipse cx="100" cy="185" rx="55" ry="8" fill="rgba(0,0,0,.25)"/>
+
+          <!-- Capsule left half (amber/gold) -->
+          <path d="M62 80 Q62 48 100 48 L100 132 Q62 132 62 100 Z" fill="#F59E0B"/>
+          <path d="M62 80 Q62 48 100 48 L100 132 Q62 132 62 100 Z" fill="url(#goldGrad)"/>
+          <!-- Capsule right half (red) -->
+          <path d="M138 80 Q138 48 100 48 L100 132 Q138 132 138 100 Z" fill="#EF4444"/>
+          <path d="M138 80 Q138 48 100 48 L100 132 Q138 132 138 100 Z" fill="url(#redGrad)"/>
+          <!-- Capsule divider line -->
+          <line x1="100" y1="48" x2="100" y2="132" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+          <!-- Capsule highlight -->
+          <ellipse cx="83" cy="68" rx="10" ry="6" fill="rgba(255,255,255,.3)" transform="rotate(-20 83 68)"/>
+
+          <!-- Plus signs floating -->
+          <!-- top center red -->
+          <g fill="#EF4444">
+            <rect x="96" y="20" width="8" height="24" rx="4"/>
+            <rect x="88" y="28" width="24" height="8" rx="4"/>
+          </g>
+          <!-- top-left amber -->
+          <g fill="#F59E0B" opacity=".85">
+            <rect x="50" y="44" width="6" height="18" rx="3"/>
+            <rect x="43" y="51" width="20" height="6" rx="3"/>
+          </g>
+          <!-- top-right green -->
+          <g fill="#10B981" opacity=".85">
+            <rect x="144" y="38" width="6" height="18" rx="3"/>
+            <rect x="137" y="45" width="20" height="6" rx="3"/>
+          </g>
+          <!-- small x marks -->
+          <g stroke="#10B981" stroke-width="3" stroke-linecap="round" opacity=".7">
+            <line x1="68" y1="114" x2="76" y2="122"/>
+            <line x1="76" y1="114" x2="68" y2="122"/>
+          </g>
+          <g stroke="#F59E0B" stroke-width="3" stroke-linecap="round" opacity=".7">
+            <line x1="124" y1="50" x2="132" y2="58"/>
+            <line x1="132" y1="50" x2="124" y2="58"/>
+          </g>
+          <g stroke="#EF4444" stroke-width="3" stroke-linecap="round" opacity=".6">
+            <line x1="56" y1="140" x2="64" y2="148"/>
+            <line x1="64" y1="140" x2="56" y2="148"/>
+          </g>
+
+          <!-- Text: DRUG Stock -->
+          <text x="100" y="158" text-anchor="middle" font-family="'IBM Plex Mono', Arial Black, sans-serif"
+            font-size="20" font-weight="900" fill="#1E2D40" letter-spacing="2">DRUG Stock</text>
+          <!-- Text: PCU Sabayou -->
+          <text x="100" y="176" text-anchor="middle" font-family="'IBM Plex Mono', Arial, sans-serif"
+            font-size="11" font-weight="600" fill="#4A5568" letter-spacing="1.5">PCU Sabayou</text>
+
+          <!-- Gradients -->
+          <defs>
+            <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FCD34D"/>
+              <stop offset="100%" stop-color="#D97706"/>
+            </linearGradient>
+            <linearGradient id="redGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#F87171"/>
+              <stop offset="100%" stop-color="#DC2626"/>
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <!-- App name below logo -->
+        <div class="ls-title">ระบบบริหารจัดการคลังยา</div>
+        <div class="ls-sub">PCU สะบ้าย้อย</div>
       </div>
 
       <!-- Dropdown select -->
       <div class="ls-select-wrap">
         <span class="ls-select-label">ผู้ใช้งาน</span>
         <div class="ls-select-box" id="user-grid">
-          <!-- trigger button -->
           <button class="ls-select-trigger" id="ls-trigger" onclick="toggleDropdown()" type="button">
             <div class="ls-trigger-avatar ui-default" id="ls-trigger-avatar">👤</div>
             <div class="ls-trigger-text">
@@ -786,16 +855,13 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
               <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
           </button>
-          <!-- dropdown panel -->
           <div class="ls-dropdown" id="ls-dropdown"></div>
         </div>
-
-        <!-- confirm button -->
         <button class="ls-confirm-btn" id="ls-confirm-btn" onclick="confirmUserSelect()" type="button">
           เข้าสู่ระบบ →
         </button>
       </div>
-      <div style="height:2rem;"></div>
+
     </div>
 
     <!-- ── STEP 2: PIN ── -->
@@ -929,7 +995,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   <div class="header">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
-      <div class="app-title">ระบบบริหารจัดการคลังยา</div>
+      <div class="app-title">ระบบบริหารจัดการ</div>
       <div class="app-sub">PCU สะบ้าย้อย</div>
     </div>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
