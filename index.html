@@ -1063,8 +1063,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   <div class="header">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
-      <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา</div>
+      <div class="app-title">ระบบบริหารจัดการคลังยา</div>
+      <div class="app-sub">PCU สะบ้าย้อย</div>
     </div>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
     <div class="user-chip" id="header-user-chip" onclick="openUserMenu()" style="display:none;">
@@ -1382,6 +1382,7 @@ function fmtExp(e){if(!e||e==='—')return '—';try{if(e.includes('/')){const p
 function parseExpDate(e){if(!e)return null;try{let d,m,y;if(e.includes('/')){const p=e.split('/');if(p.length!==3)return null;d=parseInt(p[0]);m=parseInt(p[1])-1;y=parseInt(p[2]);}else if(e.includes('-')){const p=e.split('-');if(p.length!==3)return null;y=parseInt(p[0]);m=parseInt(p[1])-1;d=parseInt(p[2]);}else return null;if(isNaN(d)||isNaN(m)||isNaN(y))return null;return new Date(y,m,d,0,0,0,0);}catch(x){return null;}}
 
 function switchTab(tab,el){
+  if(_quickScanMode&&tab!=='dispense')return; // block ใน quick scan mode
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
@@ -2453,27 +2454,35 @@ function quickScanDispense(){
   // โหลดข้อมูลที่จำเป็น
   loadReceive();
   loadDispense();
-  // ไปที่แท็บเบิกยาออกทันที
-  const dispenseBtn=document.querySelector('.nav-item:nth-child(2)');
-  if(dispenseBtn)switchTab('dispense',dispenseBtn);
-  // lock nav — ซ่อน/disable แท็บอื่น
+  // นำทางไปแท็บเบิกยาออกทันที (เรียก internal โดยตรง ไม่ผ่าน switchTab)
+  _goToDispenseTab();
+  // lock nav — แท็บอื่น dim + กดไม่ได้
   _applyNavLock();
   // แสดง banner
   _showQuickScanBanner();
-  // เปิดสแกนเนอร์ทันที (d-name field)
-  setTimeout(()=>openScanner('d-name'),400);
+}
+
+// ไปแท็บ dispense โดยตรง ไม่ผ่าน switchTab (หลีกเลี่ยง recursive)
+function _goToDispenseTab(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-dispense').classList.add('active');
+  const dispenseBtn=document.querySelector('.nav-item:nth-child(2)');
+  if(dispenseBtn)dispenseBtn.classList.add('active');
 }
 
 function _applyNavLock(){
-  // ทำให้แท็บอื่น (ไม่ใช่ dispense) กดไม่ได้
   document.querySelectorAll('.nav-item').forEach((btn,i)=>{
     if(i===1){
-      // dispense tab (index 1) — ยังใช้งานได้
+      // dispense tab — ใช้งานได้ปกติ
       btn.style.opacity='1';
       btn.style.pointerEvents='auto';
+      btn.style.filter='none';
     }else{
-      btn.style.opacity='.2';
+      // แท็บอื่น — dim ลง + กดไม่ได้
+      btn.style.opacity='.18';
       btn.style.pointerEvents='none';
+      btn.style.filter='grayscale(1)';
     }
   });
 }
@@ -2482,11 +2491,11 @@ function _removeNavLock(){
   document.querySelectorAll('.nav-item').forEach(btn=>{
     btn.style.opacity='';
     btn.style.pointerEvents='';
+    btn.style.filter='';
   });
 }
 
 function _showQuickScanBanner(){
-  // สร้าง banner แจ้งเตือนโหมด quick scan
   const existing=document.getElementById('qs-banner');
   if(existing)existing.remove();
   const banner=document.createElement('div');
@@ -2495,34 +2504,37 @@ function _showQuickScanBanner(){
     position:fixed;top:0;left:50%;transform:translateX(-50%);
     width:100%;max-width:430px;
     background:linear-gradient(135deg,#065F46,#047857);
-    color:#fff;padding:10px 16px;
+    color:#fff;
+    padding:calc(8px + env(safe-area-inset-top)) 16px 8px;
     display:flex;align-items:center;justify-content:space-between;gap:10px;
-    z-index:300;font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+    z-index:250;font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
     font-size:12px;font-weight:700;
-    padding-top:calc(10px + env(safe-area-inset-top));
-    box-shadow:0 2px 12px rgba(0,0,0,.2);
+    box-shadow:0 2px 12px rgba(0,0,0,.25);
   `;
   banner.innerHTML=`
     <div style="display:flex;align-items:center;gap:8px;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <rect x="3" y="3" width="7" height="7" rx="1"/>
         <rect x="14" y="3" width="7" height="7" rx="1"/>
         <rect x="3" y="14" width="7" height="7" rx="1"/>
         <rect x="14" y="14" width="3" height="3"/>
         <rect x="18" y="18" width="3" height="3"/>
       </svg>
-      <span>โหมดสแกน QR — เฉพาะแท็บเบิกยา</span>
+      <span>โหมดสแกน QR — เฉพาะแท็บเบิกยาออก</span>
     </div>
     <button onclick="exitQuickScanMode()" style="
-      background:rgba(255,255,255,.2);border:none;border-radius:8px;
-      color:#fff;font-size:11px;font-weight:700;padding:5px 10px;
-      cursor:pointer;font-family:inherit;white-space:nowrap;
+      background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25);
+      border-radius:8px;color:#fff;font-size:11px;font-weight:700;
+      padding:5px 10px;cursor:pointer;font-family:inherit;white-space:nowrap;
     ">✕ ออก</button>
   `;
   document.body.appendChild(banner);
-  // เลื่อน header ลงมาให้หลีกทาง banner
+  // เลื่อน header ลงให้พ้น banner (~34px)
   const header=document.querySelector('.header');
-  if(header)header.style.top='calc(34px + env(safe-area-inset-top))';
+  if(header)header.style.top='34px';
+  // เลื่อน alert-box ตาม
+  const alertBox=document.getElementById('alert-box');
+  if(alertBox)alertBox.style.top='calc(34px + 62px)';
 }
 
 function _removeQuickScanBanner(){
@@ -2530,6 +2542,8 @@ function _removeQuickScanBanner(){
   if(b)b.remove();
   const header=document.querySelector('.header');
   if(header)header.style.top='';
+  const alertBox=document.getElementById('alert-box');
+  if(alertBox)alertBox.style.top='';
 }
 
 function exitQuickScanMode(){
@@ -2538,28 +2552,15 @@ function exitQuickScanMode(){
   _removeQuickScanBanner();
   // กลับหน้า login
   document.getElementById('login-screen').classList.remove('hidden');
-  // reset step
   document.getElementById('step-user').style.display='block';
   document.getElementById('step-pin').style.display='none';
   _renderDropdown();
   _resetTrigger();
   window._pendingUserId=null;
-  // hide user chip
   const chip=document.getElementById('header-user-chip');
   if(chip)chip.style.display='none';
   const connChip=document.querySelector('.conn-chip');
   if(connChip)connChip.style.display='flex';
-}
-
-// Override switchTab เพื่อ block ถ้าอยู่ใน quick scan mode
-const _origSwitchTab=switchTab;
-function switchTab(tab,el){
-  if(_quickScanMode&&tab!=='dispense'){
-    // แสดงแจ้งเตือนสั้นๆ
-    showAlert('โหมดสแกน QR — สามารถใช้เฉพาะแท็บ "เบิกยาออก" เท่านั้น','warning');
-    return;
-  }
-  _origSwitchTab(tab,el);
 }
 
 // ── START ─────────────────────────────────────────────────────
