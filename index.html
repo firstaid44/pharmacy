@@ -592,6 +592,9 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         <button class="num-btn del" onclick="pinDel()">⌫</button>
       </div>
       <div class="login-err" id="login-err"></div>
+      <div style="margin-top:16px;text-align:center;">
+        <button onclick="clearAllPins()" style="background:none;border:none;color:rgba(255,255,255,.3);font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;">ล้างข้อมูล PIN ทั้งหมด (รีเซ็ต)</button>
+      </div>
     </div>
   </div>
 </div>
@@ -844,7 +847,10 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
       </div>
       <div id="stock-expiring-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
     </div>
-    <div class="section-hd"><span class="section-title">สรุปยาคงเหลือรายตัว</span></div>
+    <div class="section-hd">
+      <span class="section-title">สรุปยาคงเหลือรายตัว</span>
+      <button class="section-action" id="export-btn" onclick="exportInventory()" style="background:var(--teal-l);color:var(--teal);border-color:rgba(11,158,114,.2);">⬆ ส่งออกคงคลัง</button>
+    </div>
     <div class="card" id="stock-summary-card"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
     <div class="section-hd" style="margin-top:4px;"><span class="section-title">แยกกลุ่มตามวันหมดอายุ</span></div>
     <div class="card" id="stock-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
@@ -988,7 +994,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyiH9Es7y5RfKU31kMaIikz6BTjPCb18WeX_5N1QaNSoomp_MEcT1R6eds_vfPNsoOy/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyvfohKGqK9svtBMg50BcM8LTZVATzZO7SmeGy3v0lXPJAAI6IuyvlU-mPuR1iYDbmY/exec';
 const drugDB=[["1000016","ALLOPURINOL 100 มก."],["1000122","Enalapril 5 mg. (E5)/TAB"],["1000184","METFORMIN 500 MG./TAB"],["1000284","Spironolactone 25 MG./TAB กส."],["1019001","GLIPIZIDE 5 MG. /TAB กส."],["110104480112","FOLIC ACID 5MG./TAB"],["1419041","GEMfibrozil 300 MG./CAPSULES"],["1440105","AMLODIPINE 5 MG./TAB"],["1460151","ENALAPRIL 20 MG./TAB"],["1500016","Metoprolol 100 MG./TAB กส."],["1500035","METOCLOPRAMIDE 10 mg TAB"],["1530008","ASPIRIN 81 MG./TAB. กส."],["1ALB","ALBENDAZOLE 200 MG./TAB (San San)"],["1AMIT","AMITRIPTYLINE10 MG./ TAB(HK)"],["1AMO","AMOXICILLIN 500 MG./CAPSULES (องค์การเภสัชMOX)"],["1AMX","Amoxicillin 250 mg./cap (องค์การเภสัชMOX)"],["1BUF","IBUPROFEN 400 MG./TAB(I-Profen)"],["1CAL","CALCIUM 1250 MG. tab.(Cal-star)"],["1CET","PARACETAMOL 500 MG./TAB(Masapara)"],["1DCL","DICLOXACILLIN 250 MG. /CAPSULES"],["1DEXT","DEXTROMETHORPHANE"],["1DIC","DICLOFENAC SODIUM 25 MG./TAB"],["1DIM","DIMENHYDRENATE 50 MG."],["1DOM","DOMPERIDONE10 MG./TAB"],["1FBC","FERROUS FUMARATE 200 MG./TAB กส."],["1GABA","GABAPENTIN 100 mg GPO"],["1HOC","HYOSCINE-N-BUTYLBROMIDE 10 .MG/TAB(VS)"],["1lDC","LIDOCAIN 2 %"],["1LST2","LOSARTAN 50 MG.(Berlin)"],["1MET","METRONIDAZOLE 400 MG./TAB"],["1MTV","MTV (MULTIVITAMIN) TAB กส."],["1NAPRO","NAPROXEN 250 MG TAB(Nasin)"],["1NOC","NORFLOXACIN 400 MG./TAB กส."],["1OME","OMEPRAZOLE 20 MG./CAPSULES"],["1ORS","ORS เด็ก(baby-LyteH)"],["1PARA325","PARACETAMOL 325 MG(AU)"],["1STC","SIMETHICONE 80 MG/TAB"],["1TFD","TRIFERDINE TAB. กส."],["1VIB","VITAMIN B COMPLEX TAB"],["1VIC","VITAMIN C 50 MG CIBIC-50"],["2DOMP","DOMPERIDONE SUSPENSION"],["2MCAR","MIXT.CARMINATIVE"],["2MILK","MILK OF MAGNESIA(GPO)"],["2MTUS","BROWN MIXTURE GPO"],["2MTVS","MULTI VITAMIN SYR.(syn o vits)"],["2ORS","ORS ผู้ใหญ่(T.O.S)"],["2SALB","SALBUTAMOL SYR.(sabumol)"],["2SOAT","BENZYL BENZOATE 30 ML."],["3ALB","ALBENDAZOLE SYR. (FALBEN)"],["3ALM","ALUM MILK GEL(BOWA GEL ED)"],["3AMI","AMOXICILLIN 125 MG. /SYR.(Manmox)"],["3ANAL","ANAGESIC BALM (นีโอติก้า)"],["3AOM","AMMONNIUM CARBONATE SYR ."],["3CALA","CALAMINE LOTION"],["3DCL","DICLOXACILLIN 62.5 MG./SYR."],["3HYO","HYOSCINE 5 MG./SYR."],["3SIM","SIMETHICONE ORAL DROPS 40 MG.(Gas-med)"],["3TET","DIPTHERIA AND TESANUS VACCINE"],["3TRIA002","TA CREAM 0.02%(ไมโครไนซ์ ฟอร์ม)"],["3TRIA01","TA CREAM 0.1% (ไตรโนแมน)"],["3WHFO","WHITFIELD OINTMENT"],["4AMS","AMMONIA 450 ML.(วิทยาศรม)"],["4BEN","BENZYL BENZOAT 450 ML."],["4CET","PARACETAMOL 120 MG./SYR. (THOHO)"],["4CRP","CHLORAMPHENICOL *EYE OINTMENT 1% 5 Gm."],["4CTC","CLOTRIMAZOLE CREAM(Mazole)"],["4DEXA","Dexamethasone inj. 4mg./1ml."],["4GEN","GENTAMYCIN EYE 3 MG. /DROP"],["4HSC","CHLORHEXIDINE(hibi scrub) 450 ML."],["4HSC2","CHLORHEXIDINE 30 ML."],["4OPA","ANTAZOLINE HCI BP (Hista oph)"],["4POV","POVIDONE IODINE 15 ML."],["4SLV","SILVERDERM CREAM 25 G."],["4TRI","TRIAMCINOLONE ORAL"],["5ACH","ALCOHOL 70% 450ml."],["5COL","COLCHICINE 0.6 MG. tab."],["5CPM","CHLORPHENIRAMINE 4 MG./TAB (MALEATE)"],["5HCT","HCTZ-Hydrochlorothiazide 25 MG.TAB กส."],["5NOL","NSS. SODIUM CHLORIDE IRRIGATION 1000 MG."],["5PNL","PROPRANOLOL 10 MG./TAB กส."],["5PVD","POVIDONE-IODINE 450 ML."],["6CPM","CHLORPHENIRAMINE 2 MG./SY (GPO)"],["ACV CREAM","ACYCLOVIR CREAM 1 GM"],["ATO","ATORVASTATIN 40 MG/TAB กส."],["BET-1N","BETAMETHASONE+N cream 5 gm(GPO)"],["BET-SA","BETAMETHASONE+SA cream 5 gm"],["Beta","Betahistine 6 mg.(SPS)"],["BRO TAB","BROMHEXINE HCI 8 MG TAB"],["BROM2","BROMHEXINE SYRUP 60 ML Patar Lab"],["BUD","BUDESONIDE MDI 200 MCG"],["CAP RED","CLOPIDOGREL 75 MG."],["CAR","DOXAZOSIN 2MG./Tab กส."],["Carve","Carvedilol 6.25 mg."],["CEP SYR","CEPHALEXIN 125 MG SYR"],["CHL","Chloramphenicol OINTMENT 1%(ขี้ผึ้ง ยูนีซัน)"],["CPM INJ","CHLORPHENIRAMINE INJ."],["DIMEN INJ","DIMEN INJ"],["DP CRP","DIPOTASSIUM CLORAZEPATE 5 MG CAP"],["FER","Ferrous Fumarate 76 mg./5ml (GPO)"],["FERDEK Syrub","FERROUS FUMARATE 15mg/0.6 ml Syrub"],["FLU125","FLUTICASONE 125 MCG INHALOR"],["FLU20","FLUOXETIN 20 MG/TAB กส.(Pharmaland)"],["FURO","FUROSEMIDE 40 MG TAB กส"],["Griss500","GRISEOFULVIN 500 MG. TAB"],["HY251","Hydralazine 25 mg (APRESZINE)"],["HYZ","HYDROXYZINE 10 mg tab"],["ING TRA","TRAMADOL INJ 50MG/ML"],["ISO","ISOSORBIDE DINITRATE 10 MG/TAB กส."],["KTCNZ","KETOCONAZOLE 200 mg tab กส."],["LORA","LORATADINE 10 mg tab"],["MNDP","MANIDIPINE HYDOCHLORIDE"],["NI20","NIFEDIPINE 20 MG SR/CAP"],["NORET5MG","NORETHISTERONE 5 MG TAB"],["PIO1","PIOGLITAZONE 30 MG./Tab (UTMOS 30)"],["PNSL","PREDNISOLONE 5 MG/TAB"],["POLY E","POLYOPH EYE DROP 5 ml(OPSACIN)"],["PROCT TAB","PROCTOSEDYL SUPPOSITORIES TAB"],["RANI INJ","RANITIDINE INJ"],["SIM3","Simvastatin 40 mg"],["TETRA","0.5%TETRACAINE HCL"],["THE","THEOPHYLLINE 200 MG SR/TAB"],["TOL50","TOLPERISONE HCL 50MG/TAB"],["TRIAM LO1","T.A. LOTION 0.1%(starlone)"]];
 
 let receiveRows=[],dispenseRows=[],historyLog=[],lineLog2=[];
@@ -1653,7 +1659,7 @@ const USERS=[
 ];
 // Admin ใช้ PIN ตั้งต้น 1234 (reset ได้ใน admin panel)
 // User ทั่วไป: PIN ตั้งต้น 0000 (ต้องเปลี่ยนเมื่อ login ครั้งแรก)
-const DEFAULT_PIN='0000';
+const DEFAULT_PIN='1234';
 const ADMIN_ID='winas'; // คนแรกเป็น admin
 const SESSION_HOURS=8;  // session หมดอายุ 8 ชม.
 
@@ -1790,7 +1796,7 @@ function checkPin(){
 function showChangePinUI(){
   _pinTarget='change';_changePinStep=0;_newPinTemp='';_pinBuffer='';
   document.getElementById('pin-greeting').textContent='ตั้ง PIN ใหม่ 4 หลัก';
-  document.getElementById('login-err').textContent='ครั้งแรก — กรุณาตั้ง PIN ใหม่ให้ตัวเอง';
+  document.getElementById('login-err').textContent='ครั้งแรก — กรุณาตั้ง PIN ใหม่ให้ตัวเอง (จะใช้แทน 1234)';
   updatePinDots();
 }
 
@@ -1896,7 +1902,83 @@ function logoutAll(){
   logout();
 }
 
-// override openUserMenu (function hoisting issue fix — use single def below)
+function clearAllPins(){
+  if(!confirm('ล้าง PIN ทุกคนกลับเป็น 1234 ทั้งหมด?'))return;
+  USERS.forEach(u=>localStorage.removeItem(getPinKey(u.id)));
+  clearSession();
+  showAlert('ล้าง PIN ทั้งหมดแล้ว — PIN ตั้งต้นคือ 1234','success');
+}
+
+// ══ EXPORT INVENTORY TO GOOGLE SHEET ══════════════════════════
+async function exportInventory(){
+  const btn=document.getElementById('export-btn');
+  if(!_allStockItems.length){
+    showAlert('ยังไม่มีข้อมูลคลังยา — กดรีเฟรชก่อน','warning');return;
+  }
+
+  // สร้าง summary รายชื่อยา (รวม LOT ทุก lot ของยาชื่อเดียวกัน)
+  const nameMap={};
+  _allStockItems.forEach(i=>{
+    if(!nameMap[i.name]){
+      nameMap[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',earliestExp:null,exp:'',lots:[]};
+    }
+    nameMap[i.name].qty+=i.qty;
+    const ed=parseExpDate(i.exp);
+    if(ed&&(!nameMap[i.name].earliestExp||ed<nameMap[i.name].earliestExp)){
+      nameMap[i.name].earliestExp=ed;nameMap[i.name].exp=i.exp;
+    }
+    if(i.group)nameMap[i.name].group=i.group;
+    nameMap[i.name].lots.push(i.lot+'('+Math.round(i.qty)+')');
+  });
+
+  const rows=Object.values(nameMap).map(i=>{
+    const g=(i.group||'').trim();
+    const isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
+    return{
+      name:i.name, code:i.code,
+      qty:Math.round(i.qty), unit:i.unit,
+      exp:fmtExp(i.exp),
+      group:g||'ปกติ',
+      status:isR?'ใกล้หมดอายุ':isY?'ระวัง':'ปกติ',
+      lots:i.lots.join(', ')
+    };
+  });
+
+  // เรียง: แดง → เหลือง → เขียว แล้วเรียงชื่อ
+  const gOrd={'สีแดง':0,'แดง':0,'สีเหลือง':1,'เหลือง':1};
+  rows.sort((a,b)=>{
+    const ga=gOrd[a.group]??2,gb=gOrd[b.group]??2;
+    if(ga!==gb)return ga-gb;
+    return a.name.localeCompare(b.name,'th');
+  });
+
+  const now=todayTH();
+  const payload={
+    action:'export_inventory',
+    rows,
+    exportDate:now,
+    exportBy:currentUser?currentUser.name:'ระบบ'
+  };
+
+  if(btn){btn.textContent='กำลังส่งออก...';btn.disabled=true;}
+  showAlert('กำลังส่งออกข้อมูลคงคลัง '+rows.length+' รายการ...','info');
+
+  try{
+    const r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const j=await r.json();
+    if(j.status==='ok'){
+      showAlert('✓ ส่งออกคงคลัง '+rows.length+' รายการ → Sheet "คงคลัง" เรียบร้อย ('+now+')','success');
+      addHistory('edit','ส่งออกสรุปคงคลัง',rows.length+' รายการ | '+now+(currentUser?' | '+currentUser.short:''));
+    }else{
+      showAlert('ส่งออกไม่สำเร็จ: '+(j.message||''),'danger');
+    }
+  }catch(e){
+    showAlert('เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่','danger');
+  }finally{
+    if(btn){btn.textContent='⬆ ส่งออกคงคลัง';btn.disabled=false;}
+  }
+}
+
 // ── START ─────────────────────────────────────────────────────
 // init LINE badge
 (()=>{
