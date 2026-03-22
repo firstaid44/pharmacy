@@ -515,75 +515,120 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .ls-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.3px;line-height:1.2;}
 .ls-sub{font-size:11px;color:rgba(255,255,255,.35);font-weight:500;margin-top:2px;}
 
-/* ── USER LIST HEADER ── */
-.ls-list-head{
-  padding:1.25rem 1.5rem .6rem;
+/* ── DROPDOWN USER SELECT ── */
+.ls-select-wrap{
+  padding:1.5rem 1.25rem 0;
+  position:relative;z-index:10;
 }
-.ls-list-head-title{
+.ls-select-label{
   font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:rgba(255,255,255,.3);
+  color:rgba(255,255,255,.35);margin-bottom:.65rem;display:block;
 }
-
-/* ── USER ITEMS ── */
-.user-list{
-  padding:0 1rem;
-  display:flex;flex-direction:column;gap:6px;
+.ls-select-box{
+  position:relative;width:100%;
 }
-.user-btn{
-  display:flex;align-items:center;gap:14px;
-  padding:14px 16px;border-radius:18px;
-  border:1px solid rgba(255,255,255,.06);
-  background:rgba(255,255,255,.04);
-  cursor:pointer;text-align:left;width:100%;color:#fff;
-  font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
-  transition:background .15s,border-color .15s,transform .1s;
+/* custom select trigger */
+.ls-select-trigger{
+  display:flex;align-items:center;gap:12px;
+  width:100%;padding:14px 16px;border-radius:16px;
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(255,255,255,.12);
+  cursor:pointer;
+  transition:border-color .2s,background .2s;
+  position:relative;z-index:2;
   -webkit-appearance:none;
-  position:relative;overflow:hidden;
+  font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
 }
-.user-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(26,95,212,.15),rgba(11,158,114,.1));
-  opacity:0;transition:opacity .2s;
+.ls-select-trigger:focus,
+.ls-select-trigger.open{
+  outline:none;
+  border-color:rgba(74,158,255,.6);
+  background:rgba(26,95,212,.15);
+  box-shadow:0 0 0 3px rgba(74,158,255,.15);
 }
-.user-btn:active{transform:scale(.975);}
-.user-btn:active::before{opacity:1;}
-.user-initial{
-  width:42px;height:42px;border-radius:13px;flex-shrink:0;
+.ls-trigger-avatar{
+  width:38px;height:38px;border-radius:11px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  font-size:17px;font-weight:700;color:#fff;
-  position:relative;
+  font-size:16px;font-weight:700;color:#fff;
+  transition:background .2s;
 }
-/* unique gradient per initial letter */
+.ls-trigger-text{flex:1;min-width:0;text-align:left;}
+.ls-trigger-placeholder{font-size:14px;color:rgba(255,255,255,.35);font-weight:500;}
+.ls-trigger-name{font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ls-trigger-role{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;}
+.ls-trigger-chevron{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  background:rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .25s cubic-bezier(.34,1.2,.64,1),background .15s;
+}
+.ls-select-trigger.open .ls-trigger-chevron{transform:rotate(180deg);background:rgba(74,158,255,.2);}
+.ls-trigger-chevron svg{width:14px;height:14px;stroke:rgba(255,255,255,.5);fill:none;stroke-width:2.5;}
+
+/* dropdown panel */
+.ls-dropdown{
+  position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:200;
+  background:#0E1829;
+  border:1.5px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 4px 16px rgba(0,0,0,.3);
+  display:none;
+  animation:ddIn .2s cubic-bezier(.34,1.2,.64,1);
+  max-height:340px;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.ls-dropdown.open{display:block;}
+@keyframes ddIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}
+.ls-dd-item{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 16px;cursor:pointer;
+  transition:background .12s;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.ls-dd-item:last-child{border-bottom:none;}
+.ls-dd-item:active,.ls-dd-item:hover{background:rgba(74,158,255,.12);}
+.ls-dd-item.selected{background:rgba(26,95,212,.2);}
+.ls-dd-avatar{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;
+}
+.ls-dd-info{flex:1;min-width:0;}
+.ls-dd-name{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ls-dd-sub{font-size:11px;color:rgba(255,255,255,.38);margin-top:2px;}
+.ls-dd-check{
+  width:20px;height:20px;border-radius:50%;flex-shrink:0;
+  background:rgba(74,158,255,.8);
+  display:none;align-items:center;justify-content:center;
+}
+.ls-dd-item.selected .ls-dd-check{display:flex;}
+.ls-dd-check svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:3;}
+
+/* confirm button */
+.ls-confirm-btn{
+  width:100%;margin-top:1rem;padding:16px;border-radius:16px;
+  background:linear-gradient(135deg,#1A5FD4,#1347A8);
+  border:none;color:#fff;font-size:16px;font-weight:700;
+  cursor:pointer;font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
+  box-shadow:0 6px 24px rgba(26,95,212,.45);
+  transition:all .15s;display:none;
+  -webkit-appearance:none;
+}
+.ls-confirm-btn.visible{display:block;animation:btnIn .3s cubic-bezier(.34,1.4,.64,1);}
+@keyframes btnIn{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
+.ls-confirm-btn:active{transform:scale(.97);box-shadow:0 2px 12px rgba(26,95,212,.3);}
+
+/* color classes (shared with PIN avatar) */
 .ui-a{background:linear-gradient(135deg,#1A5FD4,#2D8EF5);}
 .ui-b{background:linear-gradient(135deg,#0B9E72,#07C985);}
 .ui-c{background:linear-gradient(135deg,#8B5CF6,#A78BFA);}
-.ui-d{background:linear-gradient(135deg,#F59E0B,#FCD34D);}
+.ui-d{background:linear-gradient(135deg,#C07000,#F59E0B);}
 .ui-e{background:linear-gradient(135deg,#EF4444,#F87171);}
 .ui-f{background:linear-gradient(135deg,#06B6D4,#67E8F9);}
-/* fallback */
-.ui-default{background:linear-gradient(135deg,#374151,#6B7280);}
-
-.user-btn-info{flex:1;min-width:0;}
-.user-btn-name{
-  font-size:14px;font-weight:700;color:#fff;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.user-btn-role{
-  font-size:11px;color:rgba(255,255,255,.38);margin-top:3px;
-  display:flex;align-items:center;gap:5px;
-}
-.user-btn-dot{
-  width:5px;height:5px;border-radius:50%;
-  background:rgba(255,255,255,.2);flex-shrink:0;
-}
-.user-btn-chevron{
-  width:24px;height:24px;border-radius:8px;flex-shrink:0;
-  background:rgba(255,255,255,.05);
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;color:rgba(255,255,255,.25);
-  transition:background .15s,color .15s;
-}
-.user-btn:active .user-btn-chevron{background:rgba(74,158,255,.2);color:#4A9EFF;}
+.ui-g{background:linear-gradient(135deg,#EC4899,#F472B6);}
+.ui-h{background:linear-gradient(135deg,#84CC16,#A3E635);}
+.ui-i{background:linear-gradient(135deg,#F97316,#FB923C);}
 
 /* ── PIN SCREEN ── */
 .pin-back-row{
@@ -720,18 +765,37 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
           <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         </div>
         <div class="ls-brand-text">
-          <div class="ls-title">คลังยา PCU สะบ้าย้อย</div>
-          <div class="ls-sub">ระบบบริหารจัดการยา</div>
+          <div class="ls-title">ระบบบริหารจัดการคลังยา</div>
+          <div class="ls-sub">PCU สะบ้าย้อย</div>
         </div>
       </div>
-      <!-- List header -->
-      <div class="ls-list-head">
-        <div class="ls-list-head-title">เลือกชื่อผู้ใช้งาน</div>
+
+      <!-- Dropdown select -->
+      <div class="ls-select-wrap">
+        <span class="ls-select-label">ผู้ใช้งาน</span>
+        <div class="ls-select-box" id="user-grid">
+          <!-- trigger button -->
+          <button class="ls-select-trigger" id="ls-trigger" onclick="toggleDropdown()" type="button">
+            <div class="ls-trigger-avatar ui-default" id="ls-trigger-avatar">👤</div>
+            <div class="ls-trigger-text">
+              <div class="ls-trigger-placeholder" id="ls-trigger-placeholder">— เลือกชื่อ-สกุล —</div>
+              <div class="ls-trigger-name" id="ls-trigger-name" style="display:none;"></div>
+              <div class="ls-trigger-role" id="ls-trigger-role" style="display:none;"></div>
+            </div>
+            <div class="ls-trigger-chevron">
+              <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </button>
+          <!-- dropdown panel -->
+          <div class="ls-dropdown" id="ls-dropdown"></div>
+        </div>
+
+        <!-- confirm button -->
+        <button class="ls-confirm-btn" id="ls-confirm-btn" onclick="confirmUserSelect()" type="button">
+          เข้าสู่ระบบ →
+        </button>
       </div>
-      <!-- User list -->
-      <div class="user-list" id="user-grid"></div>
-      <!-- bottom padding -->
-      <div style="height:1rem;"></div>
+      <div style="height:2rem;"></div>
     </div>
 
     <!-- ── STEP 2: PIN ── -->
@@ -865,8 +929,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   <div class="header">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
-      <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา</div>
+      <div class="app-title">ระบบบริหารจัดการคลังยา</div>
+      <div class="app-sub">PCU สะบ้าย้อย</div>
     </div>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
     <div class="user-chip" id="header-user-chip" onclick="openUserMenu()" style="display:none;">
@@ -1530,10 +1594,21 @@ function populateLotOptions(name){
 document.addEventListener('touchstart',e=>{
   if(!e.target.closest('.suggest-wrap'))document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');
   if(!e.target.closest('#stock-search')&&!e.target.closest('#stock-sbox'))document.getElementById('stock-sbox').style.display='none';
+  // close login dropdown
+  if(!e.target.closest('.ls-select-box')){
+    const dd=document.getElementById('ls-dropdown');
+    const trig=document.getElementById('ls-trigger');
+    if(dd)dd.classList.remove('open');if(trig)trig.classList.remove('open');
+  }
 },{passive:true});
 document.addEventListener('click',e=>{
   if(!e.target.closest('.suggest-wrap'))document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');
   if(!e.target.closest('#stock-search')&&!e.target.closest('#stock-sbox'))document.getElementById('stock-sbox').style.display='none';
+  if(!e.target.closest('.ls-select-box')){
+    const dd=document.getElementById('ls-dropdown');
+    const trig=document.getElementById('ls-trigger');
+    if(dd)dd.classList.remove('open');if(trig)trig.classList.remove('open');
+  }
 });
 document.getElementById('edit-modal').addEventListener('click',e=>{if(e.target===document.getElementById('edit-modal'))closeEditModal();});
 document.getElementById('drug-detail-modal').addEventListener('click',e=>{if(e.target===document.getElementById('drug-detail-modal'))document.getElementById('drug-detail-modal').classList.remove('open');});
@@ -1893,23 +1968,83 @@ function initLogin(){
     const u=USERS.find(u=>u.id===sess.userId);
     if(u){doLoginSuccess(u);return;}
   }
-  // render user list v3
-  const _uiColors=['ui-a','ui-b','ui-c','ui-d','ui-e','ui-f'];
-  const grid=document.getElementById('user-grid');
-  if(grid){
-    grid.innerHTML=USERS.map((u,i)=>`
-      <button class="user-btn" onclick="selectUser('${u.id}')">
-        <div class="user-initial ${_uiColors[i%_uiColors.length]}">${u.initial}</div>
-        <div class="user-btn-info">
-          <div class="user-btn-name">${u.short}</div>
-          <div class="user-btn-role">
-            <span class="user-btn-dot"></span>${u.prefix||''}
-          </div>
-        </div>
-        <div class="user-btn-chevron">›</div>
-      </button>`).join('');
-  }
+  // render dropdown v4
+  _renderDropdown();
+  // reset trigger to placeholder
+  _resetTrigger();
   document.getElementById('login-screen').classList.remove('hidden');
+}
+
+const _uiColors=['ui-a','ui-b','ui-c','ui-d','ui-e','ui-f','ui-g','ui-h','ui-i'];
+
+function _renderDropdown(){
+  const dd=document.getElementById('ls-dropdown');
+  if(!dd)return;
+  dd.innerHTML=USERS.map((u,i)=>`
+    <div class="ls-dd-item" id="dd-item-${u.id}" ontouchstart="" onclick="pickDropdownUser('${u.id}')">
+      <div class="ls-dd-avatar ${_uiColors[i%_uiColors.length]}">${u.initial}</div>
+      <div class="ls-dd-info">
+        <div class="ls-dd-name">${u.name}</div>
+        <div class="ls-dd-sub">${u.id==='winas'?'ผู้ดูแลระบบ':'เจ้าหน้าที่'}</div>
+      </div>
+      <div class="ls-dd-check">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>`).join('');
+}
+
+function _resetTrigger(){
+  const ph=document.getElementById('ls-trigger-placeholder');
+  const nm=document.getElementById('ls-trigger-name');
+  const rl=document.getElementById('ls-trigger-role');
+  const av=document.getElementById('ls-trigger-avatar');
+  const cb=document.getElementById('ls-confirm-btn');
+  if(ph){ph.style.display='block';ph.textContent='— เลือกชื่อ-สกุล —';}
+  if(nm)nm.style.display='none';
+  if(rl)rl.style.display='none';
+  if(av){av.textContent='👤';av.className='ls-trigger-avatar ui-default';}
+  if(cb)cb.classList.remove('visible');
+  // deselect all
+  document.querySelectorAll('.ls-dd-item').forEach(el=>el.classList.remove('selected'));
+}
+
+function toggleDropdown(){
+  const dd=document.getElementById('ls-dropdown');
+  const trig=document.getElementById('ls-trigger');
+  if(!dd||!trig)return;
+  const isOpen=dd.classList.contains('open');
+  if(isOpen){dd.classList.remove('open');trig.classList.remove('open');}
+  else{dd.classList.add('open');trig.classList.add('open');}
+}
+
+function pickDropdownUser(userId){
+  const u=USERS.find(x=>x.id===userId);if(!u)return;
+  const idx=USERS.indexOf(u);
+  // update trigger UI
+  const ph=document.getElementById('ls-trigger-placeholder');
+  const nm=document.getElementById('ls-trigger-name');
+  const rl=document.getElementById('ls-trigger-role');
+  const av=document.getElementById('ls-trigger-avatar');
+  const cb=document.getElementById('ls-confirm-btn');
+  if(ph)ph.style.display='none';
+  if(nm){nm.style.display='block';nm.textContent=u.name;}
+  if(rl){rl.style.display='none';}
+  if(av){av.textContent=u.initial;av.className='ls-trigger-avatar '+_uiColors[idx%_uiColors.length];}
+  if(cb)cb.classList.add('visible');
+  // mark selected
+  document.querySelectorAll('.ls-dd-item').forEach(el=>el.classList.remove('selected'));
+  const item=document.getElementById('dd-item-'+userId);
+  if(item)item.classList.add('selected');
+  // close dropdown
+  document.getElementById('ls-dropdown').classList.remove('open');
+  document.getElementById('ls-trigger').classList.remove('open');
+  // store pending
+  window._pendingUserId=userId;
+}
+
+function confirmUserSelect(){
+  if(!window._pendingUserId)return;
+  selectUser(window._pendingUserId);
 }
 
 function selectUser(userId){
@@ -1936,6 +2071,9 @@ function selectUser(userId){
 
 function backToUserSelect(){
   _pinBuffer='';currentUser=null;
+  // reset dropdown state
+  _resetTrigger();
+  window._pendingUserId=null;
   document.getElementById('step-user').style.display='block';
   document.getElementById('step-pin').style.display='none';
   document.getElementById('login-err').textContent='';
@@ -2021,15 +2159,10 @@ function logout(){
   document.getElementById('login-err').textContent='';
   const grid=document.getElementById('user-grid');
   if(grid){
-    grid.innerHTML=USERS.map((u,i)=>`
-      <button class="user-btn" onclick="selectUser('${u.id}')">
-        <div class="user-initial ${['ui-a','ui-b','ui-c','ui-d','ui-e','ui-f'][i%6]}">${u.initial}</div>
-        <div class="user-btn-info">
-          <div class="user-btn-name">${u.short}</div>
-          <div class="user-btn-role"><span class="user-btn-dot"></span>${u.prefix||''}</div>
-        </div>
-        <div class="user-btn-chevron">›</div>
-      </button>`).join('');
+    // re-render dropdown and reset
+    _renderDropdown();
+    _resetTrigger();
+    window._pendingUserId=null;
   }
   document.getElementById('login-screen').classList.remove('hidden');
   // hide user chip
