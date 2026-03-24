@@ -818,6 +818,132 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   100%{box-shadow:0 0 0 0 rgba(6,199,85,.0);}
 }
 
+/* ── STOCK REQ ROW ── */
+.stock-req-row{
+  padding:10px 12px;border-radius:10px;
+  border:1.5px solid var(--border);background:var(--surface);
+  transition:border-color .15s,background .15s;
+}
+.stock-req-row:has(input[type=checkbox]:checked){
+  border-color:rgba(26,95,212,.3);background:var(--blue-l);
+}
+
+/* ── REQUISITION / ใบเบิกยา ── */
+.req-modal-bg{
+  display:none;position:fixed;inset:0;z-index:700;
+  background:rgba(10,18,28,.7);backdrop-filter:blur(6px);
+  align-items:flex-end;justify-content:center;
+}
+.req-modal-bg.open{display:flex;animation:fadein .2s ease;}
+.req-sheet{
+  background:#fff;border-radius:20px 20px 0 0;
+  width:100%;max-width:430px;
+  max-height:94vh;overflow-y:auto;
+  animation:slideUp .28s cubic-bezier(.34,1.2,.64,1);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+/* ── Print styles ── */
+@media print{
+  body *{visibility:hidden;}
+  #printable-req,#printable-req *{visibility:visible;}
+  #printable-req{
+    position:fixed;top:0;left:0;right:0;
+    background:#fff!important;
+    padding:16px 20px!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+  }
+  .no-print{display:none!important;}
+}
+/* ── Requisition document styles ── */
+#printable-req{background:#fff;padding:1.25rem 1rem;}
+.req-doc-header{
+  display:flex;align-items:center;gap:12px;
+  padding-bottom:10px;border-bottom:2px solid #1A5FD4;margin-bottom:12px;
+}
+.req-doc-logo{
+  width:44px;height:44px;border-radius:10px;
+  background:linear-gradient(135deg,#1A5FD4,#0B9E72);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.req-doc-logo svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.2;}
+.req-doc-org{flex:1;}
+.req-doc-org-name{font-size:13px;font-weight:700;color:#0F1923;}
+.req-doc-org-sub{font-size:10px;color:#64748B;margin-top:1px;}
+.req-doc-num{font-size:10px;color:#94A3B8;text-align:right;font-family:'IBM Plex Mono',monospace;}
+
+.req-doc-title{
+  text-align:center;margin:8px 0 12px;
+  font-size:16px;font-weight:800;color:#1A5FD4;letter-spacing:.5px;
+}
+
+.req-meta-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
+  margin-bottom:12px;
+  background:#F7F9FC;border-radius:10px;padding:10px 12px;
+  border:1px solid rgba(0,0,0,.07);
+}
+.req-meta-item{}
+.req-meta-label{font-size:9px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;}
+.req-meta-val{font-size:12px;font-weight:700;color:#0F1923;margin-top:2px;}
+
+.req-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px;}
+.req-table th{
+  background:#1A5FD4;color:#fff;padding:7px 8px;
+  font-size:9px;font-weight:700;text-align:left;letter-spacing:.3px;text-transform:uppercase;
+}
+.req-table th:last-child{text-align:right;}
+.req-table td{
+  padding:8px 8px;border-bottom:1px solid #E8EDF2;
+  vertical-align:top;font-size:11px;
+}
+.req-table tr:last-child td{border-bottom:none;}
+.req-table tr:nth-child(even) td{background:#F8FAFC;}
+.req-table td:last-child{text-align:right;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.req-drug-name{font-weight:700;color:#0F1923;line-height:1.3;}
+.req-drug-sub{font-size:10px;color:#64748B;margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+
+.req-summary-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;background:#EBF2FF;border-radius:8px;
+  font-size:12px;font-weight:700;color:#1A5FD4;margin-bottom:12px;
+}
+
+.req-sign-area{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;
+}
+.req-sign-box{border-top:1.5px solid #CBD5E1;padding-top:6px;text-align:center;}
+.req-sign-label{font-size:9px;color:#94A3B8;text-transform:uppercase;letter-spacing:.4px;}
+.req-sign-name{font-size:11px;font-weight:700;color:#0F1923;margin-top:20px;}
+.req-sign-date{font-size:9px;color:#94A3B8;margin-top:2px;}
+
+/* ── Action buttons in modal ── */
+.req-actions{
+  padding:.875rem 1rem;
+  display:flex;gap:10px;
+  border-top:1px solid rgba(0,0,0,.07);
+  background:#fff;
+  border-radius:0 0 20px 20px;
+}
+.req-btn{
+  flex:1;padding:13px;border-radius:12px;font-size:14px;font-weight:700;
+  cursor:pointer;border:none;font-family:inherit;transition:all .15s;
+  -webkit-appearance:none;
+}
+.req-btn-cancel{background:#F0F4F8;color:#64748B;}
+.req-btn-cancel:active{opacity:.7;}
+.req-btn-print{
+  flex:2;background:linear-gradient(135deg,#1A5FD4,#1347A8);color:#fff;
+  box-shadow:0 4px 14px rgba(26,95,212,.3);
+}
+.req-btn-print:active{transform:scale(.97);}
+.req-btn-share{
+  background:linear-gradient(135deg,#0B9E72,#059642);color:#fff;
+  box-shadow:0 4px 14px rgba(11,158,114,.25);
+}
+.req-btn-share:active{transform:scale(.97);}
+
+/* TOP USER CHIP (when logged in) */
 /* ── TOP USER CHIP (when logged in) ── */
 .user-chip{
   display:flex;align-items:center;gap:7px;cursor:pointer;
@@ -1022,6 +1148,85 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   </div>
 </div>
 
+<!-- ══ STOCK REQUISITION SELECT MODAL ══ -->
+<div class="modal-bg" id="stock-req-modal" onclick="if(event.target===this)document.getElementById('stock-req-modal').classList.remove('open')">
+  <div class="modal" style="position:relative;">
+    <div class="modal-handle"></div>
+    <button onclick="document.getElementById('stock-req-modal').classList.remove('open')"
+      style="position:absolute;top:1rem;right:1rem;background:rgba(0,0,0,.06);border:none;
+             width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;
+             display:flex;align-items:center;justify-content:center;color:var(--text2);">✕</button>
+    <div class="modal-title">📋 เลือกยาที่ต้องการเบิก</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:1rem;">เลือก ☑ และกรอกจำนวนที่ต้องการจัดซื้อ — ยาใกล้หมดอายุ/น้อยแสดงก่อน</div>
+    <div id="stock-req-list" style="max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+    <div class="btn-row" style="margin-top:1rem;">
+      <button class="btn" onclick="document.getElementById('stock-req-modal').classList.remove('open')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="buildStockReq()">📄 สร้างใบเบิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REQUISITION MODAL ══ -->
+<div class="req-modal-bg" id="req-modal" onclick="if(event.target===this)closeReqModal()">
+  <div class="req-sheet">
+    <!-- printable area -->
+    <div id="printable-req">
+      <!-- header -->
+      <div class="req-doc-header">
+        <div class="req-doc-logo">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <div class="req-doc-org">
+          <div class="req-doc-org-name">PCU สะบ้าย้อย</div>
+          <div class="req-doc-org-sub">ระบบบริหารจัดการคลังยา</div>
+        </div>
+        <div class="req-doc-num" id="req-doc-num">เลขที่: —</div>
+      </div>
+      <!-- title -->
+      <div class="req-doc-title">ใบเบิกยา / Drug Requisition</div>
+      <!-- meta grid -->
+      <div class="req-meta-grid" id="req-meta"></div>
+      <!-- items table -->
+      <table class="req-table">
+        <thead>
+          <tr>
+            <th style="width:26px;">#</th>
+            <th>ชื่อยา / Drug</th>
+            <th style="width:70px;">LOT</th>
+            <th style="width:54px;">EXP</th>
+            <th style="width:50px;text-align:right;">จำนวน</th>
+            <th style="width:36px;text-align:right;">หน่วย</th>
+          </tr>
+        </thead>
+        <tbody id="req-table-body"></tbody>
+      </table>
+      <!-- summary -->
+      <div class="req-summary-row" id="req-summary"></div>
+      <!-- note -->
+      <div id="req-note-area" style="margin-bottom:10px;font-size:11px;color:#64748B;padding:7px 10px;background:#FFFBF0;border-radius:8px;border:1px solid rgba(192,112,0,.15);display:none;"></div>
+      <!-- signatures -->
+      <div class="req-sign-area">
+        <div class="req-sign-box">
+          <div class="req-sign-name" id="req-sign-requester"></div>
+          <div class="req-sign-date" id="req-sign-date"></div>
+          <div class="req-sign-label">ผู้เบิก / Requester</div>
+        </div>
+        <div class="req-sign-box">
+          <div class="req-sign-name" style="color:transparent;">—</div>
+          <div class="req-sign-date" style="color:transparent;">—</div>
+          <div class="req-sign-label">ผู้อนุมัติ / Approved by</div>
+        </div>
+      </div>
+    </div>
+    <!-- action buttons -->
+    <div class="req-actions no-print">
+      <button class="req-btn req-btn-cancel" onclick="closeReqModal()">✕ ปิด</button>
+      <button class="req-btn req-btn-share" onclick="shareRequisition()">📤 แชร์</button>
+      <button class="req-btn req-btn-print" onclick="window.print()">🖨️ พิมพ์</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ ADMIN PANEL ══ -->
 <div class="admin-modal-bg" id="admin-modal">
   <div class="admin-panel">
@@ -1100,8 +1305,13 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 
 <!-- DRUG DETAIL MODAL -->
 <div class="modal-bg" id="drug-detail-modal">
-  <div class="modal">
+  <div class="modal" style="position:relative;">
     <div class="modal-handle"></div>
+    <button onclick="document.getElementById('drug-detail-modal').classList.remove('open')"
+      style="position:absolute;top:1rem;right:1rem;background:rgba(0,0,0,.06);border:none;
+             width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;
+             display:flex;align-items:center;justify-content:center;color:var(--text2);
+             font-family:inherit;line-height:1;z-index:2;" title="ปิด">✕</button>
     <div id="drug-detail-content"></div>
     <div class="btn-row" style="margin-top:1rem;">
       <button class="btn btn-primary" onclick="document.getElementById('drug-detail-modal').classList.remove('open')">ปิด</button>
@@ -1250,6 +1460,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         <div class="form-group"><label class="form-label">หมายเหตุ</label><textarea class="form-input" id="d-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
         <div class="btn-row">
           <button class="btn" onclick="clearDispenseForm()">ล้าง</button>
+          <button class="btn" onclick="previewRequisition()" style="background:var(--blue-l);color:var(--blue);border-color:rgba(26,95,212,.2);">📄 ใบเบิก</button>
           <button class="btn btn-primary" id="d-save-btn" onclick="dispenseStock()" style="background:linear-gradient(135deg,#E84040,#C0392B);">เบิกยาออก</button>
         </div>
       </div>
@@ -1259,6 +1470,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         <div class="section-hd">
           <span class="section-title">รายการเบิกล่าสุด</span>
           <button class="section-action" onclick="loadDispense()">↻ รีเฟรช</button>
+          <button class="section-action" onclick="openReqFromLog()" style="background:var(--blue-l);color:var(--blue);border-color:rgba(26,95,212,.2);">📄 สร้างใบเบิก</button>
         </div>
         <div class="date-filter-wrap">
           <span class="date-filter-label">📅 กรองวันที่:</span>
@@ -1298,7 +1510,10 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
     </div>
     <div class="section-hd">
       <span class="section-title">สรุปยาคงเหลือรายตัว</span>
-      <button class="section-action" id="export-btn" onclick="exportInventory()" style="background:var(--teal-l);color:var(--teal);border-color:rgba(11,158,114,.2);">⬆ ส่งออกคงคลัง</button>
+      <div style="display:flex;gap:6px;">
+        <button class="section-action" onclick="openStockRequisition()" style="background:var(--blue-l);color:var(--blue);border-color:rgba(26,95,212,.2);">📋 ใบเบิกยา</button>
+        <button class="section-action" id="export-btn" onclick="exportInventory()" style="background:var(--teal-l);color:var(--teal);border-color:rgba(11,158,114,.2);">⬆ ส่งออกคงคลัง</button>
+      </div>
     </div>
     <div class="card" id="stock-summary-card"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
     <div class="section-hd" style="margin-top:4px;"><span class="section-title">แยกกลุ่มตามวันหมดอายุ</span></div>
@@ -1479,7 +1694,27 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyvfohKGqK9svtBMg50BcM8LTZVATzZO7SmeGy3v0lXPJAAI6IuyvlU-mPuR1iYDbmY/exec';
-const drugDB=[["1000016","ALLOPURINOL 100 มก."],["1000122","Enalapril 5 mg. (E5)/TAB"],["1000184","METFORMIN 500 MG./TAB"],["1000284","Spironolactone 25 MG./TAB กส."],["1019001","GLIPIZIDE 5 MG. /TAB กส."],["110104480112","FOLIC ACID 5MG./TAB"],["1419041","GEMfibrozil 300 MG./CAPSULES"],["1440105","AMLODIPINE 5 MG./TAB"],["1460151","ENALAPRIL 20 MG./TAB"],["1500016","Metoprolol 100 MG./TAB กส."],["1500035","METOCLOPRAMIDE 10 mg TAB"],["1530008","ASPIRIN 81 MG./TAB. กส."],["1ALB","ALBENDAZOLE 200 MG./TAB (San San)"],["1AMIT","AMITRIPTYLINE10 MG./ TAB(HK)"],["1AMO","AMOXICILLIN 500 MG./CAPSULES (องค์การเภสัชMOX)"],["1AMX","Amoxicillin 250 mg./cap (องค์การเภสัชMOX)"],["1BUF","IBUPROFEN 400 MG./TAB(I-Profen)"],["1CAL","CALCIUM 1250 MG. tab.(Cal-star)"],["1CET","PARACETAMOL 500 MG./TAB(Masapara)"],["1DCL","DICLOXACILLIN 250 MG. /CAPSULES"],["1DEXT","DEXTROMETHORPHANE"],["1DIC","DICLOFENAC SODIUM 25 MG./TAB"],["1DIM","DIMENHYDRENATE 50 MG."],["1DOM","DOMPERIDONE10 MG./TAB"],["1FBC","FERROUS FUMARATE 200 MG./TAB กส."],["1GABA","GABAPENTIN 100 mg GPO"],["1HOC","HYOSCINE-N-BUTYLBROMIDE 10 .MG/TAB(VS)"],["1lDC","LIDOCAIN 2 %"],["1LST2","LOSARTAN 50 MG.(Berlin)"],["1MET","METRONIDAZOLE 400 MG./TAB"],["1MTV","MTV (MULTIVITAMIN) TAB กส."],["1NAPRO","NAPROXEN 250 MG TAB(Nasin)"],["1NOC","NORFLOXACIN 400 MG./TAB กส."],["1OME","OMEPRAZOLE 20 MG./CAPSULES"],["1ORS","ORS เด็ก(baby-LyteH)"],["1PARA325","PARACETAMOL 325 MG(AU)"],["1STC","SIMETHICONE 80 MG/TAB"],["1TFD","TRIFERDINE TAB. กส."],["1VIB","VITAMIN B COMPLEX TAB"],["1VIC","VITAMIN C 50 MG CIBIC-50"],["2DOMP","DOMPERIDONE SUSPENSION"],["2MCAR","MIXT.CARMINATIVE"],["2MILK","MILK OF MAGNESIA(GPO)"],["2MTUS","BROWN MIXTURE GPO"],["2MTVS","MULTI VITAMIN SYR.(syn o vits)"],["2ORS","ORS ผู้ใหญ่(T.O.S)"],["2SALB","SALBUTAMOL SYR.(sabumol)"],["2SOAT","BENZYL BENZOATE 30 ML."],["3ALB","ALBENDAZOLE SYR. (FALBEN)"],["3ALM","ALUM MILK GEL(BOWA GEL ED)"],["3AMI","AMOXICILLIN 125 MG. /SYR.(Manmox)"],["3ANAL","ANAGESIC BALM (นีโอติก้า)"],["3AOM","AMMONNIUM CARBONATE SYR ."],["3CALA","CALAMINE LOTION"],["3DCL","DICLOXACILLIN 62.5 MG./SYR."],["3HYO","HYOSCINE 5 MG./SYR."],["3SIM","SIMETHICONE ORAL DROPS 40 MG.(Gas-med)"],["3TET","DIPTHERIA AND TESANUS VACCINE"],["3TRIA002","TA CREAM 0.02%(ไมโครไนซ์ ฟอร์ม)"],["3TRIA01","TA CREAM 0.1% (ไตรโนแมน)"],["3WHFO","WHITFIELD OINTMENT"],["4AMS","AMMONIA 450 ML.(วิทยาศรม)"],["4BEN","BENZYL BENZOAT 450 ML."],["4CET","PARACETAMOL 120 MG./SYR. (THOHO)"],["4CRP","CHLORAMPHENICOL *EYE OINTMENT 1% 5 Gm."],["4CTC","CLOTRIMAZOLE CREAM(Mazole)"],["4DEXA","Dexamethasone inj. 4mg./1ml."],["4GEN","GENTAMYCIN EYE 3 MG. /DROP"],["4HSC","CHLORHEXIDINE(hibi scrub) 450 ML."],["4HSC2","CHLORHEXIDINE 30 ML."],["4OPA","ANTAZOLINE HCI BP (Hista oph)"],["4POV","POVIDONE IODINE 15 ML."],["4SLV","SILVERDERM CREAM 25 G."],["4TRI","TRIAMCINOLONE ORAL"],["5ACH","ALCOHOL 70% 450ml."],["5COL","COLCHICINE 0.6 MG. tab."],["5CPM","CHLORPHENIRAMINE 4 MG./TAB (MALEATE)"],["5HCT","HCTZ-Hydrochlorothiazide 25 MG.TAB กส."],["5NOL","NSS. SODIUM CHLORIDE IRRIGATION 1000 MG."],["5PNL","PROPRANOLOL 10 MG./TAB กส."],["5PVD","POVIDONE-IODINE 450 ML."],["6CPM","CHLORPHENIRAMINE 2 MG./SY (GPO)"],["ACV CREAM","ACYCLOVIR CREAM 1 GM"],["ATO","ATORVASTATIN 40 MG/TAB กส."],["BET-1N","BETAMETHASONE+N cream 5 gm(GPO)"],["BET-SA","BETAMETHASONE+SA cream 5 gm"],["Beta","Betahistine 6 mg.(SPS)"],["BRO TAB","BROMHEXINE HCI 8 MG TAB"],["BROM2","BROMHEXINE SYRUP 60 ML Patar Lab"],["BUD","BUDESONIDE MDI 200 MCG"],["CAP RED","CLOPIDOGREL 75 MG."],["CAR","DOXAZOSIN 2MG./Tab กส."],["Carve","Carvedilol 6.25 mg."],["CEP SYR","CEPHALEXIN 125 MG SYR"],["CHL","Chloramphenicol OINTMENT 1%(ขี้ผึ้ง ยูนีซัน)"],["CPM INJ","CHLORPHENIRAMINE INJ."],["DIMEN INJ","DIMEN INJ"],["DP CRP","DIPOTASSIUM CLORAZEPATE 5 MG CAP"],["FER","Ferrous Fumarate 76 mg./5ml (GPO)"],["FERDEK Syrub","FERROUS FUMARATE 15mg/0.6 ml Syrub"],["FLU125","FLUTICASONE 125 MCG INHALOR"],["FLU20","FLUOXETIN 20 MG/TAB กส.(Pharmaland)"],["FURO","FUROSEMIDE 40 MG TAB กส"],["Griss500","GRISEOFULVIN 500 MG. TAB"],["HY251","Hydralazine 25 mg (APRESZINE)"],["HYZ","HYDROXYZINE 10 mg tab"],["ING TRA","TRAMADOL INJ 50MG/ML"],["ISO","ISOSORBIDE DINITRATE 10 MG/TAB กส."],["KTCNZ","KETOCONAZOLE 200 mg tab กส."],["LORA","LORATADINE 10 mg tab"],["MNDP","MANIDIPINE HYDOCHLORIDE"],["NI20","NIFEDIPINE 20 MG SR/CAP"],["NORET5MG","NORETHISTERONE 5 MG TAB"],["PIO1","PIOGLITAZONE 30 MG./Tab (UTMOS 30)"],["PNSL","PREDNISOLONE 5 MG/TAB"],["POLY E","POLYOPH EYE DROP 5 ml(OPSACIN)"],["PROCT TAB","PROCTOSEDYL SUPPOSITORIES TAB"],["RANI INJ","RANITIDINE INJ"],["SIM3","Simvastatin 40 mg"],["TETRA","0.5%TETRACAINE HCL"],["THE","THEOPHYLLINE 200 MG SR/TAB"],["TOL50","TOLPERISONE HCL 50MG/TAB"],["TRIAM LO1","T.A. LOTION 0.1%(starlone)"]];
+const drugDB=[["1000016","ALLOPURINOL 100 มก."],["1000122","Enalapril 5 mg. (E5)/TAB"],["1000184","METFORMIN 500 MG./TAB"],["1000284","Spironolactone 25 MG./TAB กส."],["1019001","GLIPIZIDE 5 MG. /TAB กส."],["110104480112","FOLIC ACID 5MG./TAB"],["1419041","GEMfibrozil 300 MG./CAPSULES"],["1440105","AMLODIPINE 5 MG./TAB"],["1460151","ENALAPRIL 20 MG./TAB"],["1500016","Metoprolol 100 MG./TAB กส."],["1500035","METOCLOPRAMIDE 10 mg TAB"],["1530008","ASPIRIN 81 MG./TAB. กส."],["1ALB","ALBENDAZOLE 200 MG./TAB (San San)"],["1AMIT","AMITRIPTYLINE10 MG./ TAB(HK)"],["1AMO","AMOXICILLIN 500 MG./CAPSULES (องค์การเภสัชMOX)"],["1AMX","Amoxicillin 250 mg./cap (องค์การเภสัชMOX)"],["1BUF","IBUPROFEN 400 MG./TAB(I-Profen)"],["1CAL","CALCIUM 1250 MG. tab.(Cal-star)"],["1CET","PARACETAMOL 500 MG./TAB(Masapara)"],["1DCL","DICLOXACILLIN 250 MG. /CAPSULES"],["1DEXT","DEXTROMETHORPHANE"],["1DIC","DICLOFENAC SODIUM 25 MG./TAB"],["1DIM","DIMENHYDRENATE 50 MG."],["1DOM","DOMPERIDONE10 MG./TAB"],["1FBC","FERROUS FUMARATE 200 MG./TAB กส."],["1GABA","GABAPENTIN 100 mg GPO"],["1HOC","HYOSCINE-N-BUTYLBROMIDE 10 .MG/TAB(VS)"],["1lDC","LIDOCAIN 2 %"],["1LST2","LOSARTAN 50 MG.(Berlin)"],["1MET","METRONIDAZOLE 400 MG./TAB"],["1MTV","MTV (MULTIVITAMIN) TAB กส."],["1NAPRO","NAPROXEN 250 MG TAB(Nasin)"],["1NOC","NORFLOXACIN 400 MG./TAB กส."],["1OME","OMEPRAZOLE 20 MG./CAPSULES"],["1ORS","ORS เด็ก(baby-LyteH)"],["1PARA325","PARACETAMOL 325 MG(AU)"],["1STC","SIMETHICONE 80 MG/TAB"],["1TFD","TRIFERDINE TAB. กส."],["1VIB","VITAMIN B COMPLEX TAB"],["1VIC","VITAMIN C 50 MG CIBIC-50"],["2DOMP","DOMPERIDONE SUSPENSION"],["2MCAR","MIXT.CARMINATIVE"],["2MILK","MILK OF MAGNESIA(GPO)"],["2MTUS","BROWN MIXTURE GPO"],["2MTVS","MULTI VITAMIN SYR.(syn o vits)"],["2ORS","ORS ผู้ใหญ่(T.O.S)"],["2SALB","SALBUTAMOL SYR.(sabumol)"],["2SOAT","BENZYL BENZOATE 30 ML."],["3ALB","ALBENDAZOLE SYR. (FALBEN)"],["3ALM","ALUM MILK GEL(BOWA GEL ED)"],["3AMI","AMOXICILLIN 125 MG. /SYR.(Manmox)"],["3ANAL","ANAGESIC BALM (นีโอติก้า)"],["3AOM","AMMONNIUM CARBONATE SYR ."],["3CALA","CALAMINE LOTION"],["3DCL","DICLOXACILLIN 62.5 MG./SYR."],["3HYO","HYOSCINE 5 MG./SYR."],["3SIM","SIMETHICONE ORAL DROPS 40 MG.(Gas-med)"],["3TET","DIPTHERIA AND TESANUS VACCINE"],["3TRIA002","TA CREAM 0.02%(ไมโครไนซ์ ฟอร์ม)"],["3TRIA01","TA CREAM 0.1% (ไตรโนแมน)"],["3WHFO","WHITFIELD OINTMENT"],["4AMS","AMMONIA 450 ML.(วิทยาศรม)"],["4BEN","BENZYL BENZOAT 450 ML."],["4CET","PARACETAMOL 120 MG./SYR. (THOHO)"],["4CRP","CHLORAMPHENICOL *EYE OINTMENT 1% 5 Gm."],["4CTC","CLOTRIMAZOLE CREAM(Mazole)"],["4DEXA","Dexamethasone inj. 4mg./1ml."],["4GEN","GENTAMYCIN EYE 3 MG. /DROP"],["4HSC","CHLORHEXIDINE(hibi scrub) 450 ML."],["4HSC2","CHLORHEXIDINE 30 ML."],["4OPA","ANTAZOLINE HCI BP (Hista oph)"],["4POV","POVIDONE IODINE 15 ML."],["4SLV","SILVERDERM CREAM 25 G."],["4TRI","TRIAMCINOLONE ORAL"],["5ACH","ALCOHOL 70% 450ml."],["5COL","COLCHICINE 0.6 MG. tab."],["5CPM","CHLORPHENIRAMINE 4 MG./TAB (MALEATE)"],["5HCT","HCTZ-Hydrochlorothiazide 25 MG.TAB กส."],["5NOL","NSS. SODIUM CHLORIDE IRRIGATION 1000 MG."],["5PNL","PROPRANOLOL 10 MG./TAB กส."],["5PVD","POVIDONE-IODINE 450 ML."],["6CPM","CHLORPHENIRAMINE 2 MG./SY (GPO)"],["ACV CREAM","ACYCLOVIR CREAM 1 GM"],["ATO","ATORVASTATIN 40 MG/TAB กส."],["BET-1N","BETAMETHASONE+N cream 5 gm(GPO)"],["BET-SA","BETAMETHASONE+SA cream 5 gm"],["Beta","Betahistine 6 mg.(SPS)"],["BRO TAB","BROMHEXINE HCI 8 MG TAB"],["BROM2","BROMHEXINE SYRUP 60 ML Patar Lab"],["BUD","BUDESONIDE MDI 200 MCG"],["CAP RED","CLOPIDOGREL 75 MG."],["CAR","DOXAZOSIN 2MG./Tab กส."],["Carve","Carvedilol 6.25 mg."],["CEP SYR","CEPHALEXIN 125 MG SYR"],["CHL","Chloramphenicol OINTMENT 1%(ขี้ผึ้ง ยูนีซัน)"],["CPM INJ","CHLORPHENIRAMINE INJ."],["DIMEN INJ","DIMEN INJ"],["DP CRP","DIPOTASSIUM CLORAZEPATE 5 MG CAP"],["FER","Ferrous Fumarate 76 mg./5ml (GPO)"],["FERDEK Syrub","FERROUS FUMARATE 15mg/0.6 ml Syrub"],["FLU125","FLUTICASONE 125 MCG INHALOR"],["FLU20","FLUOXETIN 20 MG/TAB กส.(Pharmaland)"],["FURO","FUROSEMIDE 40 MG TAB กส"],["Griss500","GRISEOFULVIN 500 MG. TAB"],["HY251","Hydralazine 25 mg (APRESZINE)"],["HYZ","HYDROXYZINE 10 mg tab"],["ING TRA","TRAMADOL INJ 50MG/ML"],["ISO","ISOSORBIDE DINITRATE 10 MG/TAB กส."],["KTCNZ","KETOCONAZOLE 200 mg tab กส."],["LORA","LORATADINE 10 mg tab"],["MNDP","MANIDIPINE HYDOCHLORIDE"],["NI20","NIFEDIPINE 20 MG SR/CAP"],["NORET5MG","NORETHISTERONE 5 MG TAB"],["PIO1","PIOGLITAZONE 30 MG./Tab (UTMOS 30)"],["PNSL","PREDNISOLONE 5 MG/TAB"],["POLY E","POLYOPH EYE DROP 5 ml(OPSACIN)"],["PROCT TAB","PROCTOSEDYL SUPPOSITORIES TAB"],["RANI INJ","RANITIDINE INJ"],["SIM3","Simvastatin 40 mg"],["TETRA","0.5%TETRACAINE HCL"],["THE","THEOPHYLLINE 200 MG SR/TAB"],["TOL50","TOLPERISONE HCL 50MG/TAB"],["TRIAM LO1","T.A. LOTION 0.1%(starlone)"],
+["1AMY","ยาอมมะแว้ง รสบ๊วย"],
+["1PTL","ฟ้าทะลายโจรแคปซูล 400 mg./tab."],
+["1SENN","ยาระบายมะขามแขก(senna7.5)"],
+["1VAN","เจลว่านหางจระเข้"],
+["3PET","สมุนไพรเพชรสังฆาต"],
+["410000000239140020182750","เถาวัลย์เปรียง"],
+["4.1003E+18","ยาเหลืองปิดสมุทร"],
+["4.101E+18","ยาจันทน์ลีลา"],
+["4.2002E+18","สมุนไพรขิง"],
+["4.2003E+18","ชาสมุนไพรชุมเห็ดเทศ"],
+["HERB1","ฟ้าทะลายโจร ชนิดแคปซูล 500mg"],
+["HERB2","ขมิ้นชัน ชนิดแคปซูล 500 mg"],
+["SHT1","สมุนไพรสหัฐธารา"],
+["6014","ENAF - 150(UMEDA)"],
+["6023","FMP(เจนนี่ ไทยนครพัฒนา)"],
+["6024","R-DENT(ไทยนครพัฒนา)"],
+["6028","FREELOX"],
+["6030","แถบตรวจปัสสาวะ"],
+["6033","EXLUTON(เดลิต้อน พอนด์เคมีคอล)"]
+];
 
 let receiveRows=[],dispenseRows=[],historyLog=[],lineLog2=[];
 let editMode='receive';
@@ -1635,17 +1870,32 @@ async function loadStock(){
     document.getElementById('st-total').textContent=_allStockItems.length;
     document.getElementById('st-expiring').textContent=red.length;
     renderSummaryTable(_allStockItems);renderExpiringList();
-    const makeGL=(list,bg,label)=>{
+    if(typeof window._greenPage==='undefined') window._greenPage=1;
+    const GL_PAGE=10;
+    const makeGL=(list,bg,label,groupKey)=>{
       if(!list.length)return '';
       const sorted=[...list].sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
-      return `<div class="group-hd" style="background:${bg};">${label}</div>${sorted.map((i,idx)=>{
+      const isGreen=groupKey==='green';
+      const page=isGreen?window._greenPage:1;
+      const total=sorted.length;
+      const perPage=isGreen?GL_PAGE:total;
+      const totalPages=isGreen?Math.max(1,Math.ceil(total/perPage)):1;
+      const pageItems=sorted.slice((page-1)*perPage,page*perPage);
+      const pgBtns=isGreen&&totalPages>1?`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(30,107,58,.2);">
+          <button onclick="event.stopPropagation();setGreenPage(${page-1})" ${page<=1?'disabled':''} style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;opacity:${page<=1?.4:1}">‹ ก่อน</button>
+          <span style="font-size:11px;color:rgba(255,255,255,.8);">หน้า ${page}/${totalPages} · ${total} รายการ</span>
+          <button onclick="event.stopPropagation();setGreenPage(${page+1})" ${page>=totalPages?'disabled':''} style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;opacity:${page>=totalPages?.4:1}">ถัดไป ›</button>
+        </div>`:'';
+      return `<div class="group-hd" style="background:${bg};">${label}${isGreen?' ('+total+' รายการ)':''}</div>${pageItems.map((i,idx)=>{
         const sn=i.name.replace(/'/g,"\\'");
-        return `<div class="group-drug-item" onclick="showDrugDetail('${sn}')"><span class="group-drug-num">${String(idx+1).padStart(2,'0')}</span><div style="flex:1;"><div class="group-drug-name">${i.name}</div><div class="group-drug-exp">EXP: ${fmtExp(i.exp)} · คงเหลือ ${Math.round(i.qty)} ${i.unit}</div></div><span class="group-drug-arrow">›</span></div>`;
-      }).join('')}`;
+        const realIdx=(page-1)*perPage+idx;
+        return `<div class="group-drug-item" onclick="showDrugDetail('${sn}')"><span class="group-drug-num">${String(realIdx+1).padStart(2,'0')}</span><div style="flex:1;"><div class="group-drug-name">${i.name}</div><div class="group-drug-exp">EXP: ${fmtExp(i.exp)} · คงเหลือ ${Math.round(i.qty)} ${i.unit}</div></div><span class="group-drug-arrow">›</span></div>`;
+      }).join('')}${pgBtns}`;
     };
-    let g=makeGL(red,'#C0392B','🔴 0–6 เดือน');
-    g+=makeGL(yellow,'#A0522D','🟡 6–12 เดือน');
-    g+=makeGL(green,'#1E6B3A','🟢 มากกว่า 12 เดือน');
+    let g=makeGL(red,'#C0392B','🔴 0–6 เดือน','red');
+    g+=makeGL(yellow,'#A0522D','🟡 6–12 เดือน','yellow');
+    g+=makeGL(green,'#1E6B3A','🟢 มากกว่า 12 เดือน','green');
     document.getElementById('stock-list').innerHTML=g||'<div class="empty"><div class="empty-icon">📦</div>ไม่พบข้อมูลคลังยา</div>';
   }catch(e){
     document.getElementById('stock-summary-card').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ</div>';
@@ -2242,6 +2492,359 @@ function renderLineLog(){
 }
 function clearLineLog(){lineLog2=[];renderLineLog();}
 
+
+// ══ REQUISITION (ใบเบิกยา) ════════════════════════════════════
+
+function _reqDocNum(){
+  // เลขที่ใบเบิก: REQ-YYYYMMDD-XXXX
+  const d=new Date();
+  const ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  const seq=String(Math.floor(Math.random()*9000)+1000);
+  return 'REQ-'+ymd+'-'+seq;
+}
+
+// สร้างใบเบิกจากฟอร์มที่กรอกอยู่
+function previewRequisition(){
+  const name=document.getElementById('d-name').value.trim();
+  const code=document.getElementById('d-code').value.trim();
+  const lot=document.getElementById('d-lot').value;
+  const exp=document.getElementById('d-exp').value;
+  const unit=document.getElementById('d-unit').value;
+  const qty=document.getElementById('d-qty').value;
+  const requester=document.getElementById('d-requester').value;
+  const note=document.getElementById('d-note').value.trim();
+
+  if(!name){showAlert('กรุณาเลือกชื่อยาก่อน','warning');return;}
+  if(!lot){showAlert('กรุณาเลือก LOT ก่อน','warning');return;}
+  if(!qty){showAlert('กรุณาระบุจำนวนก่อน','warning');return;}
+
+  const items=[{name,code,lot,exp,unit,qty:parseInt(qty)||0,note:''}];
+  _renderRequisitionModal({
+    items,
+    requester:requester||'—',
+    date:todayTH(),
+    note,
+    source:'form'
+  });
+}
+
+// สร้างใบเบิกจากรายการเบิกในล็อก (ตามวันที่ที่กรอง หรือ 10 รายการล่าสุด)
+function openReqFromLog(){
+  let rows=dispenseRows;
+  // ใช้ filter วันที่ถ้ามี
+  if(_dispDateFilter){
+    const target=fmtDate(_dispDateFilter.split('-').reverse().join('/'));
+    rows=rows.filter(r=>fmtDate(r.date)===target||r.date===_dispDateFilter);
+  }
+  if(!rows.length){
+    showAlert('ไม่มีรายการเบิก — กรองวันที่หรือโหลดข้อมูลก่อน','warning');
+    return;
+  }
+  // รวมรายการที่ซ้ำกัน (name+lot)
+  const map={};
+  rows.slice(0,30).forEach(r=>{
+    const k=r.name+'||'+r.lot;
+    if(!map[k]) map[k]={name:r.name,code:r.code,lot:r.lot,exp:r.exp,unit:r.unit,qty:0,requester:r.requester||'',note:r.note||''};
+    map[k].qty+=parseFloat(r.qty)||0;
+    if(r.requester&&!map[k].requester) map[k].requester=r.requester;
+  });
+  const items=Object.values(map);
+  // หาผู้เบิกหลัก (ที่ปรากฏมากสุด)
+  const reqCount={};
+  rows.forEach(r=>{if(r.requester)reqCount[r.requester]=(reqCount[r.requester]||0)+1;});
+  const mainReq=Object.entries(reqCount).sort((a,b)=>b[1]-a[1])[0]?.[0]||currentUser?.name||'—';
+  // วันที่
+  const dateLabel=_dispDateFilter
+    ? fmtDate(_dispDateFilter.split('-').reverse().join('/'))
+    : fmtDate(rows[0]?.date||todayTH());
+
+  _renderRequisitionModal({
+    items,
+    requester:mainReq,
+    date:dateLabel,
+    note:_dispDateFilter?'ใบเบิกยาประจำวัน '+dateLabel:'ใบเบิกยา (รายการล่าสุด)',
+    source:'log'
+  });
+}
+
+function _renderRequisitionModal(data){
+  const {items,requester,date,note,source}=data;
+  const docNum=_reqDocNum();
+  const totalItems=items.length;
+  const totalQty=items.reduce((s,i)=>s+(parseFloat(i.qty)||0),0);
+
+  // Doc number
+  document.getElementById('req-doc-num').textContent='เลขที่: '+docNum;
+
+  // Meta
+  document.getElementById('req-meta').innerHTML=`
+    <div class="req-meta-item">
+      <div class="req-meta-label">วันที่เบิก</div>
+      <div class="req-meta-val">${date}</div>
+    </div>
+    <div class="req-meta-item">
+      <div class="req-meta-label">ผู้เบิก</div>
+      <div class="req-meta-val">${requester||'—'}</div>
+    </div>
+    <div class="req-meta-item">
+      <div class="req-meta-label">จำนวนรายการ</div>
+      <div class="req-meta-val">${totalItems} รายการ</div>
+    </div>
+    <div class="req-meta-item">
+      <div class="req-meta-label">หน่วยรวม</div>
+      <div class="req-meta-val">${Math.round(totalQty)} หน่วย</div>
+    </div>`;
+
+  // Table body
+  document.getElementById('req-table-body').innerHTML=items.map((item,i)=>`
+    <tr>
+      <td style="color:#94A3B8;font-family:'IBM Plex Mono',monospace;">${String(i+1).padStart(2,'0')}</td>
+      <td>
+        <div class="req-drug-name">${item.name}</div>
+        <div class="req-drug-sub">${item.code||''}</div>
+      </td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#475569;">${item.lot||'—'}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#C07000;">${fmtExp(item.exp)||'—'}</td>
+      <td style="color:#1A5FD4;">${Math.round(parseFloat(item.qty)||0)}</td>
+      <td style="color:#64748B;font-size:10px;">${item.unit||''}</td>
+    </tr>`).join('');
+
+  // Summary
+  document.getElementById('req-summary').innerHTML=`
+    <span>รวมทั้งหมด ${totalItems} รายการยา</span>
+    <span style="font-size:14px;">${Math.round(totalQty)} หน่วย</span>`;
+
+  // Note
+  const noteEl=document.getElementById('req-note-area');
+  if(note){
+    noteEl.textContent='หมายเหตุ: '+note;
+    noteEl.style.display='block';
+  }else{
+    noteEl.style.display='none';
+  }
+
+  // Signature
+  document.getElementById('req-sign-requester').textContent=requester||'—';
+  document.getElementById('req-sign-date').textContent='วันที่: '+date;
+
+  document.getElementById('req-modal').classList.add('open');
+}
+
+function closeReqModal(){
+  document.getElementById('req-modal').classList.remove('open');
+}
+
+async function shareRequisition(){
+  // แชร์เนื้อหาใบเบิกเป็น text (สำหรับ LINE, share sheet ฯลฯ)
+  const docNum=document.getElementById('req-doc-num').textContent;
+  const date=document.querySelector('#req-meta .req-meta-val')?.textContent||todayTH();
+  const requester=document.querySelectorAll('#req-meta .req-meta-val')[1]?.textContent||'—';
+  const rows=[...document.querySelectorAll('#req-table-body tr')];
+  const lines=rows.map((tr,i)=>{
+    const tds=tr.querySelectorAll('td');
+    const name=tds[1]?.querySelector('.req-drug-name')?.textContent||'';
+    const qty=tds[4]?.textContent||'';
+    const unit=tds[5]?.textContent||'';
+    return `  ${i+1}. ${name} ${qty} ${unit}`;
+  }).join('\n');
+
+  const text=`📋 ใบเบิกยา — PCU สะบ้าย้อย\n${docNum}\nวันที่: ${date}\nผู้เบิก: ${requester}\n\nรายการ:\n${lines}\n\n(สร้างจากระบบบริหารจัดการคลังยา)`;
+
+  if(navigator.share){
+    try{
+      await navigator.share({title:'ใบเบิกยา PCU สะบ้าย้อย',text});
+      return;
+    }catch(e){}
+  }
+  // fallback: copy to clipboard
+  try{
+    await navigator.clipboard.writeText(text);
+    showAlert('คัดลอกข้อความใบเบิกยาแล้ว ✓','success');
+  }catch(e){
+    showAlert('ไม่สามารถแชร์ได้ กรุณาใช้ปุ่มพิมพ์','warning');
+  }
+}
+
+// ── GREEN GROUP PAGINATION ────────────────────────────────────
+function setGreenPage(p){
+  window._greenPage=Math.max(1,p);
+  // re-render stock list
+  loadStock();
+}
+
+// ══ STOCK REQUISITION (ใบเบิกยาจากคลัง) ══════════════════════
+let _stockReqCart=[]; // [{code,name,unit,qty,stockQty,exp,orderQty,usageRate}]
+
+function openStockRequisition(){
+  if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
+  _stockReqCart=[];
+
+  // เรียงยา: แดง (ใกล้หมดอายุ/น้อย) → เหลือง → เขียว
+  const sorted=[..._allStockItems].sort((a,b)=>{
+    const ga=(a.group||'').trim(),gb=(b.group||'').trim();
+    const ordA=ga==='สีแดง'||ga==='แดง'?0:ga==='สีเหลือง'||ga==='เหลือง'?1:2;
+    const ordB=gb==='สีแดง'||gb==='แดง'?0:gb==='สีเหลือง'||gb==='เหลือง'?1:2;
+    if(ordA!==ordB)return ordA-ordB;
+    // เรียงตาม qty น้อยก่อด
+    return a.qty-b.qty;
+  });
+
+  // สร้าง nameMap รวม qty ต่อชื่อยา
+  const nameMap={};
+  sorted.forEach(i=>{
+    if(!nameMap[i.name])nameMap[i.name]={
+      name:i.name,code:i.code,unit:i.unit,qty:0,
+      group:i.group||'',exp:i.exp
+    };
+    nameMap[i.name].qty+=i.qty;
+    const ed=parseExpDate(i.exp);
+    const ed2=parseExpDate(nameMap[i.name].exp);
+    if(ed&&(!ed2||ed<ed2))nameMap[i.name].exp=i.exp;
+    if(i.group)nameMap[i.name].group=i.group;
+  });
+  const items=Object.values(nameMap);
+
+  const modal=document.getElementById('stock-req-modal');
+  const listEl=document.getElementById('stock-req-list');
+  if(!modal||!listEl)return;
+
+  listEl.innerHTML=items.map((it,idx)=>{
+    const g=(it.group||'').trim();
+    const isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
+    const badge=isR?'<span style="background:#FEE2E2;color:#C0392B;padding:2px 6px;border-radius:6px;font-size:9px;font-weight:700;">ใกล้หมด</span>':
+                isY?'<span style="background:#FFF3DC;color:#C07000;padding:2px 6px;border-radius:6px;font-size:9px;font-weight:700;">ระวัง</span>':'';
+    return `<div class="stock-req-row" id="srr-${idx}">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="src-${idx}" style="width:16px;height:16px;cursor:pointer;accent-color:var(--blue);"
+          onchange="toggleStockReqItem(${idx},'${it.name.replace(/'/g,"\\'").replace(/"/g,"&quot;")}','${it.code}','${it.unit}',${Math.round(it.qty)})">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;">${it.name} ${badge}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;">
+            ${it.code} · คงเหลือ <span style="color:${isR?'var(--red)':isY?'var(--amber)':'var(--teal)'};">${Math.round(it.qty)}</span> ${it.unit}
+            ${it.exp?'· EXP: '+fmtExp(it.exp):''}
+          </div>
+        </div>
+        <input type="number" min="1" placeholder="จัดซื้อ"
+          id="srqty-${idx}" disabled
+          style="width:68px;padding:5px 8px;border:1.5px solid var(--border2);border-radius:8px;
+                 font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--text1);
+                 background:var(--surface2);text-align:center;">
+      </div>
+    </div>`;
+  }).join('');
+
+  modal.classList.add('open');
+}
+
+function toggleStockReqItem(idx,name,code,unit,stockQty){
+  const cb=document.getElementById('src-'+idx);
+  const qtyInput=document.getElementById('srqty-'+idx);
+  if(cb.checked){
+    qtyInput.disabled=false;qtyInput.focus();
+    qtyInput.style.background='var(--blue-l)';
+    qtyInput.style.borderColor='var(--blue)';
+  }else{
+    qtyInput.disabled=true;qtyInput.value='';
+    qtyInput.style.background='var(--surface2)';
+    qtyInput.style.borderColor='var(--border2)';
+  }
+}
+
+function buildStockReq(){
+  // รวบรวมรายการที่ checked
+  const rows=document.querySelectorAll('[id^="srr-"]');
+  const items=[];
+  rows.forEach((row,idx)=>{
+    const cb=document.getElementById('src-'+idx);
+    if(!cb||!cb.checked)return;
+    const qtyInput=document.getElementById('srqty-'+idx);
+    const orderQty=parseInt(qtyInput?.value)||0;
+    // ดึงข้อมูลจาก nameMap
+    const nameEl=row.querySelector('[style*="font-weight:700"]');
+    const subEl=row.querySelector('[style*="IBM Plex Mono"]');
+    const name=nameEl?.textContent?.replace(/ใกล้หมด|ระวัง/g,'').trim()||'';
+    const sub=subEl?.textContent||'';
+    const codeMatch=sub.match(/^([^\s·]+)/);
+    const code=codeMatch?codeMatch[1].trim():'';
+    const qtyMatch=sub.match(/คงเหลือ\s*([\d.]+)/);
+    const stockQty=qtyMatch?parseFloat(qtyMatch[1]):0;
+    const unitMatch=sub.match(/คงเหลือ\s*[\d.]+\s*(\S+)/);
+    const unit=unitMatch?unitMatch[1]:'';
+    items.push({name,code,unit,stockQty,orderQty});
+  });
+  if(!items.length){showAlert('เลือกยาอย่างน้อย 1 รายการก่อน','warning');return;}
+
+  // ปิด select modal แล้วเปิดใบเบิก
+  document.getElementById('stock-req-modal').classList.remove('open');
+  _renderRequisitionModal({
+    items:items.map(it=>({
+      name:it.name,code:it.code,lot:'',exp:'',
+      unit:it.unit,qty:it.orderQty||0,
+      note:`คงเหลือ ${Math.round(it.stockQty)} ${it.unit}`
+    })),
+    requester:currentUser?currentUser.name:'—',
+    date:todayTH(),
+    note:'ใบเบิกยาจากคลัง PCU สะบ้าย้อย',
+    source:'stock',
+    extraCols:items  // pass for custom table render
+  });
+}
+
+// ── PATCH _renderRequisitionModal to handle stock mode ────────
+const _origRenderReq=_renderRequisitionModal;
+function _renderRequisitionModal(data){
+  if(data.source==='stock'&&data.extraCols){
+    // custom table for stock requisition
+    const {extraCols,requester,date}=data;
+    const docNum=_reqDocNum();
+    const totalItems=extraCols.length;
+    const totalOrder=extraCols.reduce((s,i)=>s+(i.orderQty||0),0);
+
+    document.getElementById('req-doc-num').textContent='เลขที่: '+docNum;
+    document.getElementById('req-meta').innerHTML=`
+      <div class="req-meta-item"><div class="req-meta-label">วันที่เบิก</div><div class="req-meta-val">${date}</div></div>
+      <div class="req-meta-item"><div class="req-meta-label">ผู้เบิก</div><div class="req-meta-val">${requester||'—'}</div></div>
+      <div class="req-meta-item"><div class="req-meta-label">จำนวนรายการ</div><div class="req-meta-val">${totalItems} รายการ</div></div>
+      <div class="req-meta-item"><div class="req-meta-label">จำนวนจัดซื้อรวม</div><div class="req-meta-val">${totalOrder} หน่วย</div></div>`;
+
+    // Custom stock req table with all required columns
+    document.getElementById('req-table-body').innerHTML=`
+      <tr><td colspan="6" style="padding:0;"></td></tr>`;
+    // Override entire table in printable-req
+    const tbl=document.querySelector('#printable-req .req-table');
+    if(tbl){
+      tbl.querySelector('thead').innerHTML=`<tr>
+        <th style="width:22px;">#</th>
+        <th>รหัสยา</th>
+        <th>ชื่อยา</th>
+        <th style="text-align:right;">อัตราใช้/เดือน</th>
+        <th style="text-align:right;">คงคลัง</th>
+        <th style="text-align:right;">จัดซื้อ</th>
+        <th>หน่วย</th>
+      </tr>`;
+      tbl.querySelector('tbody').innerHTML=extraCols.map((it,i)=>`<tr style="${i%2===1?'background:#F8FAFC;':''}">
+        <td style="color:#94A3B8;font-family:'IBM Plex Mono',monospace;">${String(i+1).padStart(2,'0')}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#475569;">${it.code||'—'}</td>
+        <td><div class="req-drug-name">${it.name}</div></td>
+        <td style="text-align:right;color:#64748B;">—</td>
+        <td style="text-align:right;color:#1A5FD4;">${Math.round(it.stockQty)}</td>
+        <td style="text-align:right;color:#C0392B;font-weight:700;">${it.orderQty||'—'}</td>
+        <td style="color:#64748B;font-size:10px;">${it.unit}</td>
+      </tr>`).join('');
+    }
+
+    document.getElementById('req-summary').innerHTML=`
+      <span>รวม ${totalItems} รายการยา</span>
+      <span style="font-size:14px;">จัดซื้อรวม ${totalOrder} หน่วย</span>`;
+    document.getElementById('req-note-area').textContent='หมายเหตุ: '+data.note;
+    document.getElementById('req-note-area').style.display='block';
+    document.getElementById('req-sign-requester').textContent=requester||'—';
+    document.getElementById('req-sign-date').textContent='วันที่: '+date;
+    document.getElementById('req-modal').classList.add('open');
+  }else{
+    _origRenderReq(data);
+  }
+}
 
 // ══ DATE FILTER FUNCTIONS ════════════════════════════════════
 function applyReceiveDateFilter(){
