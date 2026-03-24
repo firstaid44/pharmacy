@@ -1157,8 +1157,24 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
              width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;
              display:flex;align-items:center;justify-content:center;color:var(--text2);">✕</button>
     <div class="modal-title">📋 เลือกยาที่ต้องการเบิก</div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:1rem;">เลือก ☑ และกรอกจำนวนที่ต้องการจัดซื้อ — ยาใกล้หมดอายุ/น้อยแสดงก่อน</div>
-    <div id="stock-req-list" style="max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:.75rem;">เลือก ☑ และกรอกจำนวนที่ต้องการจัดซื้อ — ยาใกล้หมดอายุ/น้อยแสดงก่อน</div>
+    <!-- Search box -->
+    <div style="position:relative;margin-bottom:.875rem;">
+      <input type="text" id="stock-req-search"
+        placeholder="🔍 ค้นหาชื่อยาหรือรหัสยา..."
+        oninput="filterStockReqList(this.value)"
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+        style="width:100%;padding:10px 36px 10px 12px;border:1.5px solid var(--border2);
+               border-radius:10px;font-size:13px;background:var(--surface2);color:var(--text1);
+               font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;outline:none;
+               transition:border-color .15s;">
+      <button onclick="document.getElementById('stock-req-search').value='';filterStockReqList('')"
+        style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
+               background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;
+               padding:4px;line-height:1;" title="ล้าง">✕</button>
+    </div>
+    <div id="stock-req-count" style="font-size:11px;color:var(--text3);margin-bottom:6px;"></div>
+    <div id="stock-req-list" style="max-height:50vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
     <div class="btn-row" style="margin-top:1rem;">
       <button class="btn" onclick="document.getElementById('stock-req-modal').classList.remove('open')">ยกเลิก</button>
       <button class="btn btn-primary" onclick="buildStockReq()">📄 สร้างใบเบิก</button>
@@ -1870,32 +1886,32 @@ async function loadStock(){
     document.getElementById('st-total').textContent=_allStockItems.length;
     document.getElementById('st-expiring').textContent=red.length;
     renderSummaryTable(_allStockItems);renderExpiringList();
-    if(typeof window._greenPage==='undefined') window._greenPage=1;
+    if(typeof window._glPages==='undefined') window._glPages={red:1,yellow:1,green:1};
     const GL_PAGE=10;
     const makeGL=(list,bg,label,groupKey)=>{
       if(!list.length)return '';
       const sorted=[...list].sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
-      const isGreen=groupKey==='green';
-      const page=isGreen?window._greenPage:1;
+      const page=window._glPages[groupKey]||1;
       const total=sorted.length;
-      const perPage=isGreen?GL_PAGE:total;
-      const totalPages=isGreen?Math.max(1,Math.ceil(total/perPage)):1;
-      const pageItems=sorted.slice((page-1)*perPage,page*perPage);
-      const pgBtns=isGreen&&totalPages>1?`
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(30,107,58,.2);">
-          <button onclick="event.stopPropagation();setGreenPage(${page-1})" ${page<=1?'disabled':''} style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;opacity:${page<=1?.4:1}">‹ ก่อน</button>
-          <span style="font-size:11px;color:rgba(255,255,255,.8);">หน้า ${page}/${totalPages} · ${total} รายการ</span>
-          <button onclick="event.stopPropagation();setGreenPage(${page+1})" ${page>=totalPages?'disabled':''} style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;opacity:${page>=totalPages?.4:1}">ถัดไป ›</button>
+      const totalPages=Math.max(1,Math.ceil(total/GL_PAGE));
+      const pageItems=sorted.slice((page-1)*GL_PAGE,page*GL_PAGE);
+      const pgBtns=totalPages>1?`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(0,0,0,.15);">
+          <button onclick="event.stopPropagation();setGroupPage('${groupKey}',${page-1})" ${page<=1?'disabled':''} style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;${page<=1?'opacity:.35':''}">‹ ก่อน</button>
+          <span style="font-size:11px;color:rgba(255,255,255,.85);">หน้า ${page}/${totalPages} · ${total} รายการ</span>
+          <button onclick="event.stopPropagation();setGroupPage('${groupKey}',${page+1})" ${page>=totalPages?'disabled':''} style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;${page>=totalPages?'opacity:.35':''}">ถัดไป ›</button>
         </div>`:'';
-      return `<div class="group-hd" style="background:${bg};">${label}${isGreen?' ('+total+' รายการ)':''}</div>${pageItems.map((i,idx)=>{
+      return `<div class="group-hd" style="background:${bg};">${label} (${total} รายการ)</div>${pageItems.map((i,idx)=>{
         const sn=i.name.replace(/'/g,"\\'");
-        const realIdx=(page-1)*perPage+idx;
+        const realIdx=(page-1)*GL_PAGE+idx;
         return `<div class="group-drug-item" onclick="showDrugDetail('${sn}')"><span class="group-drug-num">${String(realIdx+1).padStart(2,'0')}</span><div style="flex:1;"><div class="group-drug-name">${i.name}</div><div class="group-drug-exp">EXP: ${fmtExp(i.exp)} · คงเหลือ ${Math.round(i.qty)} ${i.unit}</div></div><span class="group-drug-arrow">›</span></div>`;
       }).join('')}${pgBtns}`;
     };
     let g=makeGL(red,'#C0392B','🔴 0–6 เดือน','red');
     g+=makeGL(yellow,'#A0522D','🟡 6–12 เดือน','yellow');
     g+=makeGL(green,'#1E6B3A','🟢 มากกว่า 12 เดือน','green');
+    // เก็บไว้ใช้ใน setGroupPage
+    window._glRed=red;window._glYellow=yellow;window._glGreen=green;
     document.getElementById('stock-list').innerHTML=g||'<div class="empty"><div class="empty-icon">📦</div>ไม่พบข้อมูลคลังยา</div>';
   }catch(e){
     document.getElementById('stock-summary-card').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ</div>';
@@ -1904,7 +1920,7 @@ async function loadStock(){
 }
 
 function renderSummaryTable(items){
-  const PER=5;
+  const PER=10;
   const nm={};
   items.forEach(i=>{
     if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',earliestExp:null,exp:''};
@@ -2665,11 +2681,31 @@ async function shareRequisition(){
   }
 }
 
-// ── GREEN GROUP PAGINATION ────────────────────────────────────
-function setGreenPage(p){
-  window._greenPage=Math.max(1,p);
-  // re-render stock list
+// ── GROUP PAGINATION ──────────────────────────────────────────
+function setGroupPage(groupKey,p){
+  if(!window._glPages) window._glPages={red:1,yellow:1,green:1};
+  const arr=groupKey==='red'?window._glRed:groupKey==='yellow'?window._glYellow:window._glGreen;
+  const total=arr?arr.length:0;
+  const totalPages=Math.max(1,Math.ceil(total/10));
+  window._glPages[groupKey]=Math.max(1,Math.min(p,totalPages));
   loadStock();
+}
+
+// ── STOCK REQ SEARCH ─────────────────────────────────────────
+let _stockReqAllRows=[]; // เก็บทุก row HTML สำหรับ filter
+
+function filterStockReqList(q){
+  const list=document.getElementById('stock-req-list');
+  const cnt=document.getElementById('stock-req-count');
+  if(!list)return;
+  const qLow=(q||'').toLowerCase().trim();
+  let shown=0;
+  _stockReqAllRows.forEach(({el,name,code})=>{
+    const match=!qLow||name.toLowerCase().includes(qLow)||code.toLowerCase().includes(qLow);
+    el.style.display=match?'':'none';
+    if(match)shown++;
+  });
+  if(cnt)cnt.textContent=qLow?`พบ ${shown} รายการ`:`ทั้งหมด ${_stockReqAllRows.length} รายการ`;
 }
 
 // ══ STOCK REQUISITION (ใบเบิกยาจากคลัง) ══════════════════════
@@ -2732,6 +2768,19 @@ function openStockRequisition(){
       </div>
     </div>`;
   }).join('');
+
+  // เก็บ reference ทุก row สำหรับ filter
+  _stockReqAllRows=items.map((it,idx)=>({
+    el:document.getElementById('srr-'+idx),
+    name:it.name,
+    code:it.code||''
+  }));
+
+  // reset search + count
+  const searchEl=document.getElementById('stock-req-search');
+  if(searchEl)searchEl.value='';
+  const cntEl=document.getElementById('stock-req-count');
+  if(cntEl)cntEl.textContent=`ทั้งหมด ${items.length} รายการ`;
 
   modal.classList.add('open');
 }
