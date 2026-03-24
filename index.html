@@ -1952,7 +1952,7 @@ function renderSummaryTable(items){
   });
   let rows=Object.values(nm);
 
-  // ── กำหนดสี/กลุ่ม ────────────────────────────────────────
+  // ── กำหนด _grp ───────────────────────────────────────────
   const now=new Date();now.setHours(0,0,0,0);
   rows.forEach(r=>{
     const g=(r.group||'').trim();
@@ -1960,11 +1960,8 @@ function renderSummaryTable(items){
     else if(g==='สีเหลือง'||g==='เหลือง'){r._grp='yellow';}
     else if(g==='สีเขียว'||g==='เขียว'){r._grp='green';}
     else{
-      // คำนวณจาก EXP ถ้าไม่มีกลุ่ม
-      if(r.earliestExp){
-        const mo=(r.earliestExp-now)/(1000*60*60*24*30.4);
-        r._grp=mo<=6?'red':mo<=12?'yellow':'green';
-      }else{r._grp='green';}
+      if(r.earliestExp){const mo=(r.earliestExp-now)/(1000*60*60*24*30.4);r._grp=mo<=6?'red':mo<=12?'yellow':'green';}
+      else{r._grp='green';}
     }
   });
 
@@ -1973,7 +1970,7 @@ function renderSummaryTable(items){
   const fSearch=(window._sumFilterSearch||'').toLowerCase().trim();
   let filtered=rows;
   if(fGrp!=='all') filtered=filtered.filter(r=>r._grp===fGrp);
-  if(fSearch) filtered=filtered.filter(r=>r.name.toLowerCase().includes(fSearch)||r.code.toLowerCase().includes(fSearch));
+  if(fSearch) filtered=filtered.filter(r=>r.name.toLowerCase().includes(fSearch)||(r.code||'').toLowerCase().includes(fSearch));
 
   // ── Sort ─────────────────────────────────────────────────
   filtered.sort((a,b)=>{
@@ -1981,14 +1978,18 @@ function renderSummaryTable(items){
     if(summarySort==='qty'){va=a.qty;vb=b.qty;}
     else if(summarySort==='name'){va=a.name;vb=b.name;}
     else if(summarySort==='exp'){va=a.earliestExp||new Date(9999,0,1);vb=b.earliestExp||new Date(9999,0,1);}
-    else if(summarySort==='group'){
-      const ord={red:0,yellow:1,green:2};
-      va=ord[a._grp]??2;vb=ord[b._grp]??2;
-    }else{va=a.qty;vb=b.qty;}
+    else if(summarySort==='group'){const ord={red:0,yellow:1,green:2};va=ord[a._grp]??2;vb=ord[b._grp]??2;}
+    else{va=a.qty;vb=b.qty;}
     if(va<vb)return summarySortDir==='asc'?-1:1;
     if(va>vb)return summarySortDir==='asc'?1:-1;
     return 0;
   });
+
+  // ── นับแต่ละกลุ่ม ─────────────────────────────────────────
+  const cntAll=rows.length;
+  const cntR=rows.filter(r=>r._grp==='red').length;
+  const cntY=rows.filter(r=>r._grp==='yellow').length;
+  const cntG=rows.filter(r=>r._grp==='green').length;
 
   // ── Pagination ────────────────────────────────────────────
   const total=filtered.length,totalPages=Math.max(1,Math.ceil(total/PER));
@@ -1996,62 +1997,51 @@ function renderSummaryTable(items){
   const pageRows=filtered.slice((summaryPage-1)*PER,summaryPage*PER);
   const thC=col=>summarySort===col?(summarySortDir==='asc'?' sort-asc':' sort-desc'):'';
 
-  // นับแต่ละกลุ่ม (ก่อน filter กลุ่ม)
-  const cntAll=rows.length;
-  const cntR=rows.filter(r=>r._grp==='red').length;
-  const cntY=rows.filter(r=>r._grp==='yellow').length;
-  const cntG=rows.filter(r=>r._grp==='green').length;
-
-  // กลุ่มสีประจำ
-  const GRP_COLOR={
-    red:{bg:'#C0392B',light:'#FEE2E2',text:'#C0392B',label:'🔴 0–6 เดือน'},
-    yellow:{bg:'#A0522D',light:'#FFF3DC',text:'#C07000',label:'🟡 6–12 เดือน'},
-    green:{bg:'#1E6B3A',light:'#E6F7F2',text:'#0B9E72',label:'🟢 >12 เดือน'},
+  // ── Active chip style helper ──────────────────────────────
+  const chipStyle=(key,activeBg,activeBorder,activeColor)=>{
+    const on=fGrp===key;
+    return `padding:5px 11px;border-radius:20px;border:1.5px solid ${on?activeBorder:'var(--border2)'};background:${on?activeBg:'var(--surface2)'};color:${on?activeColor:'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;`;
   };
 
   document.getElementById('stock-summary-card').innerHTML=`
     <!-- Filter bar -->
-    <div style="padding:10px 12px 8px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
-      <!-- Group filter chips -->
-      <button onclick="setSumFilter('all')" class="_sf-btn" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${fGrp==='all'?'var(--blue)':'var(--border2)'};background:${fGrp==='all'?'var(--blue-l)':'var(--surface)'};color:${fGrp==='all'?'var(--blue)':'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">ทั้งหมด (${cntAll})</button>
-      <button onclick="setSumFilter('red')"  class="_sf-btn" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${fGrp==='red'?'#C0392B':'var(--border2)'};background:${fGrp==='red'?'#FEE2E2':'var(--surface)'};color:${fGrp==='red'?'#C0392B':'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🔴 0–6 เดือน (${cntR})</button>
-      <button onclick="setSumFilter('yellow')" class="_sf-btn" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${fGrp==='yellow'?'#C07000':'var(--border2)'};background:${fGrp==='yellow'?'#FFF3DC':'var(--surface)'};color:${fGrp==='yellow'?'#C07000':'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🟡 6–12 เดือน (${cntY})</button>
-      <button onclick="setSumFilter('green')" class="_sf-btn" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${fGrp==='green'?'#1E6B3A':'var(--border2)'};background:${fGrp==='green'?'#E6F7F2':'var(--surface)'};color:${fGrp==='green'?'#1E6B3A':'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🟢 >12 เดือน (${cntG})</button>
-      <!-- Search -->
-      <div style="position:relative;flex:1;min-width:130px;">
+    <div style="padding:10px 10px 8px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+      <button onclick="setSumFilter('all')"    style="${chipStyle('all',   'var(--blue-l)',  'rgba(26,95,212,.4)',  'var(--blue)'  )}">ทั้งหมด (${cntAll})</button>
+      <button onclick="setSumFilter('red')"    style="${chipStyle('red',   'var(--red-l)',   'rgba(217,48,37,.4)', 'var(--red)'   )}">🔴 &lt;6 เดือน (${cntR})</button>
+      <button onclick="setSumFilter('yellow')" style="${chipStyle('yellow','var(--amber-l)', 'rgba(192,112,0,.4)', 'var(--amber)' )}">🟡 6–12 เดือน (${cntY})</button>
+      <button onclick="setSumFilter('green')"  style="${chipStyle('green', 'var(--green-l)', 'rgba(30,138,74,.4)', 'var(--green)' )}">🟢 &gt;12 เดือน (${cntG})</button>
+      <div style="position:relative;flex:1;min-width:110px;">
         <input type="text" placeholder="🔍 ค้นหายา..." value="${window._sumFilterSearch||''}"
           oninput="window._sumFilterSearch=this.value;summaryPage=1;renderSummaryTable(_allStockItems)"
-          style="width:100%;padding:6px 28px 6px 10px;border:1.5px solid var(--border2);border-radius:8px;
-                 font-size:12px;background:var(--surface);color:var(--text1);font-family:inherit;outline:none;">
-        ${(window._sumFilterSearch||'')?`<button onclick="window._sumFilterSearch='';summaryPage=1;renderSummaryTable(_allStockItems)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px;">✕</button>`:''}
+          style="width:100%;padding:6px 26px 6px 10px;border:1.5px solid var(--border2);border-radius:20px;
+                 font-size:12px;background:var(--surface2);color:var(--text1);font-family:inherit;outline:none;">
+        ${(window._sumFilterSearch||'')?`<button onclick="window._sumFilterSearch='';summaryPage=1;renderSummaryTable(_allStockItems)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;line-height:1;padding:0;">✕</button>`:''}
       </div>
     </div>
-    <!-- Table -->
+    <!-- Table (original style) -->
     <table class="sum-table"><thead><tr>
-      <th class="${thC('name')}" onclick="setSummarySort('name')">ชื่อยา</th>
+      <th class="${thC('name')}"  onclick="setSummarySort('name')">ชื่อยา</th>
       <th class="${thC('group')}" onclick="setSummarySort('group')">กลุ่ม</th>
-      <th class="${thC('exp')}" onclick="setSummarySort('exp')">EXP</th>
-      <th class="${thC('qty')}" style="text-align:right;" onclick="setSummarySort('qty')">คงเหลือ ↕</th>
+      <th class="${thC('qty')}"   onclick="setSummarySort('qty')" style="text-align:right;">คงเหลือ</th>
     </tr></thead>
     <tbody>${pageRows.map(i=>{
-      const gc=GRP_COLOR[i._grp]||GRP_COLOR.green;
+      const isR=i._grp==='red',isY=i._grp==='yellow';
+      const rc=isR?'exp-warn':isY?'exp-caution':'';
+      const qc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
+      const chip=isR
+        ?'<span class="badge-chip bc-red">🔴 &lt;6เดือน</span>'
+        :isY
+        ?'<span class="badge-chip bc-yellow">🟡 6-12เดือน</span>'
+        :'<span class="badge-chip bc-green">🟢 &gt;12เดือน</span>';
       const sn=i.name.replace(/'/g,"\\'");
-      const rowBg=i._grp==='red'?'rgba(217,48,37,.04)':i._grp==='yellow'?'rgba(192,112,0,.04)':'';
-      const leftBorder=i._grp==='red'?'border-left:3px solid #C0392B':i._grp==='yellow'?'border-left:3px solid #C07000':'border-left:3px solid transparent';
-      return `<tr style="cursor:pointer;${rowBg?'background:'+rowBg+';':''}" onclick="showDrugDetail('${sn}')">
-        <td style="${leftBorder};padding-left:11px;">
-          <div class="sum-name">${i.name}</div>
-          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">${i.code||''}</div>
-        </td>
+      return `<tr class="${rc}" onclick="showDrugDetail('${sn}')">
         <td>
-          <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:8px;
-                       background:${gc.light};color:${gc.text};font-size:10px;font-weight:700;white-space:nowrap;">
-            ${gc.label.split(' ')[0]} ${gc.label.split(' ').slice(1).join(' ')}
-          </span>
+          <div class="sum-name">${i.name}</div>
+          <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">EXP: ${fmtExp(i.exp)}</div>
         </td>
-        <td style="font-size:11px;color:${gc.text};font-family:'IBM Plex Mono',monospace;white-space:nowrap;">${fmtExp(i.exp)||'—'}</td>
-        <td style="text-align:right;">
-          <div class="sum-qty" style="color:${gc.text};">${Math.round(i.qty)}</div>
+        <td>${chip}</td>
+        <td>
+          <div class="sum-qty" style="color:${qc};">${Math.round(i.qty)}</div>
           <div class="sum-unit">${i.unit}</div>
         </td>
       </tr>`;
@@ -2059,7 +2049,7 @@ function renderSummaryTable(items){
     <!-- Pagination -->
     <div class="pagination">
       <button class="pg-btn" onclick="goSummaryPage(${summaryPage-1})" ${summaryPage<=1?'disabled':''}>‹</button>
-      <span class="pg-info">หน้า ${summaryPage}/${totalPages} · ${total} รายการ${fSearch?' (ค้นหา)':fGrp!=='all'?' (กรอง)':''}</span>
+      <span class="pg-info">หน้า ${summaryPage}/${totalPages} · ${total} รายการ</span>
       <button class="pg-btn" onclick="goSummaryPage(${summaryPage+1})" ${summaryPage>=totalPages?'disabled':''}>›</button>
     </div>`;
 }
