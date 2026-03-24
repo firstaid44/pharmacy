@@ -170,24 +170,26 @@ box-shadow:var(–sh-md);border:1px solid transparent;margin-bottom:2px;
 .card{
 background:var(–surface);border-radius:var(–r-lg);
 border:1px solid var(–border);overflow:hidden;
-margin-bottom:12px;box-shadow:var(–sh-sm);
+margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);
 }
-.card-body{padding:1rem;}
+.card-body{padding:1rem 1rem .875rem;}
 
 /* ── STATS ── */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
 .stat-card{
-background:var(–surface);border-radius:var(–r-md);
-padding:14px;border:1px solid var(–border);
-box-shadow:var(–sh-xs);position:relative;overflow:hidden;
+background:var(–surface);border-radius:var(–r-lg);
+padding:16px 14px 14px;border:1px solid var(–border);
+box-shadow:var(–sh-sm);position:relative;overflow:hidden;
+transition:transform .12s,box-shadow .12s;
 }
-.stat-card::before{content:’’;position:absolute;top:0;left:0;right:0;height:3px;background:var(–ac,var(–blue));}
+.stat-card:active{transform:scale(.97);}
+.stat-card::before{content:’’;position:absolute;top:0;left:0;right:0;height:4px;background:var(–ac,var(–blue));border-radius:var(–r-lg) var(–r-lg) 0 0;}
 .stat-card.c-blue{–ac:var(–blue);}
 .stat-card.c-teal{–ac:var(–teal);}
 .stat-card.c-amber{–ac:#E29000;}
 .stat-card.c-red{–ac:var(–red);}
-.stat-label{font-size:10px;color:var(–text3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
-.stat-value{font-size:26px;font-weight:700;color:var(–text1);letter-spacing:-1px;line-height:1;font-family:‘IBM Plex Mono’,monospace;}
+.stat-label{font-size:10px;color:var(–text3);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
+.stat-value{font-size:32px;font-weight:700;color:var(–text1);letter-spacing:-1.5px;line-height:1;font-family:‘IBM Plex Mono’,monospace;}
 .sv-blue{color:var(–blue);}.sv-teal{color:var(–teal);}.sv-amber{color:var(–amber);}.sv-red{color:var(–red);}
 
 /* ── SECTION ── */
@@ -222,20 +224,21 @@ border:1px solid rgba(26,95,212,.2);background:var(–blue-l);
 .section-action:active{opacity:.7;}
 
 /* ── FORM ── */
-.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
-.form-label{font-size:11px;font-weight:700;color:var(–text2);text-transform:uppercase;letter-spacing:.4px;}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.form-label{font-size:10px;font-weight:700;color:var(–text3);text-transform:uppercase;letter-spacing:.6px;}
 .form-label .req{color:var(–red);margin-left:2px;}
 .form-input{
-padding:13px 14px;border:1.5px solid var(–border2);
+padding:11px 14px;border:1.5px solid var(–border2);
 border-radius:var(–r-md);font-size:15px;
 background:var(–surface);color:var(–text1);width:100%;
 -webkit-appearance:none;appearance:none;
 font-family:‘IBM Plex Sans Thai’,-apple-system,sans-serif;
-transition:border-color .15s,box-shadow .15s;min-height:50px;
+transition:border-color .18s,box-shadow .18s;min-height:48px;
+box-shadow:0 1px 2px rgba(0,0,0,.04);
 }
-.form-input:focus{outline:none;border-color:var(–blue);box-shadow:0 0 0 3px rgba(26,95,212,.1);}
-.form-input[readonly]{background:var(–surface2);color:var(–text3);}
-input[type=“date”].form-input{min-height:50px;line-height:1.2;}
+.form-input:focus{outline:none;border-color:var(–blue);box-shadow:0 0 0 3px rgba(26,95,212,.1),0 1px 2px rgba(0,0,0,.04);}
+.form-input[readonly]{background:var(–surface2);color:var(–text3);box-shadow:none;}
+input[type=“date”].form-input{min-height:48px;line-height:1.2;}
 select.form-input{
 background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘12’ height=‘8’ viewBox=‘0 0 12 8’%3E%3Cpath d=‘M1 1l5 5 5-5’ stroke=’%2394A3B8’ stroke-width=‘1.8’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”);
 background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;
@@ -245,15 +248,15 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .input-with-scan{display:flex;gap:8px;}
 .input-with-scan .form-input{flex:1;}
 .scan-btn{
-padding:0 14px;border-radius:var(–r-md);
-border:1.5px solid rgba(26,95,212,.25);background:var(–blue-l);
-cursor:pointer;display:flex;align-items:center;gap:5px;
+padding:0 16px;border-radius:var(–r-md);min-height:48px;
+border:1.5px solid rgba(26,95,212,.2);background:linear-gradient(135deg,var(–blue-l),#d6e8ff);
+cursor:pointer;display:flex;align-items:center;gap:6px;
 font-size:12px;font-weight:700;color:var(–blue);
 -webkit-appearance:none;white-space:nowrap;flex-shrink:0;transition:all .15s;
-font-family:inherit;
+font-family:inherit;box-shadow:0 1px 3px rgba(26,95,212,.12);
 }
-.scan-btn svg{width:16px;height:16px;stroke:var(–blue);fill:none;stroke-width:2;}
-.scan-btn:active{transform:scale(.97);}
+.scan-btn svg{width:15px;height:15px;stroke:var(–blue);fill:none;stroke-width:2;}
+.scan-btn:active{transform:scale(.97);opacity:.85;}
 
 /* ── SUGGEST ── */
 .suggest-wrap{position:relative;}
@@ -281,17 +284,19 @@ transition:all .15s;
 }
 .btn:active{transform:scale(.97);opacity:.8;}
 .btn-primary{
-flex:2;background:linear-gradient(135deg,#2D78F5,#1A5FD4);
+flex:2;background:linear-gradient(150deg,#2D78F5,#1A5FD4 60%,#1347A8);
 color:#fff;border-color:transparent;
-box-shadow:0 4px 14px rgba(26,95,212,.3);
+box-shadow:0 4px 16px rgba(26,95,212,.35);
+letter-spacing:.2px;
 }
-.btn-primary:active{box-shadow:0 2px 8px rgba(26,95,212,.2);}
+.btn-primary:active{box-shadow:0 2px 8px rgba(26,95,212,.2);transform:scale(.97);}
 .btn:disabled{opacity:.4;}
 
 /* ── LOG ── */
-.log-item{padding:14px 1rem;border-bottom:1px solid var(–border);position:relative;transition:background .12s;}
+.log-item{padding:14px 1rem 13px;border-bottom:1px solid var(–border);position:relative;transition:background .12s;}
 .log-item:last-child{border-bottom:none;}
-.log-name{font-size:14px;font-weight:700;color:var(–text1);margin-bottom:6px;line-height:1.3;padding-right:130px;}
+.log-item:active{background:var(–surface2);}
+.log-name{font-size:14px;font-weight:700;color:var(–text1);margin-bottom:5px;line-height:1.35;padding-right:128px;}
 .log-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px;}
 .pill{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
 .pill-gray{background:#F0F2F5;color:#64748B;}
@@ -347,9 +352,9 @@ cursor:pointer;user-select:none;white-space:nowrap;text-transform:uppercase;lett
 .sum-table tr:last-child td{border-bottom:none;}
 .sum-table tbody tr{cursor:pointer;transition:background .12s;}
 .sum-table tbody tr:hover{background:var(–surface2);}
-.sum-name{font-size:13px;font-weight:700;color:var(–text1);line-height:1.3;}
-.sum-qty{font-size:17px;font-weight:700;text-align:right;font-family:‘IBM Plex Mono’,monospace;}
-.sum-unit{font-size:10px;color:var(–text3);text-align:right;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.sum-name{font-size:13px;font-weight:700;color:var(–text1);line-height:1.35;}
+.sum-qty{font-size:20px;font-weight:700;text-align:right;font-family:‘IBM Plex Mono’,monospace;letter-spacing:-.5px;}
+.sum-unit{font-size:10px;color:var(–text3);text-align:right;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:1px;}
 .exp-warn{background:rgba(217,48,37,.04);border-left:3px solid var(–red);}
 .exp-caution{background:rgba(192,112,0,.04);border-left:3px solid #E29000;}
 
@@ -362,17 +367,18 @@ cursor:pointer;-webkit-appearance:none;transition:all .15s;font-family:inherit;
 .exp-range-btn.active{background:var(–red-l);color:var(–red);border-color:rgba(217,48,37,.3);}
 
 /* ── GROUP LIST ── */
-.group-hd{padding:8px 14px;font-size:11px;font-weight:800;color:#fff;letter-spacing:.3px;text-transform:uppercase;}
+.group-hd{padding:9px 14px;font-size:10px;font-weight:800;color:#fff;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
 .group-drug-item{
-padding:12px 1rem;border-bottom:1px solid var(–border);
+padding:13px 1rem 12px;border-bottom:1px solid var(–border);
 display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .12s;
 }
 .group-drug-item:last-child{border-bottom:none;}
-.group-drug-item:active{background:var(–surface2);}
-.group-drug-num{font-size:11px;font-weight:700;color:var(–text4);min-width:22px;font-family:‘IBM Plex Mono’,monospace;}
-.group-drug-name{font-size:14px;font-weight:700;color:var(–text1);flex:1;line-height:1.3;}
-.group-drug-exp{font-size:11px;color:var(–text3);margin-top:2px;font-family:‘IBM Plex Mono’,monospace;}
-.group-drug-arrow{font-size:16px;color:var(–text4);}
+.group-drug-item:hover{background:var(–surface2);}
+.group-drug-item:active{background:#EDF2F7;}
+.group-drug-num{font-size:11px;font-weight:700;color:var(–text4);min-width:24px;font-family:‘IBM Plex Mono’,monospace;}
+.group-drug-name{font-size:14px;font-weight:700;color:var(–text1);flex:1;line-height:1.35;}
+.group-drug-exp{font-size:11px;color:var(–text3);margin-top:3px;font-family:‘IBM Plex Mono’,monospace;letter-spacing:.2px;}
+.group-drug-arrow{font-size:14px;color:var(–text4);font-weight:400;}
 
 /* ── PAGINATION ── */
 .pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-top:1px solid var(–border);}
@@ -449,26 +455,56 @@ display:none;margin-top:5px;box-shadow:var(–sh-lg);
 }
 
 /* ── CARD HEADER ── */
-.card-header{padding:14px 16px 10px;border-bottom:1px solid var(–border);display:flex;align-items:center;gap:10px;}
-.card-header-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.card-header-icon svg{width:16px;height:16px;fill:none;stroke-width:2.2;}
-.chi-blue{background:var(–blue-l);}
+.card-header{padding:14px 16px 12px;border-bottom:1px solid var(–border);display:flex;align-items:center;gap:12px;}
+.card-header-icon{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(–sh-xs);}
+.card-header-icon svg{width:17px;height:17px;fill:none;stroke-width:2.2;}
+.chi-blue{background:linear-gradient(135deg,var(–blue-l),#d6e8ff);}
 .chi-blue svg{stroke:var(–blue);}
-.chi-amber{background:var(–amber-l);}
+.chi-amber{background:linear-gradient(135deg,var(–amber-l),#ffe8b0);}
 .chi-amber svg{stroke:var(–amber);}
-.chi-green{background:#E8F8EF;}
+.chi-green{background:linear-gradient(135deg,#E8F8EF,#c8f0da);}
 .chi-green svg{stroke:#06C755;}
-.card-header-title{font-size:14px;font-weight:700;color:var(–text1);letter-spacing:-.2px;}
-.card-header-sub{font-size:11px;color:var(–text3);margin-top:1px;}
+.card-header-title{font-size:14px;font-weight:700;color:var(–text1);letter-spacing:-.3px;}
+.card-header-sub{font-size:11px;color:var(–text3);margin-top:2px;font-weight:400;}
 
 /* ── BADGE CHIP ── */
-.badge-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;}
-.bc-red{background:var(–red-l);color:var(–red);}
-.bc-yellow{background:var(–amber-l);color:var(–amber);}
-.bc-green{background:var(–green-l);color:var(–green);}
+.badge-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.1px;}
+.bc-red{background:var(–red-l);color:var(–red);border:1px solid rgba(217,48,37,.18);}
+.bc-yellow{background:var(–amber-l);color:var(–amber);border:1px solid rgba(192,112,0,.18);}
+.bc-green{background:var(–green-l);color:var(–green);border:1px solid rgba(30,138,74,.18);}
 
 /* ── D-STOCK INFO ── */
 .d-stock-info{display:none;margin-top:6px;padding:9px 12px;background:var(–blue-l);border-radius:var(–r-sm);font-size:12px;color:var(–blue);font-weight:600;border:1px solid rgba(26,95,212,.15);}
+
+/* ── DRUG DETAIL MODAL CONTENT ── */
+.drug-hd-banner{
+margin:-1.25rem -1rem 1rem;padding:1.25rem 1rem 1rem;
+background:linear-gradient(135deg,#1A5FD4 0%,#0B9E72 100%);
+position:relative;overflow:hidden;
+}
+.drug-hd-banner::before{
+content:’’;position:absolute;top:-40px;right:-40px;
+width:140px;height:140px;border-radius:50%;
+background:rgba(255,255,255,.08);pointer-events:none;
+}
+.drug-hd-name{font-size:17px;font-weight:800;color:#fff;line-height:1.3;letter-spacing:-.3px;margin-bottom:4px;}
+.drug-hd-code{font-size:11px;color:rgba(255,255,255,.75);font-family:‘IBM Plex Mono’,monospace;letter-spacing:.3px;}
+.drug-mini-stat{
+display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;
+}
+.drug-mini-stat-item{
+background:var(–surface2);border-radius:var(–r-md);
+padding:10px 12px;border:1px solid var(–border);
+}
+.drug-mini-label{font-size:9px;font-weight:700;color:var(–text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;}
+.drug-mini-val{font-size:22px;font-weight:700;line-height:1;font-family:‘IBM Plex Mono’,monospace;letter-spacing:-.5px;}
+.drug-mini-unit{font-size:10px;color:var(–text3);font-weight:600;text-transform:uppercase;margin-top:2px;}
+.drug-lot-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:.5rem;}
+.drug-lot-table th{font-size:9px;font-weight:700;color:var(–text3);text-transform:uppercase;letter-spacing:.5px;
+padding:6px 8px;border-bottom:1.5px solid var(–border);background:var(–surface2);}
+.drug-lot-table td{padding:9px 8px;border-bottom:1px solid var(–border);vertical-align:middle;}
+.drug-lot-table tr:last-child td{border-bottom:none;}
+.drug-status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
 
 /* ── LINE PAGE ── */
 .line-status{
@@ -2095,24 +2131,53 @@ function showDrugDetail(name){
   const code=rLots[0].code||'',unit=rLots[0].unit||'';
   const g=(rLots[0].group||'').trim(),isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
   const sc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
-  const sl=isR?'🔴 หมดอายุ < 6 เดือน':isY?'🟡 หมดอายุ 6–12 เดือน':'🟢 หมดอายุ > 12 เดือน';
-  el.innerHTML=`<div style="background:linear-gradient(135deg,#1A5FD4,#0B7BB5);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;">
-    <div style="font-size:16px;font-weight:700;line-height:1.3;margin-bottom:4px;">${name}</div>
-    <div style="font-size:11px;opacity:.7;font-family:'IBM Plex Mono',monospace;">รหัส: ${code}</div>
+  const statusLabel=isR?'หมดอายุ < 6 เดือน':isY?'หมดอายุ 6–12 เดือน':'หมดอายุ > 12 เดือน';
+  const statusDot=isR?'#D93025':isY?'#C07000':'#1E8A4A';
+
+  el.innerHTML=`
+  <!-- Banner header -->
+  <div class="drug-hd-banner">
+    <div class="drug-hd-name">${name}</div>
+    <div class="drug-hd-code">รหัส: ${code||'—'}</div>
   </div>
-  <div class="stats-grid" style="margin-bottom:12px;">
-    <div class="stat-card" style="--ac:${sc};"><div class="stat-label">คงเหลือรวม</div><div class="stat-value" style="color:${sc};">${left}</div><div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:2px;">${unit}</div></div>
-    <div class="stat-card"><div class="stat-label">สถานะ</div><div style="font-size:12px;font-weight:700;padding-top:4px;line-height:1.4;">${sl}</div></div>
+  <!-- Mini stats -->
+  <div class="drug-mini-stat">
+    <div class="drug-mini-stat-item">
+      <div class="drug-mini-label">คงเหลือรวม</div>
+      <div class="drug-mini-val" style="color:${sc};">${left}</div>
+      <div class="drug-mini-unit">${unit}</div>
+    </div>
+    <div class="drug-mini-stat-item">
+      <div class="drug-mini-label">สถานะ</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+        <span class="drug-status-dot" style="background:${statusDot};box-shadow:0 0 0 3px ${statusDot}33;"></span>
+        <span style="font-size:12px;font-weight:700;color:${sc};line-height:1.3;">${statusLabel}</span>
+      </div>
+    </div>
   </div>
-  <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">รายละเอียดแต่ละ LOT</div>
-  <table class="sum-table"><thead><tr><th>LOT</th><th>EXP</th><th style="text-align:right;">รับ</th><th style="text-align:right;">เบิก</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
-  <tbody>${lotItems.map(l=>{
-    const ll=Math.max(0,Math.round(l.received-l.dispensed));
-    const lg=(l.group||'').trim(),lR=lg==='สีแดง'||lg==='แดง',lY=lg==='สีเหลือง'||lg==='เหลือง';
-    const lc=lR?'var(--red)':lY?'var(--amber)':'var(--teal)';
-    const lcl=lR?'exp-warn':lY?'exp-caution':'';
-    return `<tr class="${lcl}"><td style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;">${l.lot}</td><td style="font-size:11px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(l.exp)}</td><td style="text-align:right;font-size:12px;">${Math.round(l.received)}</td><td style="text-align:right;font-size:12px;color:var(--red);">${Math.round(l.dispensed)}</td><td style="text-align:right;font-weight:700;font-size:15px;font-family:'IBM Plex Mono',monospace;color:${lc};">${ll}</td></tr>`;
-  }).join('')}</tbody></table>`;
+  <!-- LOT table -->
+  <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">รายละเอียดแต่ละ LOT</div>
+  <table class="drug-lot-table">
+    <thead><tr>
+      <th>LOT</th><th>EXP</th>
+      <th style="text-align:right;">รับ</th>
+      <th style="text-align:right;color:var(--red);">เบิก</th>
+      <th style="text-align:right;">คงเหลือ</th>
+    </tr></thead>
+    <tbody>${lotItems.map(l=>{
+      const ll=Math.max(0,Math.round(l.received-l.dispensed));
+      const lg=(l.group||'').trim(),lR=lg==='สีแดง'||lg==='แดง',lY=lg==='สีเหลือง'||lg==='เหลือง';
+      const lc=lR?'var(--red)':lY?'var(--amber)':'var(--teal)';
+      const lcl=lR?'exp-warn':lY?'exp-caution':'';
+      return `<tr class="${lcl}">
+        <td style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text2);">${l.lot}</td>
+        <td style="font-size:11px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;color:${lc};font-weight:600;">${fmtExp(l.exp)}</td>
+        <td style="text-align:right;font-size:12px;color:var(--text2);">${Math.round(l.received)}</td>
+        <td style="text-align:right;font-size:12px;color:var(--red);font-weight:600;">${Math.round(l.dispensed)||'0'}</td>
+        <td style="text-align:right;font-weight:700;font-size:18px;font-family:'IBM Plex Mono',monospace;color:${lc};">${ll}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
   modal.classList.add('open');
 }
 
