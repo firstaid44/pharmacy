@@ -1655,8 +1655,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version11.16.25.03.2569
-</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version11.33.25.03.2569</div>
     </div>
     <button onclick="openGlobalSearch()"
       id="gsearch-btn"
@@ -2696,26 +2695,31 @@ function populateLotOptions(name){
 
   picker.innerHTML=lots.map((r,idx)=>{
     const stock=calcStock(name,r.lot);
-    const ed=parseExpDate(r.exp);
-    const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):999;
+    // ผ่าน fmtExp ก่อนเสมอ เพื่อ normalize format (dd/MM/yyyy)
+    const expFormatted=fmtExp(r.exp)||r.exp||'';
+    const ed=parseExpDate(expFormatted);
+    const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):null;
     // สีตามวันหมดอายุ
-    const expColor= mo<=0  ?'#B91C1C'
-                  : mo<=6  ?'var(--red)'
-                  : mo<=12 ?'var(--amber)'
-                  :          'var(--teal)';
-    const moLabel = mo<=0  ?'⛔ หมดแล้ว'
-                  : mo<1   ?'🔴 < 1 เดือน'
-                  : mo<=6  ?`🔴 ${mo} เดือน`
-                  : mo<=12 ?`🟡 ${mo} เดือน`
-                  :          `🟢 ${mo} เดือน`;
-    const moBg  =  mo<=0  ?'#FEE2E2'
-                 : mo<=6  ?'#FEE2E2'
-                 : mo<=12 ?'#FFF3DC'
-                 :          '#E9F7EF';
+    const expColor= mo===null ?'var(--text3)'
+                  : mo<=0    ?'#B91C1C'
+                  : mo<=6    ?'var(--red)'
+                  : mo<=12   ?'var(--amber)'
+                  :            'var(--teal)';
+    const moLabel = mo===null ?'— ไม่ระบุ'
+                  : mo<=0    ?'⛔ หมดแล้ว'
+                  : mo<1     ?'🔴 < 1 เดือน'
+                  : mo<=6    ?`🔴 ${mo} เดือน`
+                  : mo<=12   ?`🟡 ${mo} เดือน`
+                  :            `🟢 ${mo} เดือน`;
+    const moBg  =  mo===null ?'#F0F2F5'
+                 : mo<=0    ?'#FEE2E2'
+                 : mo<=6    ?'#FEE2E2'
+                 : mo<=12   ?'#FFF3DC'
+                 :            '#E9F7EF';
     const isEmpty=stock<=0;
-    const expStr=fmtExp(r.exp)||'—';
+    const expStr=expFormatted||'—';
     return `<div class="lot-card${isEmpty?' out':''}" id="dlot-card-${idx}"
-      onclick="${isEmpty?'void(0)':`selectLotCard(${idx},'${r.lot.replace(/'/g,"\\'")}','${r.exp}',${stock},'${r.unit}')`}">
+      onclick="${isEmpty?'void(0)':`selectLotCard(${idx},'${r.lot.replace(/'/g,"\\'")}','${expFormatted}',${stock},'${r.unit}')`}">
       <div style="grid-column:1;grid-row:1;">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <span class="lot-card-lot">LOT: ${r.lot||'—'}</span>
