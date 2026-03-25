@@ -472,6 +472,34 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .bc-yellow{background:var(--amber-l);color:var(--amber);border:1px solid rgba(192,112,0,.18);}
 .bc-green{background:var(--green-l);color:var(--green);border:1px solid rgba(30,138,74,.18);}
 
+/* ── LOT CARD PICKER ── */
+.lot-picker{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.lot-card{
+  padding:12px 14px;border-radius:var(--r-md);
+  border:1.5px solid var(--border2);background:var(--surface);
+  cursor:pointer;transition:all .15s;position:relative;
+  display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;
+}
+.lot-card:active{transform:scale(.98);}
+.lot-card.selected{
+  border-color:var(--blue);background:var(--blue-l);
+  box-shadow:0 0 0 3px rgba(26,95,212,.1);
+}
+.lot-card.out{opacity:.5;cursor:not-allowed;}
+.lot-card-lot{font-size:12px;font-weight:700;color:var(--text1);font-family:'IBM Plex Mono',monospace;}
+.lot-card-exp{font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.lot-card-stock{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;text-align:right;line-height:1;}
+.lot-card-unit{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;text-align:right;}
+.lot-card-mo{font-size:10px;font-weight:700;padding:1px 7px;border-radius:6px;white-space:nowrap;}
+.lot-card-check{
+  position:absolute;top:10px;right:10px;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--blue);color:#fff;
+  display:none;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+.lot-card.selected .lot-card-check{display:flex;}
+
 /* ── D-STOCK INFO ── */
 .d-stock-info{display:none;margin-top:6px;padding:9px 12px;background:var(--blue-l);border-radius:var(--r-sm);font-size:12px;color:var(--blue);font-weight:600;border:1px solid rgba(26,95,212,.15);}
 
@@ -1063,6 +1091,82 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .req-btn-share:active{transform:scale(.97);}
 
 /* TOP USER CHIP (when logged in) */
+/* ── GLOBAL SEARCH ── */
+.gsearch-overlay{
+  display:none;position:fixed;inset:0;z-index:400;
+  background:rgba(15,25,35,.55);backdrop-filter:blur(4px);
+  animation:fadein .18s ease;
+}
+.gsearch-overlay.open{display:block;}
+.gsearch-box{
+  position:fixed;top:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;z-index:401;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:calc(.6rem + env(safe-area-inset-top)) 1rem .75rem;
+  box-shadow:0 4px 24px rgba(0,0,0,.15);
+  animation:slideDown .2s cubic-bezier(.34,1.2,.64,1);
+}
+@keyframes slideDown{from{transform:translateX(-50%) translateY(-20px);opacity:.5}to{transform:translateX(-50%);opacity:1}}
+.gsearch-input-wrap{
+  display:flex;align-items:center;gap:10px;margin-bottom:.75rem;
+}
+.gsearch-input{
+  flex:1;padding:11px 14px 11px 40px;border:1.5px solid var(--border2);
+  border-radius:var(--r-md);font-size:15px;background:var(--surface2);
+  color:var(--text1);font-family:inherit;outline:none;
+  transition:border-color .15s,box-shadow .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+.gsearch-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,95,212,.1);}
+.gsearch-icon{
+  position:absolute;left:26px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:17px;pointer-events:none;
+}
+.gsearch-cancel{
+  padding:8px 12px;border-radius:10px;border:none;background:none;
+  font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;
+  font-family:inherit;white-space:nowrap;flex-shrink:0;
+}
+.gsearch-tabs{
+  display:flex;gap:4px;overflow-x:auto;padding-bottom:2px;
+  scrollbar-width:none;
+}
+.gsearch-tabs::-webkit-scrollbar{display:none;}
+.gsearch-tab{
+  padding:5px 14px;border-radius:20px;border:1.5px solid var(--border2);
+  background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;
+  cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;flex-shrink:0;
+}
+.gsearch-tab.active{background:var(--blue-l);border-color:rgba(26,95,212,.35);color:var(--blue);}
+.gsearch-results{
+  max-height:58vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.gsearch-section-label{
+  font-size:10px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.5px;
+  padding:10px 16px 6px;background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:1;
+}
+.gsearch-item{
+  padding:11px 16px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .12s;display:flex;align-items:center;gap:10px;
+}
+.gsearch-item:last-child{border-bottom:none;}
+.gsearch-item:active{background:var(--surface2);}
+.gsearch-item-icon{
+  width:34px;height:34px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.gsearch-item-main{flex:1;min-width:0;}
+.gsearch-item-name{font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gsearch-item-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.gsearch-item-badge{font-size:11px;font-weight:700;flex-shrink:0;}
+.gsearch-empty{text-align:center;padding:2.5rem;color:var(--text4);font-size:13px;}
+mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
 /* ── TOP USER CHIP (when logged in) ── */
 .user-chip{
   display:flex;align-items:center;gap:7px;cursor:pointer;
@@ -1424,6 +1528,31 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   </div>
 </div>
 
+<!-- ══ GLOBAL SEARCH ══ -->
+<div class="gsearch-overlay" id="gsearch-overlay" onclick="closeGlobalSearch()"></div>
+<div class="gsearch-box" id="gsearch-box" style="display:none;">
+  <div class="gsearch-input-wrap" style="position:relative;">
+    <span class="gsearch-icon">🔍</span>
+    <input class="gsearch-input" id="gsearch-input" type="text"
+      placeholder="ค้นหาในระบบ..."
+      autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+      oninput="runGlobalSearch(this.value)">
+    <button class="gsearch-cancel" onclick="closeGlobalSearch()">ยกเลิก</button>
+  </div>
+  <!-- Tab filters -->
+  <div class="gsearch-tabs" id="gsearch-tabs">
+    <button class="gsearch-tab active" data-scope="all"    onclick="setGSearchScope('all',this)">ทั้งหมด</button>
+    <button class="gsearch-tab"        data-scope="stock"  onclick="setGSearchScope('stock',this)">💊 คลัง</button>
+    <button class="gsearch-tab"        data-scope="recv"   onclick="setGSearchScope('recv',this)">📥 รับยา</button>
+    <button class="gsearch-tab"        data-scope="disp"   onclick="setGSearchScope('disp',this)">📤 เบิกยา</button>
+    <button class="gsearch-tab"        data-scope="hist"   onclick="setGSearchScope('hist',this)">🕐 ประวัติ</button>
+  </div>
+  <!-- Results -->
+  <div class="gsearch-results" id="gsearch-results">
+    <div class="gsearch-empty">พิมพ์เพื่อค้นหา...</div>
+  </div>
+</div>
+
 <!-- ══ ADMIN PANEL ══ -->
 <div class="admin-modal-bg" id="admin-modal">
   <div class="admin-panel">
@@ -1526,8 +1655,15 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version10.40.25.03.2569</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version11.16.25.03.2569
+</div>
     </div>
+    <button onclick="openGlobalSearch()"
+      id="gsearch-btn"
+      style="width:36px;height:36px;border-radius:12px;border:1px solid var(--border2);
+             background:var(--surface2);display:flex;align-items:center;justify-content:center;
+             cursor:pointer;font-size:18px;flex-shrink:0;transition:all .15s;-webkit-appearance:none;"
+      title="ค้นหา">🔍</button>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
     <div class="user-chip" id="header-user-chip" onclick="openUserMenu()" style="display:none;margin-left:auto;">
       <div class="user-avatar" id="header-avatar">?</div>
@@ -1580,7 +1716,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         <div class="form-group"><label class="form-label">วันหมดอายุ <span class="req">*</span></label><input class="form-input" id="r-exp" type="date"/></div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">หน่วยนับ</label>
-            <select class="form-input" id="r-unit"><option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option><option>ซอง</option><option>กล่อง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option></select>
+            <select class="form-input" id="r-unit"><option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option><option>ซอง</option><option>กล่อง</option><option>แพ็ค</option><option>ลัง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option></select>
           </div>
           <div class="form-group"><label class="form-label">จำนวน <span class="req">*</span></label><input class="form-input" id="r-qty" type="number" min="1" placeholder="0" inputmode="numeric" pattern="[0-9]*" style="font-family:'IBM Plex Mono',monospace;"/></div>
         </div>
@@ -1635,14 +1771,27 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
           </div>
           <div class="sbox" id="sbox-d"></div>
         </div>
-        <div class="form-group"><label class="form-label">รหัสยา</label><input class="form-input" id="d-code" readonly placeholder="ดึงอัตโนมัติ" style="font-family:'IBM Plex Mono',monospace;"/></div>
-        <div class="form-group"><label class="form-label">LOT Number <span class="req">*</span></label>
-          <select class="form-input" id="d-lot" style="font-family:'IBM Plex Mono',monospace;font-size:14px;"><option value="">— เลือก LOT —</option></select>
+        <!-- hidden d-code + d-exp for backward compat -->
+        <input type="hidden" id="d-code">
+        <input type="hidden" id="d-exp">
+        <input type="hidden" id="d-lot" value="">
+
+        <!-- LOT Card Picker -->
+        <div class="form-group">
+          <label class="form-label">LOT / วันหมดอายุ <span class="req">*</span></label>
+          <div class="lot-picker" id="d-lot-picker">
+            <div style="font-size:13px;color:var(--text3);padding:10px 0;">เลือกชื่อยาก่อน...</div>
+          </div>
         </div>
-        <div class="form-group"><label class="form-label">วันหมดอายุ</label><input class="form-input" id="d-exp" readonly placeholder="ดึงจาก LOT ที่เลือก" style="font-family:'IBM Plex Mono',monospace;"/></div>
+
         <div class="form-row">
           <div class="form-group"><label class="form-label">หน่วยนับ</label>
-            <select class="form-input" id="d-unit"><option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option><option>ซอง</option><option>กล่อง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option></select>
+            <select class="form-input" id="d-unit">
+              <option>เม็ด</option><option>แคปซูล</option><option>ขวด</option>
+              <option>หลอด</option><option>ซอง</option><option>กล่อง</option>
+              <option>แพ็ค</option><option>ลัง</option>
+              <option>อัน</option><option>ชิ้น</option><option>หน่วย</option>
+            </select>
           </div>
           <div class="form-group"><label class="form-label">จำนวนเบิก <span class="req">*</span></label>
             <select class="form-input" id="d-qty" style="font-family:'IBM Plex Mono',monospace;"><option value="">— เลือก —</option></select>
@@ -2513,24 +2662,94 @@ function calcStock(name,lot){
 function populateQtyOptions(stock){
   const sel=document.getElementById('d-qty'),info=document.getElementById('d-stock-info');
   sel.innerHTML='<option value="">— เลือกจำนวน —</option>';
-  if(stock<=0){sel.innerHTML='<option value="">ยาหมดคลัง</option>';info.textContent='คงเหลือ 0 — ไม่สามารถเบิกได้';info.style.background='var(--red-l)';info.style.color='var(--red)';info.style.display='block';return;}
-  for(let i=1;i<=stock;i++)sel.innerHTML+=`<option value="${i}">${i}</option>`;
-  info.textContent=`คงเหลือในคลัง: ${stock}`;info.style.background='var(--blue-l)';info.style.color='var(--blue)';info.style.display='block';
+  if(stock<=0){
+    sel.innerHTML='<option value="">ยาหมดคลัง</option>';
+    info.textContent='คงเหลือ 0 — ไม่สามารถเบิกได้';
+    info.style.background='var(--red-l)';info.style.color='var(--red)';info.style.display='block';
+    return;
+  }
+  const max=Math.min(stock,999);
+  for(let i=1;i<=max;i++) sel.innerHTML+=`<option value="${i}">${i}</option>`;
+  info.textContent=`คงเหลือในคลัง: ${stock}`;
+  info.style.background='var(--blue-l)';info.style.color='var(--blue)';info.style.display='block';
 }
+
 function populateLotOptions(name){
-  const sel=document.getElementById('d-lot'),lots=receiveRows.filter(r=>r.name===name);
-  sel.innerHTML='<option value="">— เลือก LOT —</option>';
-  lots.forEach(r=>{const s=calcStock(name,r.lot);sel.innerHTML+=`<option value="${r.lot}" data-exp="${r.exp}" data-stock="${s}">${r.lot} (คงเหลือ: ${s})</option>`;});
+  const picker=document.getElementById('d-lot-picker');
+  const lots=[...new Map(
+    receiveRows.filter(r=>r.name===name)
+      .map(r=>[r.lot, r])
+  ).values()];
+
+  // reset hidden fields
+  document.getElementById('d-lot').value='';
+  document.getElementById('d-exp').value='';
   document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';
   document.getElementById('d-stock-info').style.display='none';
-  sel.onchange=()=>{
-    const opt=sel.selectedOptions[0];
-    document.getElementById('d-exp').value=opt?opt.dataset.exp||'':'';
-    const u=lots.find(r=>r.lot===sel.value);
-    if(u){const s=document.getElementById('d-unit');for(let i=0;i<s.options.length;i++)if(s.options[i].value===u.unit){s.selectedIndex=i;break;}}
-    if(sel.value){populateQtyOptions(parseInt(opt.dataset.stock)||0);}
-    else{document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';document.getElementById('d-stock-info').style.display='none';}
-  };
+
+  if(!lots.length){
+    picker.innerHTML='<div style="font-size:13px;color:var(--text3);padding:8px 0;">ไม่พบ LOT ในคลัง</div>';
+    return;
+  }
+
+  const now=new Date();now.setHours(0,0,0,0);
+
+  picker.innerHTML=lots.map((r,idx)=>{
+    const stock=calcStock(name,r.lot);
+    const ed=parseExpDate(r.exp);
+    const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):999;
+    // สีตามวันหมดอายุ
+    const expColor= mo<=0  ?'#B91C1C'
+                  : mo<=6  ?'var(--red)'
+                  : mo<=12 ?'var(--amber)'
+                  :          'var(--teal)';
+    const moLabel = mo<=0  ?'⛔ หมดแล้ว'
+                  : mo<1   ?'🔴 < 1 เดือน'
+                  : mo<=6  ?`🔴 ${mo} เดือน`
+                  : mo<=12 ?`🟡 ${mo} เดือน`
+                  :          `🟢 ${mo} เดือน`;
+    const moBg  =  mo<=0  ?'#FEE2E2'
+                 : mo<=6  ?'#FEE2E2'
+                 : mo<=12 ?'#FFF3DC'
+                 :          '#E9F7EF';
+    const isEmpty=stock<=0;
+    const expStr=fmtExp(r.exp)||'—';
+    return `<div class="lot-card${isEmpty?' out':''}" id="dlot-card-${idx}"
+      onclick="${isEmpty?'void(0)':`selectLotCard(${idx},'${r.lot.replace(/'/g,"\\'")}','${r.exp}',${stock},'${r.unit}')`}">
+      <div style="grid-column:1;grid-row:1;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="lot-card-lot">LOT: ${r.lot||'—'}</span>
+          <span class="lot-card-mo" style="background:${moBg};color:${expColor};">${moLabel}</span>
+          ${isEmpty?'<span style="background:#FEE2E2;color:var(--red);padding:1px 7px;border-radius:6px;font-size:9px;font-weight:700;">หมดคลัง</span>':''}
+        </div>
+        <div style="margin-top:5px;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">EXP</span>
+          <span class="lot-card-exp" style="color:${expColor};">${expStr}</span>
+        </div>
+      </div>
+      <div style="grid-column:2;grid-row:1;text-align:right;">
+        <div class="lot-card-stock" style="color:${isEmpty?'var(--text4)':expColor};">${stock}</div>
+        <div class="lot-card-unit" style="color:var(--text3);">${r.unit}</div>
+      </div>
+      <div class="lot-card-check">✓</div>
+    </div>`;
+  }).join('');
+}
+
+function selectLotCard(idx,lot,exp,stock,unit){
+  // deselect all
+  document.querySelectorAll('.lot-card').forEach(c=>c.classList.remove('selected'));
+  // select this
+  const card=document.getElementById('dlot-card-'+idx);
+  if(card) card.classList.add('selected');
+  // update hidden fields
+  document.getElementById('d-lot').value=lot;
+  document.getElementById('d-exp').value=exp;
+  // update unit
+  const us=document.getElementById('d-unit');
+  if(unit){for(let i=0;i<us.options.length;i++)if(us.options[i].value===unit){us.selectedIndex=i;break;}}
+  // populate qty
+  populateQtyOptions(stock);
 }
 
 document.addEventListener('touchstart',e=>{
@@ -2616,12 +2835,17 @@ async function dispenseStock(){
   btn.textContent='เบิกยาออก';btn.disabled=false;
 }
 function clearDispenseForm(){
-  ['d-name','d-code','d-note'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('d-exp').value='';document.getElementById('d-requester').value='';
-  document.getElementById('d-lot').innerHTML='<option value="">— เลือก LOT —</option>';
-  document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';
-  const info=document.getElementById('d-stock-info');if(info)info.style.display='none';
-  document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');
+  ['d-name','d-code','d-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('d-exp').value='';
+  document.getElementById('d-lot').value='';
+  const req=document.getElementById('d-requester');
+  if(req)req.value=currentUser?currentUser.name:'';
+  // reset LOT picker
+  const picker=document.getElementById('d-lot-picker');
+  if(picker)picker.innerHTML='<div style="font-size:13px;color:var(--text3);padding:10px 0;">เลือกชื่อยาก่อน...</div>';
+  document.getElementById('d-qty').innerHTML='<option value="">— เลือก —</option>';
+  document.getElementById('d-stock-info').style.display='none';
+  document.getElementById('sbox-d').style.display='none';
 }
 
 function addHistory(type,msg,detail){
@@ -3803,6 +4027,155 @@ function _renderRequisitionModal(data){
     _origRenderReq(data);
   }
 }
+
+// ══ GLOBAL SEARCH ════════════════════════════════════════════
+let _gsScope='all';
+
+function openGlobalSearch(){
+  document.getElementById('gsearch-overlay').classList.add('open');
+  const box=document.getElementById('gsearch-box');
+  box.style.display='block';
+  const inp=document.getElementById('gsearch-input');
+  inp.value='';
+  document.getElementById('gsearch-results').innerHTML='<div class="gsearch-empty">พิมพ์เพื่อค้นหา...</div>';
+  setTimeout(()=>inp.focus(),80);
+  document.body.style.overflow='hidden';
+}
+function closeGlobalSearch(){
+  document.getElementById('gsearch-overlay').classList.remove('open');
+  document.getElementById('gsearch-box').style.display='none';
+  document.getElementById('gsearch-input').blur();
+  document.body.style.overflow='';
+}
+function setGSearchScope(scope,el){
+  _gsScope=scope;
+  document.querySelectorAll('.gsearch-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  runGlobalSearch(document.getElementById('gsearch-input').value);
+}
+function _hl(text,q){
+  if(!q||!text)return text||'';
+  const re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return String(text).replace(re,'<mark class="hl">$1</mark>');
+}
+function runGlobalSearch(raw){
+  const q=(raw||'').trim();
+  const el=document.getElementById('gsearch-results');
+  if(!q){el.innerHTML='<div class="gsearch-empty">พิมพ์เพื่อค้นหา...</div>';return;}
+  const ql=q.toLowerCase();
+  let html='';
+  const MAX=12;
+
+  // ── คลังยา ──────────────────────────────────────────────
+  if(_gsScope==='all'||_gsScope==='stock'){
+    const nm={};
+    (_allStockItems||[]).forEach(i=>{
+      if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',exp:''};
+      nm[i.name].qty+=i.qty;
+      const ed=parseExpDate(i.exp);
+      if(ed){const old=parseExpDate(nm[i.name].exp);if(!old||ed<old)nm[i.name].exp=i.exp;}
+      if(i.group)nm[i.name].group=i.group;
+    });
+    const hits=Object.values(nm).filter(i=>
+      i.name.toLowerCase().includes(ql)||(i.code||'').toLowerCase().includes(ql)
+    ).slice(0,MAX);
+    if(hits.length){
+      html+=`<div class="gsearch-section-label">💊 คลังยา (${hits.length}${hits.length===MAX?'+':''})</div>`;
+      html+=hits.map(i=>{
+        const g=(i.group||'').trim();
+        const isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
+        const qc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
+        const grpBg=isR?'#FEE2E2':isY?'#FFF3DC':'#E9F7EF';
+        const nm2=i.name.replace(/'/g,"\\'");
+        return `<div class="gsearch-item" onclick="closeGlobalSearch();switchTab('stock');setTimeout(()=>{const si=document.getElementById('stock-search');if(si){si.value='${nm2}';searchStock(si.value);}},300)">
+          <div class="gsearch-item-icon" style="background:${grpBg};">💊</div>
+          <div class="gsearch-item-main">
+            <div class="gsearch-item-name">${_hl(i.name,q)}</div>
+            <div class="gsearch-item-sub">${_hl(i.code||'—',q)} · EXP: ${fmtExp(i.exp)||'—'}</div>
+          </div>
+          <span class="gsearch-item-badge" style="color:${qc};white-space:nowrap;">${Math.round(i.qty)} ${i.unit}</span>
+        </div>`;
+      }).join('');
+    }
+    // fallback: ค้นจาก drugDB
+    if(!hits.length&&_gsScope==='stock'){
+      const dbHits=drugDB.filter(d=>d[1].toLowerCase().includes(ql)||d[0].toLowerCase().includes(ql)).slice(0,MAX);
+      if(dbHits.length){
+        html+=`<div class="gsearch-section-label">📋 ฐานข้อมูลยา (${dbHits.length}${dbHits.length===MAX?'+':''})</div>`;
+        html+=dbHits.map(d=>`<div class="gsearch-item" onclick="closeGlobalSearch();switchTab('receive');setTimeout(()=>{const n=document.getElementById('r-name');if(n){n.value='${d[1].replace(/'/g,"\\'")}';searchReceiveDrug(n.value);}},300)">
+          <div class="gsearch-item-icon" style="background:#EBF2FF;">📋</div>
+          <div class="gsearch-item-main">
+            <div class="gsearch-item-name">${_hl(d[1],q)}</div>
+            <div class="gsearch-item-sub">${_hl(d[0],q)}</div>
+          </div>
+        </div>`).join('');
+      }
+    }
+  }
+
+  // ── รับยาเข้า ────────────────────────────────────────────
+  if(_gsScope==='all'||_gsScope==='recv'){
+    const hits=(receiveRows||[]).filter(r=>
+      r.name.toLowerCase().includes(ql)||
+      (r.code||'').toLowerCase().includes(ql)||
+      (r.lot||'').toLowerCase().includes(ql)||
+      fmtDate(r.date).toLowerCase().includes(ql)
+    ).slice(0,MAX);
+    if(hits.length){
+      html+=`<div class="gsearch-section-label">📥 รับยาเข้า (${hits.length}${hits.length===MAX?'+':''})</div>`;
+      html+=hits.map(r=>`<div class="gsearch-item" onclick="closeGlobalSearch();switchTab('receive')">
+        <div class="gsearch-item-icon" style="background:var(--blue-l);">📥</div>
+        <div class="gsearch-item-main">
+          <div class="gsearch-item-name">${_hl(r.name,q)}</div>
+          <div class="gsearch-item-sub">${_hl(r.code||'—',q)} · LOT: ${_hl(r.lot||'—',q)} · ${fmtDate(r.date)}</div>
+        </div>
+        <span class="gsearch-item-badge" style="color:var(--teal);white-space:nowrap;">${r.qty} ${r.unit}</span>
+      </div>`).join('');
+    }
+  }
+
+  // ── เบิกยา ───────────────────────────────────────────────
+  if(_gsScope==='all'||_gsScope==='disp'){
+    const hits=(dispenseRows||[]).filter(r=>
+      r.name.toLowerCase().includes(ql)||
+      (r.code||'').toLowerCase().includes(ql)||
+      (r.lot||'').toLowerCase().includes(ql)||
+      (r.requester||'').toLowerCase().includes(ql)||
+      fmtDate(r.date).toLowerCase().includes(ql)
+    ).slice(0,MAX);
+    if(hits.length){
+      html+=`<div class="gsearch-section-label">📤 เบิกยา (${hits.length}${hits.length===MAX?'+':''})</div>`;
+      html+=hits.map(r=>`<div class="gsearch-item" onclick="closeGlobalSearch();switchTab('dispense')">
+        <div class="gsearch-item-icon" style="background:var(--amber-l);">📤</div>
+        <div class="gsearch-item-main">
+          <div class="gsearch-item-name">${_hl(r.name,q)}</div>
+          <div class="gsearch-item-sub">${_hl(r.code||'—',q)} · ${_hl(r.requester||'—',q)} · ${fmtDate(r.date)}</div>
+        </div>
+        <span class="gsearch-item-badge" style="color:var(--amber);white-space:nowrap;">${r.qty} ${r.unit}</span>
+      </div>`).join('');
+    }
+  }
+
+  // ── ประวัติ ──────────────────────────────────────────────
+  if(_gsScope==='all'||_gsScope==='hist'){
+    const hits=(historyLog||[]).filter(h=>
+      h.msg.toLowerCase().includes(ql)||(h.detail||'').toLowerCase().includes(ql)
+    ).slice(0,MAX);
+    if(hits.length){
+      html+=`<div class="gsearch-section-label">🕐 ประวัติ (${hits.length}${hits.length===MAX?'+':''})</div>`;
+      html+=hits.map(h=>`<div class="gsearch-item" onclick="closeGlobalSearch();switchTab('history')">
+        <div class="gsearch-item-icon" style="background:var(--purple-l);">🕐</div>
+        <div class="gsearch-item-main">
+          <div class="gsearch-item-name">${_hl(h.msg,q)}</div>
+          <div class="gsearch-item-sub">${_hl(h.detail||'',q)} · ${h.time||''}</div>
+        </div>
+      </div>`).join('');
+    }
+  }
+
+  el.innerHTML=html||`<div class="gsearch-empty">ไม่พบ "<strong>${q}</strong>" ในระบบ</div>`;
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGlobalSearch();});
 
 // ══ DATE FILTER FUNCTIONS ════════════════════════════════════
 function applyReceiveDateFilter(){
