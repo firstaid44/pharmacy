@@ -475,6 +475,89 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 /* ── D-STOCK INFO ── */
 .d-stock-info{display:none;margin-top:6px;padding:9px 12px;background:var(--blue-l);border-radius:var(--r-sm);font-size:12px;color:var(--blue);font-weight:600;border:1px solid rgba(26,95,212,.15);}
 
+/* ── PERSISTENT CART ── */
+.cart-fab{
+  position:fixed;bottom:calc(88px + env(safe-area-inset-bottom));right:16px;
+  z-index:300;
+  background:linear-gradient(135deg,#2D78F5,#1A5FD4);
+  color:#fff;border:none;border-radius:50px;
+  padding:12px 18px;
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:700;font-family:inherit;
+  cursor:pointer;
+  box-shadow:0 4px 20px rgba(26,95,212,.45);
+  transition:all .2s cubic-bezier(.34,1.2,.64,1);
+  min-width:52px;justify-content:center;
+}
+.cart-fab:active{transform:scale(.95);}
+.cart-fab.hidden{transform:translateY(100px);opacity:0;pointer-events:none;}
+.cart-badge{
+  background:#EF4444;color:#fff;border-radius:10px;
+  font-size:10px;font-weight:800;padding:1px 6px;min-width:18px;text-align:center;
+  border:1.5px solid rgba(255,255,255,.4);
+}
+/* ── CART PREVIEW MODAL ── */
+.cart-modal-bg{
+  display:none;position:fixed;inset:0;z-index:700;
+  background:rgba(10,18,28,.65);backdrop-filter:blur(6px);
+  align-items:flex-end;justify-content:center;
+}
+.cart-modal-bg.open{display:flex;animation:fadein .2s ease;}
+.cart-modal{
+  background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;
+  width:100%;max-width:430px;
+  max-height:92vh;overflow-y:auto;
+  animation:slideUp .28s cubic-bezier(.34,1.2,.64,1);
+  box-shadow:0 -8px 40px rgba(0,0,0,.2);
+}
+.cart-header{
+  padding:1rem 1rem .875rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--surface);z-index:2;
+}
+.cart-header-left{display:flex;align-items:center;gap:10px;}
+.cart-header-title{font-size:17px;font-weight:800;color:var(--text1);letter-spacing:-.3px;}
+.cart-header-count{
+  background:var(--blue-l);color:var(--blue);
+  font-size:11px;font-weight:700;padding:2px 9px;border-radius:12px;
+  border:1px solid rgba(26,95,212,.2);
+}
+.cart-close-btn{
+  width:32px;height:32px;border-radius:50%;border:none;
+  background:rgba(0,0,0,.06);color:var(--text2);
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.cart-item{
+  padding:13px 1rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.cart-item:last-child{border-bottom:none;}
+.cart-item-info{flex:1;min-width:0;}
+.cart-item-name{font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;}
+.cart-item-meta{font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.cart-item-qty{
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
+}
+.cart-qty-input{
+  width:56px;padding:5px 6px;border:1.5px solid var(--border2);border-radius:8px;
+  font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace;
+  color:var(--blue);background:var(--blue-l);text-align:center;outline:none;
+  transition:border-color .15s;
+}
+.cart-qty-input:focus{border-color:var(--blue);}
+.cart-del-btn{
+  width:28px;height:28px;border-radius:50%;border:none;
+  background:var(--red-l);color:var(--red);
+  font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-weight:700;
+}
+.cart-footer{
+  padding:.875rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);
+  background:var(--surface2);
+  display:flex;gap:10px;
+}
 /* ── DRUG DETAIL MODAL CONTENT ── */
 .drug-hd-banner{
   margin:-1.25rem -1rem 1rem;padding:1.25rem 1rem 1rem;
@@ -1230,6 +1313,52 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
     <div class="btn-row" style="margin-top:1rem;">
       <button class="btn" onclick="document.getElementById('stock-req-modal').classList.remove('open')">ยกเลิก</button>
       <button class="btn btn-primary" onclick="buildStockReq()">📄 สร้างใบเบิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CART FLOATING BUTTON ══ -->
+<button class="cart-fab hidden" id="cart-fab" onclick="openCartModal()">
+  <span>📋</span>
+  <span id="cart-fab-label">ใบเบิกยา</span>
+  <span class="cart-badge" id="cart-fab-badge">0</span>
+</button>
+
+<!-- ══ CART PREVIEW MODAL ══ -->
+<div class="cart-modal-bg" id="cart-modal" onclick="if(event.target===this)closeCartModal()">
+  <div class="cart-modal">
+    <!-- sticky header -->
+    <div class="cart-modal-handle" style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 0;"></div>
+    <div class="cart-header">
+      <div class="cart-header-left">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;font-size:18px;">📋</div>
+        <div>
+          <div class="cart-header-title">ใบเบิกยา</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1px;" id="cart-date-label"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="cart-header-count" id="cart-count-label">0 รายการ</span>
+        <button class="cart-close-btn" onclick="closeCartModal()">✕</button>
+      </div>
+    </div>
+    <!-- cart items -->
+    <div id="cart-items-list">
+      <div class="empty" style="padding:2.5rem;"><div class="empty-icon">🛒</div>ยังไม่มียาในใบเบิก</div>
+    </div>
+    <!-- footer actions -->
+    <div class="cart-footer">
+      <button class="btn" onclick="clearCart()"
+        style="flex:1;background:var(--red-l);color:var(--red);border-color:rgba(217,48,37,.2);">
+        🗑 ล้างทั้งหมด
+      </button>
+      <button class="btn" onclick="addMoreToCart()"
+        style="flex:1;background:var(--blue-l);color:var(--blue);border-color:rgba(26,95,212,.2);">
+        ＋ เพิ่มยา
+      </button>
+      <button class="btn btn-primary" onclick="buildCartReq()" style="flex:2;">
+        🖨️ ดู/พิมพ์ใบเบิก
+      </button>
     </div>
   </div>
 </div>
@@ -2905,7 +3034,7 @@ function filterStockReqByGroup(grp,btn){
   filterStockReqList(q);
 }
 
-// ปุ่ม "+ ขอเบิก" รวดเร็ว — tick checkbox + focus qty
+// ปุ่ม "+ ขอเบิก" รวดเร็ว — tick checkbox + focus qty + addToCart
 function quickAddToReq(idx){
   const cb=document.getElementById('src-'+idx);
   const qi=document.getElementById('srqty-'+idx);
@@ -2916,31 +3045,45 @@ function quickAddToReq(idx){
   qi.style.borderColor='var(--blue)';
   qi.value=qi.value||'1';
   qi.focus();qi.select();
+  // เพิ่มเข้า persistent cart ทันที
+  const it=window._stockReqItems?window._stockReqItems[idx]:null;
+  if(it){
+    addToCart(it.name,it.code,it.unit,Math.round(it.qty),it.exp,it._grp||'green',parseInt(qi.value)||1);
+  }
   // scroll row into view
   const row=document.getElementById('srr-'+idx);
   if(row)row.scrollIntoView({behavior:'smooth',block:'nearest'});
+  // update qty ใน cart เมื่อแก้ไขในช่อง
+  qi.addEventListener('change',function(){
+    const it2=window._stockReqItems?window._stockReqItems[idx]:null;
+    if(it2) addToCart(it2.name,it2.code,it2.unit,Math.round(it2.qty),it2.exp,it2._grp||'green',parseInt(this.value)||1);
+  },{once:true});
 }
 
 // เพิ่มยาจาก drug detail modal เข้าใบเบิกโดยตรง
 function addDrugToReqFromDetail(){
   const name=window._currentDrugDetail;
   if(!name){showAlert('ไม่พบข้อมูลยา','warning');return;}
+  // หาข้อมูลยาจาก _allStockItems
+  const nm={};
+  (_allStockItems||[]).forEach(i=>{
+    if(i.name!==name)return;
+    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',exp:i.exp};
+    nm[i.name].qty+=i.qty;
+    const ed=parseExpDate(fmtExp(i.exp));
+    const old=parseExpDate(nm[i.name].exp);
+    if(ed&&(!old||ed<old))nm[i.name].exp=i.exp;
+    if(i.group)nm[i.name].group=i.group;
+  });
+  const it=nm[name];
+  if(!it){showAlert('ไม่พบข้อมูลคลังยา','warning');return;}
+  const g=(it.group||'').trim();
+  const grp=(g==='สีแดง'||g==='แดง')?'red':(g==='สีเหลือง'||g==='เหลือง')?'yellow':'green';
   document.getElementById('drug-detail-modal').classList.remove('open');
-  // เปิด stock-req-modal พร้อม search ชื่อยานั้น
-  openStockRequisition();
-  setTimeout(()=>{
-    const si=document.getElementById('stock-req-search');
-    if(si){si.value=name;filterStockReqList(name);}
-    // auto-check ถ้าพบ 1 รายการ
-    setTimeout(()=>{
-      const visible=_stockReqAllRows.filter(r=>r.el.style.display!=='none');
-      if(visible.length===1){
-        const rowEl=visible[0].el;
-        const idx=[..._stockReqAllRows].indexOf(visible[0]);
-        if(idx>=0) quickAddToReq(idx);
-      }
-    },80);
-  },300);
+  // เพิ่มเข้า cart
+  addToCart(it.name,it.code,it.unit,Math.round(it.qty),it.exp,grp,1);
+  // แสดง cart modal หลัง animation เล็กน้อย
+  setTimeout(()=>openCartModal(),350);
 }
 
 // ══ EXPORT MENU ════════════════════════════════════════════
@@ -3035,12 +3178,130 @@ function copyInventoryText(){
   navigator.clipboard.writeText(text).then(()=>showAlert('คัดลอกรายการยาคงคลังแล้ว ✓','success')).catch(()=>showAlert('ไม่สามารถคัดลอกได้','warning'));
 }
 
+// ══════════════════════════════════════════════════════════════
+//  PERSISTENT REQUISITION CART
+// ══════════════════════════════════════════════════════════════
+let _cart = []; // [{name,code,unit,stockQty,exp,grp,orderQty}]
+
+function _updateCartFab(){
+  const fab   = document.getElementById('cart-fab');
+  const badge = document.getElementById('cart-fab-badge');
+  const label = document.getElementById('cart-fab-label');
+  if(!fab)return;
+  const n = _cart.length;
+  if(n===0){fab.classList.add('hidden');}
+  else{
+    fab.classList.remove('hidden');
+    if(badge) badge.textContent = n;
+    if(label) label.textContent = 'ใบเบิกยา';
+  }
+}
+
+function addToCart(name,code,unit,stockQty,exp,grp,orderQty){
+  const existing = _cart.find(i=>i.name===name);
+  if(existing){
+    existing.orderQty = orderQty||existing.orderQty;
+    showAlert('"'+name.substring(0,20)+'..." อัปเดตในใบเบิกแล้ว ✓','success');
+  }else{
+    _cart.push({name,code:code||'',unit:unit||'',stockQty:stockQty||0,
+      exp:exp||'',grp:grp||'green',orderQty:orderQty||1});
+    showAlert('"'+name.substring(0,20)+'..." เพิ่มเข้าใบเบิกแล้ว ✓','success');
+  }
+  _updateCartFab();
+}
+
+function removeFromCart(idx){
+  _cart.splice(idx,1);
+  _renderCartItems();
+  _updateCartFab();
+}
+
+function clearCart(){
+  if(_cart.length===0){closeCartModal();return;}
+  if(!confirm('ล้างรายการยาทั้งหมดในใบเบิก?'))return;
+  _cart=[];_renderCartItems();_updateCartFab();
+}
+
+function _renderCartItems(){
+  const el      = document.getElementById('cart-items-list');
+  const cnt     = document.getElementById('cart-count-label');
+  const dateLbl = document.getElementById('cart-date-label');
+  if(dateLbl) dateLbl.textContent = todayTH();
+  if(cnt) cnt.textContent = _cart.length + ' รายการ';
+  if(!el)return;
+  if(!_cart.length){
+    el.innerHTML='<div class="empty" style="padding:2.5rem;"><div class="empty-icon">🛒</div>ยังไม่มียาในใบเบิก<br><span style="font-size:12px;color:var(--text3);margin-top:6px;display:block;">กด "+ เพิ่มยา" เพื่อเลือกยา</span></div>';
+    return;
+  }
+  el.innerHTML = _cart.map((it,i)=>{
+    const isR=it.grp==='red',isY=it.grp==='yellow';
+    const gc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
+    const grpLabel=isR?'🔴 ใกล้หมด':isY?'🟡 ระวัง':'🟢 ปกติ';
+    const grpBg=isR?'#FEE2E2':isY?'#FFF3DC':'#E9F7EF';
+    return `<div class="cart-item" id="citem-${i}">
+      <div style="width:34px;height:34px;border-radius:10px;background:${grpBg};
+                  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">💊</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${it.name}</div>
+        <div class="cart-item-meta">${it.code||'—'} · คงเหลือ <span style="color:${gc};font-weight:700;">${Math.round(it.stockQty)}</span> ${it.unit}
+          <span style="background:${grpBg};color:${gc};padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;margin-left:3px;">${grpLabel}</span>
+        </div>
+        ${it.exp?`<div class="cart-item-meta" style="margin-top:1px;">EXP: <span style="color:${gc};">${fmtExp(it.exp)}</span></div>`:''}
+      </div>
+      <div class="cart-item-qty">
+        <input type="number" min="1" value="${it.orderQty||1}"
+          class="cart-qty-input" title="จำนวนที่ขอเบิก"
+          onchange="_cart[${i}].orderQty=Math.max(1,parseInt(this.value)||1);this.value=_cart[${i}].orderQty;"
+          oninput="_cart[${i}].orderQty=Math.max(1,parseInt(this.value)||1)">
+        <span style="font-size:10px;color:var(--text3);white-space:nowrap;">${it.unit}</span>
+        <button class="cart-del-btn" onclick="removeFromCart(${i})" title="ลบออกจากใบเบิก">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openCartModal(){
+  _renderCartItems();
+  document.getElementById('cart-modal').classList.add('open');
+}
+function closeCartModal(){
+  document.getElementById('cart-modal').classList.remove('open');
+}
+function addMoreToCart(){
+  closeCartModal();
+  setTimeout(()=>openStockRequisition(),200);
+}
+
+// สร้างใบเบิกจาก cart
+function buildCartReq(){
+  if(!_cart.length){showAlert('ไม่มียาในใบเบิก','warning');return;}
+  closeCartModal();
+  const extraCols=_cart.map(it=>({
+    name:it.name,code:it.code,unit:it.unit,
+    stockQty:it.stockQty,orderQty:it.orderQty||1
+  }));
+  setTimeout(()=>{
+    _renderRequisitionModal({
+      items:_cart.map(it=>({
+        name:it.name,code:it.code,lot:'',exp:fmtExp(it.exp),
+        unit:it.unit,qty:it.orderQty,
+        note:`คงเหลือ ${Math.round(it.stockQty)} ${it.unit}`
+      })),
+      requester:currentUser?currentUser.name:'—',
+      date:todayTH(),
+      note:'ใบเบิกยาจากคลัง PCU สะบ้าย้อย',
+      source:'stock',
+      extraCols
+    });
+  },80);
+}
+
 // ══ STOCK REQUISITION (ใบเบิกยาจากคลัง) ══════════════════════
 let _stockReqCart=[]; // [{code,name,unit,qty,stockQty,exp,orderQty,usageRate}]
 
 function openStockRequisition(){
   if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
-  _stockReqCart=[];
+  // ไม่ reset cart — ยังคงรายการที่เพิ่มไว้
 
   // เรียงยา: แดง (ใกล้หมดอายุ/น้อย) → เหลือง → เขียว
   const sorted=[..._allStockItems].sort((a,b)=>{
@@ -3161,43 +3422,24 @@ function toggleStockReqItem(idx,name,code,unit,stockQty){
 }
 
 function buildStockReq(){
-  // รวบรวมรายการที่ checked
+  // รวบรวมรายการที่ checked จาก _stockReqItems (เชื่อถือได้กว่า DOM parse)
   const rows=document.querySelectorAll('[id^="srr-"]');
-  const items=[];
+  let addedCount=0;
   rows.forEach((row,idx)=>{
     const cb=document.getElementById('src-'+idx);
     if(!cb||!cb.checked)return;
     const qtyInput=document.getElementById('srqty-'+idx);
-    const orderQty=parseInt(qtyInput?.value)||0;
-    // ดึงข้อมูลจาก nameMap
-    const nameEl=row.querySelector('[style*="font-weight:700"]');
-    const subEl=row.querySelector('[style*="IBM Plex Mono"]');
-    const name=nameEl?.textContent?.replace(/ใกล้หมด|ระวัง/g,'').trim()||'';
-    const sub=subEl?.textContent||'';
-    const codeMatch=sub.match(/^([^\s·]+)/);
-    const code=codeMatch?codeMatch[1].trim():'';
-    const qtyMatch=sub.match(/คงเหลือ\s*([\d.]+)/);
-    const stockQty=qtyMatch?parseFloat(qtyMatch[1]):0;
-    const unitMatch=sub.match(/คงเหลือ\s*[\d.]+\s*(\S+)/);
-    const unit=unitMatch?unitMatch[1]:'';
-    items.push({name,code,unit,stockQty,orderQty});
+    const orderQty=Math.max(1,parseInt(qtyInput?.value)||1);
+    const it=window._stockReqItems?window._stockReqItems[idx]:null;
+    if(it){
+      addToCart(it.name,it.code,it.unit,Math.round(it.qty),it.exp,it._grp||'green',orderQty);
+      addedCount++;
+    }
   });
-  if(!items.length){showAlert('เลือกยาอย่างน้อย 1 รายการก่อน','warning');return;}
-
-  // ปิด select modal แล้วเปิดใบเบิก
+  if(addedCount===0&&_cart.length===0){showAlert('เลือกยาอย่างน้อย 1 รายการก่อน','warning');return;}
+  // ปิด select modal แล้วเปิด cart
   document.getElementById('stock-req-modal').classList.remove('open');
-  _renderRequisitionModal({
-    items:items.map(it=>({
-      name:it.name,code:it.code,lot:'',exp:'',
-      unit:it.unit,qty:it.orderQty||0,
-      note:`คงเหลือ ${Math.round(it.stockQty)} ${it.unit}`
-    })),
-    requester:currentUser?currentUser.name:'—',
-    date:todayTH(),
-    note:'ใบเบิกยาจากคลัง PCU สะบ้าย้อย',
-    source:'stock',
-    extraCols:items  // pass for custom table render
-  });
+  setTimeout(()=>openCartModal(),200);
 }
 
 // ── PATCH _renderRequisitionModal to handle stock mode ────────
