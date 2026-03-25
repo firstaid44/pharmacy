@@ -1682,7 +1682,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version15.55.25.03.2569</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version16.14.25.03.2569</div>
     </div>
     <button onclick="openGlobalSearch()"
       id="gsearch-btn"
@@ -1972,15 +1972,15 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
   <div class="page" id="page-summary">
     <div style="height:.75rem;"></div>
     <!-- Search bar -->
-    <div style="position:relative;margin-bottom:12px;">
+    <div style="position:relative;margin-bottom:10px;">
       <input class="form-input" id="summary-search"
         placeholder="🔍  ค้นหาชื่อยา รหัส หรือ LOT..."
         oninput="renderSummaryDrugPage(1)"
         autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
         style="padding-left:14px;"/>
     </div>
-    <!-- Stats row -->
-    <div class="stats-grid" style="margin-bottom:14px;">
+    <!-- Stats row + export btn -->
+    <div class="stats-grid" style="margin-bottom:10px;">
       <div class="stat-card c-blue">
         <div class="stat-label">รายการรับเข้าทั้งหมด</div>
         <div class="stat-value sv-blue" id="sum-recv-total">—</div>
@@ -1989,6 +1989,16 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         <div class="stat-label">รายการเบิกออกทั้งหมด</div>
         <div class="stat-value sv-amber" id="sum-disp-total">—</div>
       </div>
+    </div>
+    <!-- Export button bar -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+      <button onclick="openSummaryExportPreview()"
+        style="display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:12px;
+               border:1.5px solid rgba(26,95,212,.25);background:linear-gradient(135deg,var(--blue-l),#d6e8ff);
+               color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
+               box-shadow:0 2px 8px rgba(26,95,212,.15);transition:all .15s;">
+        <span style="font-size:16px;">📤</span> ส่งออกข้อมูลรับ-เบิกยา
+      </button>
     </div>
     <!-- Drug list -->
     <div class="card" id="summary-drug-list">
@@ -3041,7 +3051,7 @@ function renderReqLog(){
           <div class="req-log-requester">${r.requester}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <div class="req-log-date">${r.date}</div>
+          <div class="req-log-date">${fmtDate(r.date)}</div>
           <button onclick="deleteReqLog(${idx})"
             style="padding:2px 8px;border-radius:6px;border:1px solid rgba(217,48,37,.2);
                    background:var(--red-l);color:var(--red);font-size:10px;font-weight:700;
@@ -4583,7 +4593,7 @@ function renderSummaryDrugPage(page){
               background:${isR?'#EBF2FF':'#FFF3DC'};color:${isR?'var(--blue)':'var(--amber)'};">
               ${isR?'📥 รับ':'📤 เบิก'}
             </span>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;">${t.date}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;">${fmtDate(t.date)}</div>
           </td>
           <td style="padding:6px 5px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text2);">${t.docNum}</td>
           <td style="padding:6px 5px;font-size:10px;color:var(--text2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.fromTo}</td>
@@ -4647,6 +4657,177 @@ function renderSummaryDrugPage(page){
       <span class="pg-info">หน้า ${_summaryDrugPage}/${totalPages} · ${total} รายการ</span>
       <button class="pg-btn" onclick="renderSummaryDrugPage(${_summaryDrugPage+1})" ${_summaryDrugPage>=totalPages?'disabled':''}>›</button>
     </div>`;
+}
+
+// ══ ส่งออกข้อมูลรับ-เบิกยา (Preview + PDF) ════════════════════
+function openSummaryExportPreview(){
+  if(!receiveRows.length&&!dispenseRows.length){
+    showAlert('ยังไม่มีข้อมูล กดรีเฟรชในแท็บรับยา/เบิกยาก่อน','warning');return;
+  }
+  const nowTs=new Date();nowTs.setHours(0,0,0,0);
+  const today=todayTH();
+
+  // สร้าง nameMap
+  const nm={};
+  receiveRows.forEach(r=>{
+    if(!nm[r.name])nm[r.name]={name:r.name,code:r.code,unit:r.unit,recv:0,disp:0,txns:[]};
+    const qty=parseFloat(r.qty)||0;
+    nm[r.name].recv+=qty;
+    nm[r.name].txns.push({type:'recv',date:fmtDate(r.date),docNum:r.docNum||'—',fromTo:r.source||'—',qty,lot:r.lot,exp:fmtExp(r.exp)||'—',unit:r.unit||nm[r.name].unit});
+  });
+  dispenseRows.forEach(d=>{
+    if(!nm[d.name])nm[d.name]={name:d.name,code:d.code,unit:d.unit,recv:0,disp:0,txns:[]};
+    const qty=parseFloat(d.qty)||0;
+    nm[d.name].disp+=qty;
+    nm[d.name].txns.push({type:'disp',date:fmtDate(d.date),docNum:d.docNum||'—',fromTo:d.dest||d.requester||'—',qty,lot:d.lot,exp:fmtExp(d.exp)||'—',unit:d.unit||nm[d.name].unit});
+  });
+
+  const q=(document.getElementById('summary-search')?.value||'').toLowerCase().trim();
+  let drugs=Object.values(nm).sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  if(q)drugs=drugs.filter(d=>d.name.toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q));
+
+  const totalRecv=drugs.reduce((s,d)=>s+d.recv,0);
+  const totalDisp=drugs.reduce((s,d)=>s+d.disp,0);
+
+  function expColor(expStr){
+    if(!expStr||expStr==='—')return '#94A3B8';
+    const p=expStr.split('/');if(p.length!==3)return '#94A3B8';
+    const ed=new Date(p[2],p[1]-1,p[0]);
+    const mo=(ed-nowTs)/(1000*60*60*24*30.4);
+    return mo<=0?'#B91C1C':mo<=6?'#C0392B':mo<=12?'#C07000':'#1E8A4A';
+  }
+
+  const drugRows=drugs.map(drug=>{
+    const bal=Math.round(drug.recv-drug.disp);
+    const balColor=bal<=0?'#C0392B':bal<=3?'#C07000':'#1E8A4A';
+    const txns=[...drug.txns].sort((a,b)=>{
+      const pa=a.date.split('/'),pb=b.date.split('/');
+      return new Date(pa[2],pa[1]-1,pa[0])-new Date(pb[2],pb[1]-1,pb[0]);
+    });
+    let run=0;
+    const tRows=txns.map(t=>{
+      const isR=t.type==='recv';
+      run+=isR?t.qty:-t.qty;
+      const rc=Math.round(run);
+      const rcc=rc<=0?'#C0392B':rc<=3?'#C07000':'#1E8A4A';
+      return `<tr>
+        <td style="text-align:center;"><span style="display:inline-block;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;background:${isR?'#EBF2FF':'#FFF3DC'};color:${isR?'#1A5FD4':'#C07000'};">${isR?'📥 รับ':'📤 เบิก'}</span></td>
+        <td style="font-family:monospace;white-space:nowrap;">${t.date}</td>
+        <td style="font-family:monospace;color:#64748B;">${t.docNum}</td>
+        <td style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.fromTo}</td>
+        <td style="text-align:right;font-weight:700;color:${isR?'#1A5FD4':'#888'};">${isR?t.qty:'—'}</td>
+        <td style="text-align:right;font-weight:700;color:${isR?'#888':'#C07000'};">${isR?'—':t.qty}</td>
+        <td style="text-align:right;font-weight:800;color:${rcc};font-family:monospace;">${rc}</td>
+        <td style="font-family:monospace;color:${expColor(t.exp)};font-weight:600;white-space:nowrap;">${t.exp}</td>
+        <td style="font-family:monospace;color:#64748B;">${t.lot}</td>
+      </tr>`;
+    }).join('');
+    return `
+      <div style="background:#fff;border-radius:12px;margin-bottom:10px;border:1px solid #E2E8F0;overflow:hidden;page-break-inside:avoid;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 14px;background:linear-gradient(135deg,#EBF2FF,#E6F7F2);border-bottom:1px solid #D1E3FF;">
+          <div style="display:flex;align-items:baseline;gap:8px;">
+            <span style="font-size:13px;font-weight:800;color:#0F1923;">${drug.name}</span>
+            <span style="font-size:10px;color:#64748B;font-family:monospace;background:#E2E8F0;padding:1px 7px;border-radius:4px;">${drug.code||'—'}</span>
+          </div>
+          <div style="display:flex;gap:14px;align-items:center;">
+            <div style="text-align:center;"><div style="font-size:8px;font-weight:700;color:#94A3B8;text-transform:uppercase;">รับรวม</div><div style="font-size:17px;font-weight:800;color:#1A5FD4;font-family:monospace;">${Math.round(drug.recv)}</div></div>
+            <div style="text-align:center;"><div style="font-size:8px;font-weight:700;color:#94A3B8;text-transform:uppercase;">เบิกรวม</div><div style="font-size:17px;font-weight:800;color:#C07000;font-family:monospace;">${Math.round(drug.disp)||0}</div></div>
+            <div style="text-align:center;"><div style="font-size:8px;font-weight:700;color:#94A3B8;text-transform:uppercase;">คงเหลือ</div><div style="font-size:17px;font-weight:800;color:${balColor};font-family:monospace;">${bal}</div></div>
+            <span style="font-size:10px;font-weight:600;color:#64748B;background:#E2E8F0;padding:2px 8px;border-radius:6px;">${drug.unit}</span>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:10px;min-width:520px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="padding:6px 8px;text-align:center;font-size:8.5px;font-weight:700;color:#64748B;border-bottom:1.5px solid #E2E8F0;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;">ประเภท</th>
+              <th style="padding:6px 8px;text-align:left;font-size:8.5px;font-weight:700;color:#64748B;border-bottom:1.5px solid #E2E8F0;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;">วันที่</th>
+              <th style="padding:6px 8px;text-align:left;font-size:8.5px;font-weight:700;color:#64748B;border-bottom:1.5px solid #E2E8F0;text-transform:uppercase;letter-spacing:.4px;">เลขที่เอกสาร</th>
+              <th style="padding:6px 8px;text-align:left;font-size:8.5px;font-weight:700;color:#64748B;border-bottom:1.5px solid #E2E8F0;text-transform:uppercase;letter-spacing:.4px;">รับจาก/เบิกให้</th>
+              <th style="padding:6px 8px;text-align:right;font-size:8.5px;font-weight:700;color:#1A5FD4;border-bottom:1.5px solid #E2E8F0;text-transform:uppercase;">จำนวนรับ</th>
+              <th style="padding:6px 8px;text-align:right;font-size:8.5px;font-weight:700;color:#C07000;border-bottom:1.5px solid #E2E8F0;text-transform:uppercase;">จำนวนจ่าย</th>
+              <th style="padding:6px 8px;text-align:right;font-size:8.5px;font-weight:700;color:#64748B;border-bottom:1.5px solid #E2E8F0;text-transform:uppercase;">คงเหลือ</th>
+              <th style="padding:6px 8px;text-align:left;font-size:8.5px;font-weight:700;color:#64748B;border-bottom:1.5px solid #E2E8F0;text-transform:uppercase;white-space:nowrap;">วันหมดอายุ</th>
+              <th style="padding:6px 8px;text-align:left;font-size:8.5px;font-weight:700;color:#64748B;border-bottom:1.5px solid #E2E8F0;text-transform:uppercase;">LOT</th>
+            </tr></thead>
+            <tbody>${tRows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+
+  const html=`<!DOCTYPE html><html lang="th"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>สรุปรับเข้า-เบิกออก — PCU สะบ้าย้อย</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Sarabun','Noto Sans Thai','IBM Plex Sans Thai',sans-serif;font-size:11px;background:#F8FAFC;color:#0F1923;}
+.toolbar{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,#1A5FD4,#0B9E72);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 10px rgba(0,0,0,.2);}
+.tb-title{flex:1;}.tb-title h2{font-size:14px;font-weight:700;}.tb-title p{font-size:10px;opacity:.75;margin-top:1px;}
+.tb-btn{padding:8px 18px;border-radius:9px;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s;}
+.tb-btn:hover{background:rgba(255,255,255,.28);}
+.tb-pdf{background:#fff;color:#1A5FD4;border-color:transparent;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.tb-pdf:hover{background:#f0f6ff;}
+.tb-share{background:rgba(11,158,114,.35);border-color:rgba(255,255,255,.3);}
+.tb-share:hover{background:rgba(11,158,114,.55);}
+.content{max-width:960px;margin:16px auto;padding:0 12px 60px;}
+@media print{.toolbar{display:none!important;}body{background:#fff;}.content{margin:0;padding:0;}@page{margin:12mm;size:A4 portrait;}}
+</style></head><body>
+<div class="toolbar">
+  <div class="tb-title"><h2>📊 สรุปรับเข้า-เบิกออก — PCU สะบ้าย้อย</h2><p>ดูตัวอย่างก่อนบันทึก/แชร์ · ${today}</p></div>
+  <button class="tb-btn" onclick="window.close()">← กลับ</button>
+  <button class="tb-btn tb-pdf" onclick="window.print()">🖨️ บันทึก PDF</button>
+  <button class="tb-btn tb-share" onclick="doShare()">📤 แชร์/ส่งต่อ</button>
+</div>
+<div class="content">
+  <!-- Doc header -->
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:12px;border:1px solid #E2E8F0;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+    <div style="width:44px;height:44px;border-radius:12px;flex-shrink:0;background:linear-gradient(135deg,#1A5FD4,#0B9E72);display:flex;align-items:center;justify-content:center;font-size:22px;">💊</div>
+    <div style="flex:1;">
+      <div style="font-size:15px;font-weight:700;">PCU สะบ้าย้อย</div>
+      <div style="font-size:11px;color:#64748B;margin-top:2px;">รายงานสรุปการรับยาเข้า-เบิกยาออก</div>
+    </div>
+    <div style="display:flex;gap:16px;">
+      <div style="text-align:right;"><div style="font-size:9px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">วันที่พิมพ์</div><div style="font-size:13px;font-weight:700;">${today}</div></div>
+      <div style="text-align:right;"><div style="font-size:9px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">รายการยา</div><div style="font-size:13px;font-weight:700;">${drugs.length} รายการ</div></div>
+      ${q?`<div style="text-align:right;"><div style="font-size:9px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">กรองโดย</div><div style="font-size:12px;font-weight:700;">${q}</div></div>`:''}
+    </div>
+  </div>
+  <!-- Summary bar -->
+  <div style="background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:12px;border:1px solid #E2E8F0;display:flex;gap:0;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+    ${[
+      {lbl:'รายการรับเข้า',val:receiveRows.length,color:'#1A5FD4',unit:'รายการ'},
+      {lbl:'รับเข้ารวม',val:Math.round(totalRecv),color:'#1A5FD4',unit:'หน่วย'},
+      {lbl:'รายการเบิกออก',val:dispenseRows.length,color:'#C07000',unit:'รายการ'},
+      {lbl:'เบิกออกรวม',val:Math.round(totalDisp),color:'#C07000',unit:'หน่วย'},
+      {lbl:'ยาทั้งหมด',val:drugs.length,color:'#0F1923',unit:'ชนิด'},
+    ].map((s,i)=>`
+      ${i>0?'<div style="width:1px;background:#E2E8F0;margin:0 16px;"></div>':''}
+      <div style="text-align:center;min-width:70px;">
+        <div style="font-size:9px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">${s.lbl}</div>
+        <div style="font-size:22px;font-weight:800;color:${s.color};font-family:monospace;line-height:1;">${s.val}</div>
+        <div style="font-size:9px;color:#94A3B8;font-weight:600;margin-top:1px;">${s.unit}</div>
+      </div>`).join('')}
+  </div>
+  <!-- Drug rows -->
+  ${drugRows}
+</div>
+<scr`+'ipt>'+`
+function doShare(){
+  if(navigator&&navigator.share){
+    navigator.share({title:'สรุปรับเข้า-เบิกออก PCU สะบ้าย้อย',text:'รายงานสรุปยา ณ วันที่ `+today+`'})
+    .catch(()=>{window.print();});
+  }else{
+    alert('วิธีส่งต่อ PDF:\\n1. กด \\"บันทึก PDF\\" → เลือก Save as PDF\\n2. เปิดแอปไฟล์ → แชร์ PDF ไปยัง LINE หรืออีเมล');
+    window.print();
+  }
+}
+window.focus();
+</scr`+'ipt>'+`
+</body></html>`;
+
+  const w=window.open('','_blank');
+  if(!w){showAlert('กรุณาอนุญาต Popup ในเบราว์เซอร์ก่อน','warning');return;}
+  w.document.write(html);w.document.close();w.focus();
 }
 
 // ══ Save inventory as .txt file ════════════════════════════
