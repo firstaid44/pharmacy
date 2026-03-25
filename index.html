@@ -1193,24 +1193,40 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
              width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;
              display:flex;align-items:center;justify-content:center;color:var(--text2);">✕</button>
     <div class="modal-title">📋 เลือกยาที่ต้องการเบิก</div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:.75rem;">เลือก ☑ และกรอกจำนวนที่ต้องการจัดซื้อ — ยาใกล้หมดอายุ/น้อยแสดงก่อน</div>
-    <!-- Search box -->
-    <div style="position:relative;margin-bottom:.875rem;">
+    <!-- Search box — อยู่บนสุดก่อนปุ่มกรอง -->
+    <div style="position:relative;margin-bottom:10px;">
       <input type="text" id="stock-req-search"
         placeholder="🔍 ค้นหาชื่อยาหรือรหัสยา..."
         oninput="filterStockReqList(this.value)"
         autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
-        style="width:100%;padding:10px 36px 10px 12px;border:1.5px solid var(--border2);
-               border-radius:10px;font-size:13px;background:var(--surface2);color:var(--text1);
+        style="width:100%;padding:11px 38px 11px 14px;border:1.5px solid var(--border2);
+               border-radius:12px;font-size:14px;background:var(--surface2);color:var(--text1);
                font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;outline:none;
-               transition:border-color .15s;">
+               transition:border-color .18s,box-shadow .18s;box-shadow:0 1px 3px rgba(0,0,0,.05);"
+        onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(26,95,212,.1)'"
+        onblur="this.style.borderColor='var(--border2)';this.style.boxShadow='0 1px 3px rgba(0,0,0,.05)'">
       <button onclick="document.getElementById('stock-req-search').value='';filterStockReqList('')"
-        style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
-               background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;
+        style="position:absolute;right:10px;top:50%;transform:translateY(-50%);
+               background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;
                padding:4px;line-height:1;" title="ล้าง">✕</button>
     </div>
+    <!-- Filter chips -->
+    <div id="stock-req-group-filter" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+      <button onclick="filterStockReqByGroup('all',this)"
+        class="_srg active" data-grp="all"
+        style="padding:4px 12px;border-radius:16px;border:1.5px solid rgba(26,95,212,.4);background:var(--blue-l);color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">ทั้งหมด</button>
+      <button onclick="filterStockReqByGroup('red',this)"
+        class="_srg" data-grp="red"
+        style="padding:4px 12px;border-radius:16px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🔴 &lt;6 เดือน</button>
+      <button onclick="filterStockReqByGroup('yellow',this)"
+        class="_srg" data-grp="yellow"
+        style="padding:4px 12px;border-radius:16px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🟡 6–12 เดือน</button>
+      <button onclick="filterStockReqByGroup('green',this)"
+        class="_srg" data-grp="green"
+        style="padding:4px 12px;border-radius:16px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🟢 &gt;12 เดือน</button>
+    </div>
     <div id="stock-req-count" style="font-size:11px;color:var(--text3);margin-bottom:6px;"></div>
-    <div id="stock-req-list" style="max-height:50vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+    <div id="stock-req-list" style="max-height:46vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
     <div class="btn-row" style="margin-top:1rem;">
       <button class="btn" onclick="document.getElementById('stock-req-modal').classList.remove('open')">ยกเลิก</button>
       <button class="btn btn-primary" onclick="buildStockReq()">📄 สร้างใบเบิก</button>
@@ -1365,7 +1381,12 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
              display:flex;align-items:center;justify-content:center;color:var(--text2);
              font-family:inherit;line-height:1;z-index:2;" title="ปิด">✕</button>
     <div id="drug-detail-content"></div>
-    <div class="btn-row" style="margin-top:1rem;">
+    <div class="btn-row" style="margin-top:1rem;" id="drug-detail-btns">
+      <button class="btn" id="drug-req-add-btn"
+        onclick="addDrugToReqFromDetail()"
+        style="background:var(--blue-l);color:var(--blue);border-color:rgba(26,95,212,.2);flex:1.5;">
+        ＋ เพิ่มเข้าใบเบิกยา
+      </button>
       <button class="btn btn-primary" onclick="document.getElementById('drug-detail-modal').classList.remove('open')">ปิด</button>
     </div>
   </div>
@@ -1512,7 +1533,6 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
         <div class="form-group"><label class="form-label">หมายเหตุ</label><textarea class="form-input" id="d-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
         <div class="btn-row">
           <button class="btn" onclick="clearDispenseForm()">ล้าง</button>
-          <button class="btn" onclick="previewRequisition()" style="background:var(--blue-l);color:var(--blue);border-color:rgba(26,95,212,.2);">📄 ใบเบิก</button>
           <button class="btn btn-primary" id="d-save-btn" onclick="dispenseStock()" style="background:linear-gradient(135deg,#E84040,#C0392B);">เบิกยาออก</button>
         </div>
       </div>
@@ -1561,10 +1581,20 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
       <div id="stock-expiring-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
     </div>
     <div class="section-hd">
-      <span class="section-title">สรุปยาคงเหลือรายตัว</span>
-      <div style="display:flex;gap:6px;">
-        <button class="section-action" onclick="openStockRequisition()" style="background:var(--blue-l);color:var(--blue);border-color:rgba(26,95,212,.2);">📋 ใบเบิกยา</button>
-        <button class="section-action" id="export-btn" onclick="exportInventory()" style="background:var(--teal-l);color:var(--teal);border-color:rgba(11,158,114,.2);">⬆ ส่งออกคงคลัง</button>
+      <span class="section-title">สรุปยาคงคลัง</span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="openStockRequisition()"
+          style="font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;
+                 padding:8px 16px;border-radius:22px;
+                 border:1.5px solid rgba(26,95,212,.25);background:var(--blue-l);
+                 font-family:inherit;transition:all .15s;
+                 box-shadow:0 1px 4px rgba(26,95,212,.12);">📋 ใบเบิกยา</button>
+        <button id="export-btn" onclick="openExportMenu()"
+          style="font-size:13px;font-weight:700;color:var(--teal);cursor:pointer;
+                 padding:8px 14px;border-radius:22px;
+                 border:1.5px solid rgba(11,158,114,.25);background:var(--teal-l);
+                 font-family:inherit;transition:all .15s;
+                 box-shadow:0 1px 4px rgba(11,158,114,.1);">📤 ส่งออกรายการยาคงคลัง</button>
       </div>
     </div>
     <div class="card" id="stock-summary-card"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
@@ -2098,6 +2128,7 @@ function renderExpiringList(){
 }
 
 function showDrugDetail(name){
+  window._currentDrugDetail=name; // เก็บไว้ใช้ปุ่ม "เพิ่มเข้าใบเบิกยา"
   const modal=document.getElementById('drug-detail-modal'),el=document.getElementById('drug-detail-content');
   if(!modal||!el)return;
   const rLots=receiveRows.filter(r=>r.name===name);
@@ -2829,21 +2860,179 @@ function setGroupPage(groupKey,p){
   loadStock();
 }
 
-// ── STOCK REQ SEARCH ─────────────────────────────────────────
-let _stockReqAllRows=[]; // เก็บทุก row HTML สำหรับ filter
+// ── STOCK REQ SEARCH + GROUP FILTER ─────────────────────────
+let _stockReqAllRows=[];
+let _stockReqGrpFilter='all';
 
 function filterStockReqList(q){
-  const list=document.getElementById('stock-req-list');
   const cnt=document.getElementById('stock-req-count');
-  if(!list)return;
+  const grp=window._stockReqGrpFilter||'all';
   const qLow=(q||'').toLowerCase().trim();
   let shown=0;
-  _stockReqAllRows.forEach(({el,name,code})=>{
-    const match=!qLow||name.toLowerCase().includes(qLow)||code.toLowerCase().includes(qLow);
-    el.style.display=match?'':'none';
-    if(match)shown++;
+  _stockReqAllRows.forEach(({el,name,code,grp:itemGrp})=>{
+    const matchQ=!qLow||name.toLowerCase().includes(qLow)||(code||'').toLowerCase().includes(qLow);
+    const matchG=grp==='all'||itemGrp===grp;
+    el.style.display=(matchQ&&matchG)?'':'none';
+    if(matchQ&&matchG)shown++;
   });
-  if(cnt)cnt.textContent=qLow?`พบ ${shown} รายการ`:`ทั้งหมด ${_stockReqAllRows.length} รายการ`;
+  if(cnt)cnt.textContent=qLow||grp!=='all'?`พบ ${shown} รายการ`:`ทั้งหมด ${_stockReqAllRows.length} รายการ`;
+}
+
+function filterStockReqByGroup(grp,btn){
+  window._stockReqGrpFilter=grp;
+  // update chip styles
+  document.querySelectorAll('._srg').forEach(b=>{
+    const on=b.dataset.grp===grp;
+    if(grp==='all'){
+      b.style.borderColor=on?'rgba(26,95,212,.4)':'var(--border2)';
+      b.style.background=on?'var(--blue-l)':'var(--surface2)';
+      b.style.color=on?'var(--blue)':'var(--text2)';
+    } else if(grp==='red'){
+      b.style.borderColor=on?'rgba(217,48,37,.4)':'var(--border2)';
+      b.style.background=on?'var(--red-l)':'var(--surface2)';
+      b.style.color=on?'var(--red)':'var(--text2)';
+    } else if(grp==='yellow'){
+      b.style.borderColor=on?'rgba(192,112,0,.4)':'var(--border2)';
+      b.style.background=on?'var(--amber-l)':'var(--surface2)';
+      b.style.color=on?'var(--amber)':'var(--text2)';
+    } else if(grp==='green'){
+      b.style.borderColor=on?'rgba(30,138,74,.4)':'var(--border2)';
+      b.style.background=on?'var(--green-l)':'var(--surface2)';
+      b.style.color=on?'var(--green)':'var(--text2)';
+    }
+  });
+  const q=document.getElementById('stock-req-search')?.value||'';
+  filterStockReqList(q);
+}
+
+// ปุ่ม "+ ขอเบิก" รวดเร็ว — tick checkbox + focus qty
+function quickAddToReq(idx){
+  const cb=document.getElementById('src-'+idx);
+  const qi=document.getElementById('srqty-'+idx);
+  if(!cb||!qi)return;
+  cb.checked=true;
+  qi.disabled=false;
+  qi.style.background='var(--blue-l)';
+  qi.style.borderColor='var(--blue)';
+  qi.value=qi.value||'1';
+  qi.focus();qi.select();
+  // scroll row into view
+  const row=document.getElementById('srr-'+idx);
+  if(row)row.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// เพิ่มยาจาก drug detail modal เข้าใบเบิกโดยตรง
+function addDrugToReqFromDetail(){
+  const name=window._currentDrugDetail;
+  if(!name){showAlert('ไม่พบข้อมูลยา','warning');return;}
+  document.getElementById('drug-detail-modal').classList.remove('open');
+  // เปิด stock-req-modal พร้อม search ชื่อยานั้น
+  openStockRequisition();
+  setTimeout(()=>{
+    const si=document.getElementById('stock-req-search');
+    if(si){si.value=name;filterStockReqList(name);}
+    // auto-check ถ้าพบ 1 รายการ
+    setTimeout(()=>{
+      const visible=_stockReqAllRows.filter(r=>r.el.style.display!=='none');
+      if(visible.length===1){
+        const rowEl=visible[0].el;
+        const idx=[..._stockReqAllRows].indexOf(visible[0]);
+        if(idx>=0) quickAddToReq(idx);
+      }
+    },80);
+  },300);
+}
+
+// ══ EXPORT MENU ════════════════════════════════════════════
+function openExportMenu(){
+  // สร้าง dropdown menu ใต้ปุ่ม
+  const existMenu=document.getElementById('export-menu-popup');
+  if(existMenu){existMenu.remove();return;}
+  const btn=document.getElementById('export-btn');
+  const menu=document.createElement('div');
+  menu.id='export-menu-popup';
+  menu.style.cssText=`position:fixed;z-index:600;background:#fff;border:1px solid var(--border2);
+    border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);min-width:200px;overflow:hidden;
+    animation:dropIn .15s ease;`;
+  const options=[
+    {icon:'📋',label:'ส่งออกไปยัง Sheet (คงคลัง)',fn:'exportInventory()'},
+    {icon:'🖨️',label:'พิมพ์รายการคงคลัง',fn:'printInventory()'},
+    {icon:'📄',label:'คัดลอกเป็น Text',fn:'copyInventoryText()'},
+  ];
+  menu.innerHTML=options.map(o=>`
+    <button onclick="${o.fn};document.getElementById('export-menu-popup')?.remove()"
+      style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;
+             background:none;border:none;border-bottom:1px solid var(--border);
+             font-size:13px;font-weight:600;color:var(--text1);cursor:pointer;
+             font-family:inherit;text-align:left;transition:background .1s;"
+      onmouseover="this.style.background='var(--surface2)'"
+      onmouseout="this.style.background='none'">
+      <span>${o.icon}</span><span>${o.label}</span>
+    </button>`).join('');
+  // last button no border
+  menu.querySelector('button:last-child').style.borderBottom='none';
+  document.body.appendChild(menu);
+  // position below button
+  const r=btn.getBoundingClientRect();
+  menu.style.right=(window.innerWidth-r.right)+'px';
+  menu.style.top=(r.bottom+6)+'px';
+  // close on outside click
+  setTimeout(()=>document.addEventListener('click',function h(e){
+    if(!menu.contains(e.target)&&e.target!==btn){menu.remove();document.removeEventListener('click',h);}
+  }),50);
+}
+
+function printInventory(){
+  // สร้าง print window พร้อม table คงคลัง
+  if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง','warning');return;}
+  const nm={};
+  _allStockItems.forEach(i=>{
+    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',exp:''};
+    nm[i.name].qty+=i.qty;
+    const ed=parseExpDate(fmtExp(i.exp));
+    if(ed){const old=parseExpDate(nm[i.name].exp);if(!old||ed<old)nm[i.name].exp=i.exp;}
+    if(i.group)nm[i.name].group=i.group;
+  });
+  const rows=Object.values(nm).sort((a,b)=>{
+    const go={สีแดง:0,แดง:0,สีเหลือง:1,เหลือง:1};
+    const ga=go[a.group.trim()]??2,gb=go[b.group.trim()]??2;
+    return ga-gb||a.name.localeCompare(b.name,'th');
+  });
+  const today=todayTH();
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>รายการยาคงคลัง PCU สะบ้าย้อย</title>
+  <style>body{font-family:'IBM Plex Sans Thai',sans-serif;font-size:12px;margin:16px;}
+  h2{font-size:15px;margin-bottom:4px;}
+  .sub{font-size:11px;color:#666;margin-bottom:12px;}
+  table{width:100%;border-collapse:collapse;}
+  th{background:#1A5FD4;color:#fff;padding:6px 8px;font-size:10px;text-align:left;}
+  td{padding:7px 8px;border-bottom:1px solid #eee;}
+  tr.red td{background:#fff0f0;border-left:3px solid #C0392B;}
+  tr.yellow td{background:#fffbf0;border-left:3px solid #C07000;}
+  @media print{@page{margin:12mm;}}
+  </style></head><body>
+  <h2>รายการยาคงคลัง — PCU สะบ้าย้อย</h2>
+  <div class="sub">ณ วันที่ ${today} · ${rows.length} รายการ</div>
+  <table><thead><tr><th>#</th><th>รหัสยา</th><th>ชื่อยา</th><th>คงเหลือ</th><th>หน่วย</th><th>EXP</th><th>กลุ่ม</th></tr></thead>
+  <tbody>${rows.map((r,i)=>{
+    const g=r.group.trim();
+    const isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
+    const cls=isR?'red':isY?'yellow':'';
+    return `<tr class="${cls}"><td>${i+1}</td><td>${r.code}</td><td>${r.name}</td><td><b>${Math.round(r.qty)}</b></td><td>${r.unit}</td><td>${fmtExp(r.exp)||'—'}</td><td>${g||'ปกติ'}</td></tr>`;
+  }).join('')}</tbody></table></body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),400);
+}
+
+function copyInventoryText(){
+  if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง','warning');return;}
+  const nm={};
+  _allStockItems.forEach(i=>{
+    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0};
+    nm[i.name].qty+=i.qty;
+  });
+  const lines=Object.values(nm).map(r=>`${r.code}\t${r.name}\t${Math.round(r.qty)} ${r.unit}`);
+  const text=`รายการยาคงคลัง PCU สะบ้าย้อย (${todayTH()})\n${'─'.repeat(40)}\n${lines.join('\n')}`;
+  navigator.clipboard.writeText(text).then(()=>showAlert('คัดลอกรายการยาคงคลังแล้ว ✓','success')).catch(()=>showAlert('ไม่สามารถคัดลอกได้','warning'));
 }
 
 // ══ STOCK REQUISITION (ใบเบิกยาจากคลัง) ══════════════════════
@@ -2882,27 +3071,53 @@ function openStockRequisition(){
   const listEl=document.getElementById('stock-req-list');
   if(!modal||!listEl)return;
 
-  listEl.innerHTML=items.map((it,idx)=>{
+  // กำหนด _grp ให้แต่ละยา
+  const _now=new Date();_now.setHours(0,0,0,0);
+  items.forEach(it=>{
     const g=(it.group||'').trim();
-    const isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
-    const badge=isR?'<span style="background:#FEE2E2;color:#C0392B;padding:2px 6px;border-radius:6px;font-size:9px;font-weight:700;">ใกล้หมด</span>':
-                isY?'<span style="background:#FFF3DC;color:#C07000;padding:2px 6px;border-radius:6px;font-size:9px;font-weight:700;">ระวัง</span>':'';
-    return `<div class="stock-req-row" id="srr-${idx}">
+    if(g==='สีแดง'||g==='แดง')it._grp='red';
+    else if(g==='สีเหลือง'||g==='เหลือง')it._grp='yellow';
+    else if(g==='สีเขียว'||g==='เขียว')it._grp='green';
+    else{
+      const ed=parseExpDate(fmtExp(it.exp));
+      if(ed){const mo=(ed-_now)/(1000*60*60*24*30.4);it._grp=mo<=6?'red':mo<=12?'yellow':'green';}
+      else it._grp='green';
+    }
+  });
+  window._stockReqItems=items;
+
+  listEl.innerHTML=items.map((it,idx)=>{
+    const isR=it._grp==='red',isY=it._grp==='yellow';
+    const grpBg=isR?'#FEE2E2':isY?'#FFF3DC':'#E9F7EF';
+    const grpTxt=isR?'#C0392B':isY?'#C07000':'#1E8A4A';
+    const grpLabel=isR?'🔴 ใกล้หมด':isY?'🟡 ระวัง':'🟢 ปกติ';
+    const qcTxt=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
+    const nm=it.name.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    return `<div class="stock-req-row" id="srr-${idx}" data-grp="${it._grp}">
       <div style="display:flex;align-items:center;gap:8px;">
-        <input type="checkbox" id="src-${idx}" style="width:16px;height:16px;cursor:pointer;accent-color:var(--blue);"
-          onchange="toggleStockReqItem(${idx},'${it.name.replace(/'/g,"\\'").replace(/"/g,"&quot;")}','${it.code}','${it.unit}',${Math.round(it.qty)})">
+        <input type="checkbox" id="src-${idx}" style="width:17px;height:17px;cursor:pointer;accent-color:var(--blue);flex-shrink:0;"
+          onchange="toggleStockReqItem(${idx},'${nm}','${it.code}','${it.unit}',${Math.round(it.qty)})">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;">${it.name} ${badge}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;">
-            ${it.code} · คงเหลือ <span style="color:${isR?'var(--red)':isY?'var(--amber)':'var(--teal)'};">${Math.round(it.qty)}</span> ${it.unit}
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:2px;">
+            <span style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;">${it.name}</span>
+            <span style="background:${grpBg};color:${grpTxt};padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;border:1px solid ${grpTxt}33;">${grpLabel}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">
+            ${it.code||'—'} · คงเหลือ <span style="color:${qcTxt};font-weight:700;">${Math.round(it.qty)}</span> ${it.unit}
             ${it.exp?'· EXP: '+fmtExp(it.exp):''}
           </div>
         </div>
-        <input type="number" min="1" placeholder="จัดซื้อ"
-          id="srqty-${idx}" disabled
-          style="width:68px;padding:5px 8px;border:1.5px solid var(--border2);border-radius:8px;
-                 font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--text1);
-                 background:var(--surface2);text-align:center;">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+          <button onclick="quickAddToReq(${idx})" title="เพิ่มเข้าใบเบิกทันที"
+            style="padding:5px 11px;border-radius:8px;border:1.5px solid rgba(26,95,212,.25);
+                   background:var(--blue-l);color:var(--blue);font-size:11px;font-weight:700;
+                   cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .12s;">+ ขอเบิก</button>
+          <input type="number" min="1" placeholder="จำนวน"
+            id="srqty-${idx}" disabled
+            style="width:64px;padding:4px 8px;border:1.5px solid var(--border2);border-radius:7px;
+                   font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--text1);
+                   background:var(--surface2);text-align:center;">
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -2911,12 +3126,20 @@ function openStockRequisition(){
   _stockReqAllRows=items.map((it,idx)=>({
     el:document.getElementById('srr-'+idx),
     name:it.name,
-    code:it.code||''
+    code:it.code||'',
+    grp:it._grp||'green'
   }));
 
-  // reset search + count
+  // reset search + group filter + count
   const searchEl=document.getElementById('stock-req-search');
   if(searchEl)searchEl.value='';
+  window._stockReqGrpFilter='all';
+  document.querySelectorAll('._srg').forEach(b=>{
+    const on=b.dataset.grp==='all';
+    b.style.borderColor=on?'rgba(26,95,212,.4)':'var(--border2)';
+    b.style.background=on?'var(--blue-l)':'var(--surface2)';
+    b.style.color=on?'var(--blue)':'var(--text2)';
+  });
   const cntEl=document.getElementById('stock-req-count');
   if(cntEl)cntEl.textContent=`ทั้งหมด ${items.length} รายการ`;
 
