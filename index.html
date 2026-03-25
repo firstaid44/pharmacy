@@ -1682,7 +1682,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version16.14.25.03.2569</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version16.23.25.03.2569</div>
     </div>
     <button onclick="openGlobalSearch()"
       id="gsearch-btn"
@@ -4710,7 +4710,16 @@ function openSummaryExportPreview(){
       run+=isR?t.qty:-t.qty;
       const rc=Math.round(run);
       const rcc=rc<=0?'#C0392B':rc<=3?'#C07000':'#1E8A4A';
-      return `<tr>
+      return `<tr data-txn-row="1"
+        data-type="${isR?'รับ':'เบิก'}"
+        data-date="${t.date}"
+        data-docnum="${t.docNum}"
+        data-fromto="${t.fromTo}"
+        data-recv="${isR?t.qty:''}"
+        data-disp="${isR?'':t.qty}"
+        data-bal="${rc}"
+        data-exp="${t.exp}"
+        data-lot="${t.lot}">
         <td style="text-align:center;"><span style="display:inline-block;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;background:${isR?'#EBF2FF':'#FFF3DC'};color:${isR?'#1A5FD4':'#C07000'};">${isR?'📥 รับ':'📤 เบิก'}</span></td>
         <td style="font-family:monospace;white-space:nowrap;">${t.date}</td>
         <td style="font-family:monospace;color:#64748B;">${t.docNum}</td>
@@ -4723,7 +4732,13 @@ function openSummaryExportPreview(){
       </tr>`;
     }).join('');
     return `
-      <div style="background:#fff;border-radius:12px;margin-bottom:10px;border:1px solid #E2E8F0;overflow:hidden;page-break-inside:avoid;">
+      <div style="background:#fff;border-radius:12px;margin-bottom:10px;border:1px solid #E2E8F0;overflow:hidden;page-break-inside:avoid;"
+        data-drug-name="${drug.name.replace(/"/g,'&quot;')}"
+        data-drug-code="${(drug.code||'').replace(/"/g,'&quot;')}"
+        data-recv="${Math.round(drug.recv)}"
+        data-disp="${Math.round(drug.disp)||0}"
+        data-bal="${bal}"
+        data-unit="${drug.unit}">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 14px;background:linear-gradient(135deg,#EBF2FF,#E6F7F2);border-bottom:1px solid #D1E3FF;">
           <div style="display:flex;align-items:baseline;gap:8px;">
             <span style="font-size:13px;font-weight:800;color:#0F1923;">${drug.name}</span>
@@ -4812,15 +4827,162 @@ body{font-family:'Sarabun','Noto Sans Thai','IBM Plex Sans Thai',sans-serif;font
   ${drugRows}
 </div>
 <scr`+'ipt>'+`
+/* ── Share options sheet ── */
 function doShare(){
-  if(navigator&&navigator.share){
-    navigator.share({title:'สรุปรับเข้า-เบิกออก PCU สะบ้าย้อย',text:'รายงานสรุปยา ณ วันที่ `+today+`'})
-    .catch(()=>{window.print();});
+  // สร้าง bottom sheet เลือก
+  var existing=document.getElementById('_share_sheet');
+  if(existing){existing.remove();return;}
+
+  var sheet=document.createElement('div');
+  sheet.id='_share_sheet';
+  sheet.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,18,28,.55);backdrop-filter:blur(4px);animation:_sfadein .18s ease;';
+  sheet.innerHTML=
+    '<style>'+
+    '@keyframes _sfadein{from{opacity:0}to{opacity:1}}'+
+    '@keyframes _ssup{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}'+
+    '._scard{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;'+
+    '  padding:0 0 env(safe-area-inset-bottom,16px);'+
+    '  animation:_ssup .25s cubic-bezier(.34,1.2,.64,1);'+
+    '  box-shadow:0 -8px 40px rgba(0,0,0,.2);}'+
+    '._shandle{width:36px;height:4px;background:rgba(0,0,0,.15);border-radius:2px;margin:12px auto 0;}'+
+    '._stitle{font-size:15px;font-weight:800;color:#0F1923;padding:14px 18px 8px;}'+
+    '._ssub{font-size:11px;color:#64748B;padding:0 18px 14px;border-bottom:1px solid #F1F5F9;}'+
+    '._sitem{display:flex;align-items:center;gap:14px;padding:15px 18px;cursor:pointer;transition:background .12s;border-bottom:1px solid #F1F5F9;}'+
+    '._sitem:last-of-type{border-bottom:none;}'+
+    '._sitem:hover,._sitem:active{background:#F8FAFC;}'+
+    '._sicon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}'+
+    '._sinfo{flex:1;}._sname{font-size:13px;font-weight:700;color:#0F1923;}'+
+    '._sdesc{font-size:11px;color:#64748B;margin-top:2px;}'+
+    '._sclose{width:100%;padding:14px;background:none;border:none;font-size:14px;font-weight:700;color:#64748B;cursor:pointer;font-family:inherit;}'+
+    '</style>'+
+    '<div class="_scard">'+
+    '  <div class="_shandle"></div>'+
+    '  <div class="_stitle">📤 แชร์ / ส่งต่อรายงาน</div>'+
+    '  <div class="_ssub">เลือกรูปแบบที่ต้องการ</div>'+
+    '  <!-- PDF -->'+
+    '  <div class="_sitem" id="_si_pdf">'+
+    '    <div class="_sicon" style="background:#FEE2E2;">📄</div>'+
+    '    <div class="_sinfo">'+
+    '      <div class="_sname">บันทึก / แชร์เป็น PDF</div>'+
+    '      <div class="_sdesc">เปิด Print Dialog → Save as PDF แล้วแชร์ผ่านแอปไฟล์</div>'+
+    '    </div>'+
+    '    <span style="color:#94A3B8;font-size:16px;">›</span>'+
+    '  </div>'+
+    '  <!-- Excel -->'+
+    '  <div class="_sitem" id="_si_xl">'+
+    '    <div class="_sicon" style="background:#D1FAE5;">📊</div>'+
+    '    <div class="_sinfo">'+
+    '      <div class="_sname">ดาวน์โหลด Excel (CSV)</div>'+
+    '      <div class="_sdesc">ไฟล์ .csv เปิดได้ด้วย Excel / Google Sheets</div>'+
+    '    </div>'+
+    '    <span style="color:#94A3B8;font-size:16px;">›</span>'+
+    '  </div>'+
+    '  <!-- Native share -->'+
+    '  <div class="_sitem" id="_si_share">'+
+    '    <div class="_sicon" style="background:#EBF2FF;">💬</div>'+
+    '    <div class="_sinfo">'+
+    '      <div class="_sname">แชร์ข้อความสรุป</div>'+
+    '      <div class="_sdesc">ส่งสรุปยาผ่าน LINE, Messenger, Email ฯลฯ</div>'+
+    '    </div>'+
+    '    <span style="color:#94A3B8;font-size:16px;">›</span>'+
+    '  </div>'+
+    '  <button class="_sclose" onclick="document.getElementById(\'_share_sheet\').remove()">ยกเลิก</button>'+
+    '</div>';
+
+  document.body.appendChild(sheet);
+  sheet.addEventListener('click',function(e){if(e.target===sheet)sheet.remove();});
+
+  /* PDF */
+  document.getElementById('_si_pdf').onclick=function(){
+    sheet.remove();
+    setTimeout(function(){window.print();},200);
+  };
+
+  /* Excel CSV */
+  document.getElementById('_si_xl').onclick=function(){
+    sheet.remove();
+    exportToExcel();
+  };
+
+  /* Native share text */
+  document.getElementById('_si_share').onclick=function(){
+    sheet.remove();
+    var txt=buildShareText();
+    if(navigator&&navigator.share){
+      navigator.share({title:'สรุปยา PCU สะบ้าย้อย',text:txt}).catch(function(){copyText(txt);});
+    }else{
+      copyText(txt);
+    }
+  };
+}
+
+function buildShareText(){
+  var lines=['📊 สรุปรับเข้า-เบิกออก — PCU สะบ้าย้อย'];
+  lines.push('📅 ณ วันที่ `+today+`');
+  lines.push('─'.repeat(32));
+  var rows=document.querySelectorAll('._drug_name_row');
+  if(!rows.length){
+    // fallback: read from drug sections
+    document.querySelectorAll('[data-drug-name]').forEach(function(el){
+      lines.push('💊 '+el.dataset.drugName+
+        ' รับ:'+el.dataset.recv+' เบิก:'+el.dataset.disp+' คงเหลือ:'+el.dataset.bal+' '+el.dataset.unit);
+    });
+  }
+  lines.push('─'.repeat(32));
+  lines.push('(ระบบบริหารจัดการคลังยา PCU สะบ้าย้อย)');
+  return lines.join('\n');
+}
+
+function copyText(txt){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(function(){
+      alert('คัดลอกข้อความแล้ว ✓ นำไปวางใน LINE หรืออีเมลได้เลย');
+    }).catch(function(){alert('ไม่สามารถคัดลอกได้');});
   }else{
-    alert('วิธีส่งต่อ PDF:\\n1. กด \\"บันทึก PDF\\" → เลือก Save as PDF\\n2. เปิดแอปไฟล์ → แชร์ PDF ไปยัง LINE หรืออีเมล');
-    window.print();
+    alert('คัดลอกข้อความ:\n'+txt.substring(0,200)+'...');
   }
 }
+
+function exportToExcel(){
+  /* รวบรวมข้อมูล transactions จาก DOM */
+  var rows=[['ชื่อยา','รหัสยา','ประเภท','วันที่','เลขที่เอกสาร','รับจาก/เบิกให้','จำนวนรับ','จำนวนจ่าย','คงเหลือ','วันหมดอายุ','LOT']];
+
+  document.querySelectorAll('[data-drug-name]').forEach(function(el){
+    var dname=el.dataset.drugName||'';
+    var dcode=el.dataset.drugCode||'';
+    var dunit=el.dataset.unit||'';
+    /* summary row */
+    rows.push([dname,dcode,'สรุป','','','',el.dataset.recv||'',el.dataset.disp||'',el.dataset.bal||'','',dunit]);
+    /* transaction rows */
+    el.querySelectorAll('[data-txn-row]').forEach(function(tr){
+      rows.push([
+        dname,dcode,
+        tr.dataset.type||'',
+        tr.dataset.date||'',
+        tr.dataset.docnum||'',
+        tr.dataset.fromto||'',
+        tr.dataset.recv||'',
+        tr.dataset.disp||'',
+        tr.dataset.bal||'',
+        tr.dataset.exp||'',
+        tr.dataset.lot||''
+      ]);
+    });
+  });
+
+  var csv='\ufeff'+rows.map(function(r){
+    return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(',');
+  }).join('\r\n');
+
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='สรุปยา_PCU_`+today.replace(/\//g,'-')+`.csv';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);a.remove();},500);
+}
+
 window.focus();
 </scr`+'ipt>'+`
 </body></html>`;
