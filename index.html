@@ -1663,7 +1663,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version14.35.25.03.2569</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version15.20.25.03.2569</div>
     </div>
     <button onclick="openGlobalSearch()"
       id="gsearch-btn"
@@ -1712,6 +1712,22 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
             </div>
           </div>
           <div class="sbox" id="sbox-r"></div>
+        </div>
+        <!-- เลขที่เอกสาร + รับจาก -->
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">เลขที่เอกสาร</label>
+            <input class="form-input" id="r-docnum" placeholder="เช่น 53/68" autocomplete="off"
+              style="font-family:'IBM Plex Mono',monospace;"/>
+          </div>
+          <div class="form-group"><label class="form-label">รับจาก <span class="req">*</span></label>
+            <select class="form-input" id="r-source" onchange="toggleRSourceOther(this.value)">
+              <option value="รพ.สะบ้าย้อย">รพ.สะบ้าย้อย</option>
+              <option value="อื่นๆ">อื่นๆ (ระบุ)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="r-source-other-group" style="display:none;margin-top:-8px;">
+          <input class="form-input" id="r-source-other" placeholder="ระบุแหล่งที่รับยา..."/>
         </div>
         <div class="form-group"><label class="form-label">รหัสยา</label><input class="form-input" id="r-code" readonly placeholder="ดึงอัตโนมัติ" style="font-family:'IBM Plex Mono',monospace;"/></div>
         <div class="form-group"><label class="form-label">LOT Number <span class="req">*</span></label>
@@ -1782,6 +1798,24 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         <input type="hidden" id="d-code">
         <input type="hidden" id="d-exp">
         <input type="hidden" id="d-lot" value="">
+
+        <!-- เลขที่เอกสาร + เบิกให้ -->
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">เลขที่เอกสาร</label>
+            <input class="form-input" id="d-docnum" placeholder="รันอัตโนมัติ" readonly
+              style="font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--surface2);color:var(--blue);"/>
+          </div>
+          <div class="form-group"><label class="form-label">เบิกให้ <span class="req">*</span></label>
+            <select class="form-input" id="d-dest" onchange="toggleDDestOther(this.value)">
+              <option value="คลังยานอก">คลังยานอก</option>
+              <option value="Exchange รพ.สะบ้าย้อย">Exchange รพ.สะบ้าย้อย</option>
+              <option value="อื่นๆ">อื่นๆ (ระบุ)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="d-dest-other-group" style="display:none;margin-top:-8px;">
+          <input class="form-input" id="d-dest-other" placeholder="ระบุปลายทาง..."/>
+        </div>
 
         <!-- LOT Card Picker -->
         <div class="form-group">
@@ -2057,7 +2091,19 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       </div>
       <span class="nav-label">คลังยา</span>
     </button>
-    <!-- ประวัติ: นาฬิกา + เส้นรายการ -->
+    <!-- สรุปรับเข้า-เบิกออก: chart bar icon -->
+    <button class="nav-item" onclick="switchTab('summary',this)">
+      <div class="nav-pill"></div>
+      <div class="nav-icon-wrap">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="12" width="4" height="9" rx="1"/>
+          <rect x="10" y="7" width="4" height="14" rx="1"/>
+          <rect x="17" y="3" width="4" height="18" rx="1"/>
+        </svg>
+      </div>
+      <span class="nav-label" style="font-size:8.5px;letter-spacing:-.2px;white-space:nowrap;">สรุปรับ-เบิก</span>
+    </button>
+    <!-- ประวัติ: นาฬิกา -->
     <button class="nav-item" onclick="switchTab('history',this)">
       <div class="nav-pill"></div>
       <div class="nav-icon-wrap">
@@ -2068,18 +2114,6 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       </div>
       <span class="nav-label">ประวัติ</span>
       <span class="nav-badge" id="hist-badge" style="display:none;">0</span>
-    </button>
-    <!-- สรุปยา: chart bar icon -->
-    <button class="nav-item" onclick="switchTab('summary',this)">
-      <div class="nav-pill"></div>
-      <div class="nav-icon-wrap">
-        <svg viewBox="0 0 24 24">
-          <rect x="3" y="12" width="4" height="9" rx="1"/>
-          <rect x="10" y="7" width="4" height="14" rx="1"/>
-          <rect x="17" y="3" width="4" height="18" rx="1"/>
-        </svg>
-      </div>
-      <span class="nav-label">สรุปยา</span>
     </button>
   </div>
 </div>
@@ -2178,7 +2212,7 @@ function switchTab(tab,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
   el.classList.add('active');
-  if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();}
+  if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();setTimeout(_setDispenseDocNum,300);}
   if(tab==='stock')loadStock();
   if(tab==='history')renderHistory();
   if(tab==='line')loadLineSettings();
@@ -2822,11 +2856,14 @@ async function receiveStock(){
   const unit=document.getElementById('r-unit').value;
   const qty=parseInt(document.getElementById('r-qty').value)||0;
   const note=document.getElementById('r-note').value.trim();
+  const docNum=document.getElementById('r-docnum').value.trim();
+  const srcSel=document.getElementById('r-source').value;
+  const source=srcSel==='อื่นๆ'?(document.getElementById('r-source-other').value.trim()||'อื่นๆ'):srcSel;
   if(!name){showAlert('กรุณาเลือกชื่อยา','danger');return;}
   if(!lot){showAlert('กรุณากรอก LOT Number','danger');return;}
   if(!exp){showAlert('กรุณาระบุวันหมดอายุ','danger');return;}
   if(qty<=0){showAlert('กรุณาระบุจำนวน','danger');return;}
-  const entry={name,code,lot,exp,unit,qty,note,date:todayTH(),action:'receive'};
+  const entry={name,code,lot,exp,unit,qty,note,docNum,source,date:todayTH(),action:'receive'};
   const btn=document.getElementById('save-btn');
   btn.textContent='กำลังบันทึก...';btn.disabled=true;
   setSheet('amber','กำลังส่งข้อมูล...');clearReceiveForm();
@@ -2834,15 +2871,20 @@ async function receiveStock(){
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
     setSheet('green','บันทึกสำเร็จ');
     showAlert(`✓ รับยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} เรียบร้อย`,'success');
-    addHistory('in',`รับยาเข้า: ${name}`,`LOT: ${lot} | ${qty} ${unit}`);
+    addHistory('in',`รับยาเข้า: ${name}`,`LOT: ${lot} | ${qty} ${unit} | จาก: ${source}${docNum?' | เลขที่: '+docNum:''}`);
     setTimeout(()=>loadReceive(),1500);
   }catch(e){setSheet('red','บันทึกไม่สำเร็จ');showAlert('ส่งข้อมูลไม่สำเร็จ','danger');}
   btn.textContent='+ บันทึกรับยาเข้า';btn.disabled=false;
 }
 function clearReceiveForm(){
-  ['r-name','r-code','r-lot','r-qty','r-note'].forEach(id=>document.getElementById(id).value='');
+  ['r-name','r-code','r-lot','r-qty','r-note','r-docnum','r-source-other'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('r-exp').value='';
+  document.getElementById('r-source').value='รพ.สะบ้าย้อย';
+  document.getElementById('r-source-other-group').style.display='none';
   document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');
+}
+function toggleRSourceOther(v){
+  document.getElementById('r-source-other-group').style.display=v==='อื่นๆ'?'block':'none';
 }
 
 async function dispenseStock(){
@@ -2852,39 +2894,59 @@ async function dispenseStock(){
   const exp=document.getElementById('d-exp').value;
   const unit=document.getElementById('d-unit').value;
   const qty=parseInt(document.getElementById('d-qty').value)||0;
-  // ใช้ currentUser ถ้ายังไม่ได้เลือก
   const requester=document.getElementById('d-requester').value||(currentUser?currentUser.name:'');
   const note=document.getElementById('d-note').value.trim();
+  const docNum=document.getElementById('d-docnum').value.trim();
+  const destSel=document.getElementById('d-dest').value;
+  const dest=destSel==='อื่นๆ'?(document.getElementById('d-dest-other').value.trim()||'อื่นๆ'):destSel;
   if(!name){showAlert('กรุณาเลือกชื่อยา','danger');return;}
   if(!lot){showAlert('กรุณาเลือก LOT Number','danger');return;}
   if(qty<=0){showAlert('กรุณาระบุจำนวน','danger');return;}
   if(!requester){showAlert('กรุณาระบุชื่อผู้เบิก','danger');return;}
   const stockLeft=calcStock(name,lot)-qty;
-  const entry={name,code,lot,exp,unit,qty,requester,note,date:todayTH(),action:'dispense'};
+  const entry={name,code,lot,exp,unit,qty,requester,note,docNum,dest,date:todayTH(),action:'dispense'};
   const btn=document.getElementById('d-save-btn');
   btn.textContent='กำลังบันทึก...';btn.disabled=true;
   clearDispenseForm();
   try{
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
     showAlert(`✓ เบิกยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} โดย ${requester}`,'success');
-    addHistory('out',`เบิกยาออก: ${name}`,`LOT: ${lot} | ${qty} ${unit} | ผู้เบิก: ${requester}`);
+    addHistory('out',`เบิกยาออก: ${name}`,`LOT: ${lot} | ${qty} ${unit} | ผู้เบิก: ${requester} | เบิกให้: ${dest}${docNum?' | เลขที่: '+docNum:''}`);
     setTimeout(()=>loadDispense(),1500);
     sendLineFlexDispense({name,code,lot,exp,unit,qty,requester,note,date:todayTH(),stockLeft:Math.max(0,stockLeft)});
   }catch(e){showAlert('ส่งข้อมูลไม่สำเร็จ','danger');}
   btn.textContent='เบิกยาออก';btn.disabled=false;
 }
 function clearDispenseForm(){
-  ['d-name','d-code','d-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['d-name','d-code','d-note','d-dest-other'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('d-exp').value='';
   document.getElementById('d-lot').value='';
   const req=document.getElementById('d-requester');
   if(req)req.value=currentUser?currentUser.name:'';
+  document.getElementById('d-dest').value='คลังยานอก';
+  const dog=document.getElementById('d-dest-other-group');
+  if(dog)dog.style.display='none';
   // reset LOT picker
   const picker=document.getElementById('d-lot-picker');
   if(picker)picker.innerHTML='<div style="font-size:13px;color:var(--text3);padding:10px 0;">เลือกชื่อยาก่อน...</div>';
   document.getElementById('d-qty').innerHTML='<option value="">— เลือก —</option>';
   document.getElementById('d-stock-info').style.display='none';
   document.getElementById('sbox-d').style.display='none';
+  // รันเลขที่เอกสารใหม่
+  _setDispenseDocNum();
+}
+function toggleDDestOther(v){
+  const g=document.getElementById('d-dest-other-group');
+  if(g)g.style.display=v==='อื่นๆ'?'block':'none';
+}
+function _setDispenseDocNum(){
+  // format: ลำดับ/ปีพ.ศ. เช่น 01/2568
+  const yr=new Date().getFullYear()+543;
+  // นับจากการเบิกทั้งหมดปีนี้ +1
+  const count=(dispenseRows||[]).filter(d=>(d.date||'').includes('/'+yr)).length+1;
+  const seq=String(count).padStart(2,'0');
+  const el=document.getElementById('d-docnum');
+  if(el)el.value=`${seq}/${yr}`;
 }
 
 function addHistory(type,msg,detail){
@@ -4310,98 +4372,125 @@ function renderSummaryDrugPage(page){
   if(rt)rt.textContent=receiveRows.length;
   if(dt)dt.textContent=dispenseRows.length;
   if(!receiveRows.length&&!dispenseRows.length){
-    el.innerHTML='<div class="empty" style="padding:2rem;"><div class="empty-icon">📊</div>ยังไม่มีข้อมูล<br><span style="font-size:12px;color:var(--text3);margin-top:6px;display:block;">กดรีเฟรชในแท็บรับยา/เบิกยาก่อน แล้วกลับมาที่แท็บนี้</span></div>';
+    el.innerHTML='<div class="empty" style="padding:2rem;"><div class="empty-icon">📊</div>ยังไม่มีข้อมูล<br><span style="font-size:12px;color:var(--text3);margin-top:6px;display:block;">กดรีเฟรชในแท็บรับยา/เบิกยาก่อน</span></div>';
     return;
   }
   const q=(document.getElementById('summary-search')?.value||'').toLowerCase().trim();
   const now=new Date();now.setHours(0,0,0,0);
+
+  // สร้าง nameMap รวม recv+disp พร้อม transactions
   const nm={};
   receiveRows.forEach(r=>{
-    if(!nm[r.name])nm[r.name]={name:r.name,code:r.code,unit:r.unit,recv:0,disp:0,balance:0,lots:{},group:r.group||''};
+    if(!nm[r.name])nm[r.name]={name:r.name,code:r.code,unit:r.unit,recv:0,disp:0,txns:[]};
     const qty=parseFloat(r.qty)||0;
-    nm[r.name].recv+=qty;nm[r.name].balance+=qty;
-    if(!nm[r.name].lots[r.lot])nm[r.name].lots[r.lot]={lot:r.lot,exp:r.exp,recv:0,disp:0};
-    nm[r.name].lots[r.lot].recv+=qty;
-    if(r.group)nm[r.name].group=r.group;
-    if(r.unit)nm[r.name].unit=r.unit;
+    nm[r.name].recv+=qty;
+    nm[r.name].txns.push({type:'recv',date:r.date,docNum:r.docNum||'—',fromTo:r.source||'—',qty,lot:r.lot,exp:r.exp,unit:r.unit});
   });
   dispenseRows.forEach(d=>{
-    if(!nm[d.name])nm[d.name]={name:d.name,code:d.code,unit:d.unit,recv:0,disp:0,balance:0,lots:{},group:''};
+    if(!nm[d.name])nm[d.name]={name:d.name,code:d.code,unit:d.unit,recv:0,disp:0,txns:[]};
     const qty=parseFloat(d.qty)||0;
-    nm[d.name].disp+=qty;nm[d.name].balance-=qty;
-    if(!nm[d.name].lots[d.lot])nm[d.name].lots[d.lot]={lot:d.lot,exp:d.exp,recv:0,disp:0};
-    nm[d.name].lots[d.lot].disp+=qty;
+    nm[d.name].disp+=qty;
+    nm[d.name].txns.push({type:'disp',date:d.date,docNum:d.docNum||'—',fromTo:d.dest||d.requester||'—',qty,lot:d.lot,exp:d.exp,unit:d.unit});
   });
+
   let rows=Object.values(nm);
   if(q)rows=rows.filter(r=>r.name.toLowerCase().includes(q)||(r.code||'').toLowerCase().includes(q));
   rows.sort((a,b)=>a.name.localeCompare(b.name,'th'));
+
   const total=rows.length;
   const totalPages=Math.max(1,Math.ceil(total/SUMMARY_PER));
   if(_summaryDrugPage>totalPages)_summaryDrugPage=1;
   const pageRows=rows.slice((_summaryDrugPage-1)*SUMMARY_PER,_summaryDrugPage*SUMMARY_PER);
   if(!pageRows.length){el.innerHTML='<div class="empty" style="padding:2rem;"><div class="empty-icon">🔍</div>ไม่พบยาที่ค้นหา</div>';return;}
+
   el.innerHTML=`
-    <div style="padding:10px 14px 8px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+    <div style="padding:10px 14px 8px;border-bottom:1px solid var(--border);background:var(--surface2);
+                display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
       <span style="font-size:12px;font-weight:700;color:var(--text2);">${q?`พบ ${total} รายการ`:`ทั้งหมด ${total} รายการ`}</span>
-      <span style="font-size:11px;color:var(--text3);">หน้า ${_summaryDrugPage}/${totalPages} · กดแถวดู LOT</span>
+      <span style="font-size:11px;color:var(--text3);">หน้า ${_summaryDrugPage}/${totalPages} · กดชื่อยาดูรายการ</span>
     </div>
     ${pageRows.map((i,ri)=>{
-      const bal=Math.round(i.balance);
+      const bal=Math.round(i.recv-i.disp);
       const balColor=bal<=0?'var(--red)':bal<=3?'var(--amber)':'var(--teal)';
-      const lots=Object.values(i.lots).filter(l=>l.recv>0||l.disp>0)
-        .sort((a,b)=>{const ea=parseExpDate(fmtExp(a.exp)),eb=parseExpDate(fmtExp(b.exp));return(ea||new Date(9999,0))-(eb||new Date(9999,0));});
-      const uid='sd'+(_summaryDrugPage*100+ri);
-      return `<div style="border-bottom:1px solid var(--border);">
-        <div style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .12s;"
-          onclick="const d=document.getElementById('${uid}');d.style.display=d.style.display==='none'?'block':'none';"
+      const uid='sd_'+(_summaryDrugPage*1000+ri);
+      // เรียง transactions วันที่ล่าสุดก่อน → คำนวณคงเหลือสะสม
+      const txns=[...i.txns].sort((a,b)=>{
+        const da=parseExpDate(a.date.split('/').reverse().join('-'))||new Date(0);
+        const db=parseExpDate(b.date.split('/').reverse().join('-'))||new Date(0);
+        return da-db;
+      });
+      let running=0;
+      const txnRows=txns.map(t=>{
+        const isR=t.type==='recv';
+        running+=isR?t.qty:-t.qty;
+        const expFmt=fmtExp(t.exp)||'—';
+        const ed=parseExpDate(fmtExp(t.exp));
+        const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):null;
+        const ec=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=6?'var(--red)':mo<=12?'var(--amber)':'var(--teal)';
+        const rc=Math.round(running);
+        const rcc=rc<=0?'var(--red)':rc<=3?'var(--amber)':'var(--teal)';
+        return `<tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:6px 5px;white-space:nowrap;">
+            <span style="display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:700;
+              background:${isR?'#EBF2FF':'#FFF3DC'};color:${isR?'var(--blue)':'var(--amber)'};">
+              ${isR?'📥 รับ':'📤 เบิก'}
+            </span>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;">${t.date}</div>
+          </td>
+          <td style="padding:6px 5px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text2);">${t.docNum}</td>
+          <td style="padding:6px 5px;font-size:10px;color:var(--text2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.fromTo}</td>
+          <td style="padding:6px 5px;text-align:right;font-weight:700;color:${isR?'var(--blue)':'var(--text3)'};">${isR?t.qty:'—'}</td>
+          <td style="padding:6px 5px;text-align:right;font-weight:700;color:${isR?'var(--text3)':'var(--amber)'};">${isR?'—':t.qty}</td>
+          <td style="padding:6px 5px;text-align:right;font-weight:800;font-size:13px;color:${rcc};font-family:'IBM Plex Mono',monospace;">${rc}</td>
+          <td style="padding:6px 5px;font-size:10px;color:${ec};font-family:'IBM Plex Mono',monospace;white-space:nowrap;">${expFmt}</td>
+          <td style="padding:6px 5px;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">${t.lot||'—'}</td>
+        </tr>`;
+      }).join('');
+      return `<div style="border-bottom:2px solid var(--border2);">
+        <!-- ชื่อยา + สรุป -->
+        <div style="padding:11px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .12s;"
+          onclick="const d=document.getElementById('${uid}');d.style.display=d.style.display==='none'||d.style.display===''?'block':'none';"
           onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
           <div style="flex:1;min-width:0;">
             <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;">${i.name}</div>
-            <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">${i.code||'—'} · ${lots.length} LOT</div>
+            <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">${i.code||'—'} · ${txns.length} รายการ</div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
-            <div style="text-align:center;min-width:36px;">
+            <div style="text-align:center;min-width:34px;">
               <div style="font-size:9px;color:var(--blue);font-weight:700;text-transform:uppercase;">รับ</div>
               <div style="font-size:16px;font-weight:700;color:var(--blue);font-family:'IBM Plex Mono',monospace;">${Math.round(i.recv)}</div>
             </div>
-            <div style="text-align:center;min-width:36px;">
+            <div style="text-align:center;min-width:34px;">
               <div style="font-size:9px;color:var(--amber);font-weight:700;text-transform:uppercase;">เบิก</div>
               <div style="font-size:16px;font-weight:700;color:var(--amber);font-family:'IBM Plex Mono',monospace;">${Math.round(i.disp)||0}</div>
             </div>
-            <div style="text-align:center;min-width:40px;">
+            <div style="text-align:center;min-width:38px;">
               <div style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">คงเหลือ</div>
               <div style="font-size:20px;font-weight:800;color:${balColor};font-family:'IBM Plex Mono',monospace;line-height:1;">${bal}</div>
               <div style="font-size:9px;color:var(--text3);font-weight:600;">${i.unit}</div>
             </div>
-            <span style="color:var(--text4);font-size:14px;">›</span>
+            <span style="color:var(--text4);font-size:13px;transform:rotate(90deg);display:inline-block;">›</span>
           </div>
         </div>
-        <div id="${uid}" style="display:none;background:var(--surface2);border-top:1px solid var(--border);padding:10px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">รายละเอียดแต่ละ LOT</div>
-          <table style="width:100%;border-collapse:collapse;font-size:12px;">
-            <thead><tr style="background:var(--surface);">
-              <th style="text-align:left;padding:5px 6px;font-size:9px;color:var(--text3);border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">LOT</th>
-              <th style="text-align:left;padding:5px 6px;font-size:9px;color:var(--text3);border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">EXP</th>
-              <th style="text-align:right;padding:5px 6px;font-size:9px;color:var(--blue);border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase;">รับ</th>
-              <th style="text-align:right;padding:5px 6px;font-size:9px;color:var(--amber);border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase;">เบิก</th>
-              <th style="text-align:right;padding:5px 6px;font-size:9px;color:var(--text3);border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase;">คงเหลือ</th>
-            </tr></thead>
-            <tbody>${lots.map(l=>{
-              const lbal=Math.round(l.recv-l.disp);
-              const lc=lbal<=0?'var(--red)':lbal<=3?'var(--amber)':'var(--teal)';
-              const expFmt=fmtExp(l.exp)||'—';
-              const ed=parseExpDate(fmtExp(l.exp));
-              const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):null;
-              const ec=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=6?'var(--red)':mo<=12?'var(--amber)':'var(--teal)';
-              return `<tr style="border-bottom:1px solid var(--border);">
-                <td style="padding:7px 6px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);font-weight:600;">${l.lot||'—'}</td>
-                <td style="padding:7px 6px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:${ec};white-space:nowrap;">${expFmt}</td>
-                <td style="padding:7px 6px;text-align:right;color:var(--blue);font-weight:700;">${Math.round(l.recv)}</td>
-                <td style="padding:7px 6px;text-align:right;color:var(--amber);font-weight:700;">${Math.round(l.disp)||0}</td>
-                <td style="padding:7px 6px;text-align:right;font-weight:800;font-size:15px;color:${lc};font-family:'IBM Plex Mono',monospace;">${lbal}</td>
-              </tr>`;
-            }).join('')}</tbody>
-          </table>
+        <!-- Transaction detail -->
+        <div id="${uid}" style="display:none;background:var(--surface2);border-top:1px solid var(--border);">
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:480px;">
+              <thead>
+                <tr style="background:#EDF2F7;">
+                  <th style="padding:6px 5px;text-align:left;font-size:9px;font-weight:700;color:var(--text3);border-bottom:1.5px solid var(--border2);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;">ประเภท / วันที่</th>
+                  <th style="padding:6px 5px;text-align:left;font-size:9px;font-weight:700;color:var(--text3);border-bottom:1.5px solid var(--border2);text-transform:uppercase;letter-spacing:.4px;">เลขที่เอกสาร</th>
+                  <th style="padding:6px 5px;text-align:left;font-size:9px;font-weight:700;color:var(--text3);border-bottom:1.5px solid var(--border2);text-transform:uppercase;letter-spacing:.4px;">รับจาก/เบิกให้</th>
+                  <th style="padding:6px 5px;text-align:right;font-size:9px;font-weight:700;color:var(--blue);border-bottom:1.5px solid var(--border2);text-transform:uppercase;">จำนวนรับ</th>
+                  <th style="padding:6px 5px;text-align:right;font-size:9px;font-weight:700;color:var(--amber);border-bottom:1.5px solid var(--border2);text-transform:uppercase;">จำนวนจ่าย</th>
+                  <th style="padding:6px 5px;text-align:right;font-size:9px;font-weight:700;color:var(--text3);border-bottom:1.5px solid var(--border2);text-transform:uppercase;">คงเหลือ</th>
+                  <th style="padding:6px 5px;text-align:left;font-size:9px;font-weight:700;color:var(--text3);border-bottom:1.5px solid var(--border2);text-transform:uppercase;white-space:nowrap;">วันหมดอายุ</th>
+                  <th style="padding:6px 5px;text-align:left;font-size:9px;font-weight:700;color:var(--text3);border-bottom:1.5px solid var(--border2);text-transform:uppercase;">LOT</th>
+                </tr>
+              </thead>
+              <tbody>${txnRows}</tbody>
+            </table>
+          </div>
         </div>
       </div>`;
     }).join('')}
