@@ -1525,7 +1525,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   <div class="header">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
-      <div class="app-title">คลังยา PCU สะบ้าย้อย V.1.3</div>
+      <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
       <div class="app-sub">ระบบบริหารจัดการยา</div>
     </div>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
@@ -2237,23 +2237,72 @@ function setExpRange(btn,months){_expRangeMonths=months;document.querySelectorAl
 function renderExpiringList(){
   const el=document.getElementById('stock-expiring-list');if(!el)return;
   if(!_allStockItems.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีข้อมูลคลัง กดรีเฟรช</div>';return;}
+  const now=new Date();now.setHours(0,0,0,0);
   const filtered=_allStockItems.filter(i=>{
     const m=parseFloat(i.months)||null;if(m!==null)return m<=_expRangeMonths;
     const g=(i.group||'').trim();if(g){const gm=(g==='สีแดง'||g==='แดง')?1:(g==='สีเหลือง'||g==='เหลือง')?7:13;return gm<=_expRangeMonths;}
     const ed=parseExpDate(i.exp);if(!ed)return false;
-    const now=new Date();now.setHours(0,0,0,0);return(ed-now)/(1000*60*60*24*30.4)<=_expRangeMonths;
-  }).sort((a,b)=>(parseFloat(a.months)||999)-(parseFloat(b.months)||999));
+    return(ed-now)/(1000*60*60*24*30.4)<=_expRangeMonths;
+  }).sort((a,b)=>{
+    // เรียงตาม EXP จริง น้อยสุดก่อน
+    const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);
+    if(!ea)return 1;if(!eb)return -1;
+    return ea-eb;
+  });
   if(!filtered.length){el.innerHTML=`<div style="padding:1rem;text-align:center;font-size:13px;color:var(--teal);font-weight:600;">✓ ไม่มียาหมดอายุภายใน ${_expRangeMonths} เดือน</div>`;return;}
-  el.innerHTML=`<div style="padding:8px 10px 4px;font-size:11px;color:var(--text3);">ภายใน <strong style="color:var(--red);">${_expRangeMonths} เดือน</strong> — พบ <strong>${filtered.length}</strong> รายการ</div>
-  <table class="sum-table"><thead><tr><th>ชื่อยา / LOT</th><th>EXP</th><th style="text-align:right;">คงเหลือ</th></tr></thead>
-  <tbody>${filtered.map(i=>{
-    const m=parseFloat(i.months)||null,g=(i.group||'').trim();
-    const isR=(m!==null&&m<=6)||(g==='สีแดง'||g==='แดง');
-    const isY=(m!==null&&m>6&&m<=12)||(g==='สีเหลือง'||g==='เหลือง');
-    const rc=isR?'exp-warn':isY?'exp-caution':'';const c=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
-    const sn=i.name.replace(/'/g,"\\'");
-    return `<tr class="${rc}" onclick="showDrugDetail('${sn}')"><td><div class="sum-name">${i.name}</div><div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">LOT: ${i.lot}</div></td><td style="font-size:12px;color:${c};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(i.exp)}</td><td><div class="sum-qty" style="color:${c};">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td></tr>`;
-  }).join('')}</tbody></table>`;
+
+  el.innerHTML=`
+  <div style="padding:8px 10px 4px;font-size:11px;color:var(--text3);">
+    ภายใน <strong style="color:var(--red);">${_expRangeMonths} เดือน</strong> — พบ <strong>${filtered.length}</strong> รายการ
+  </div>
+  <table class="sum-table">
+    <thead><tr>
+      <th>ชื่อยา / LOT</th>
+      <th>EXP</th>
+      <th style="text-align:right;">คงเหลือ</th>
+    </tr></thead>
+    <tbody>${filtered.map(i=>{
+      const sn=i.name.replace(/'/g,"\\'");
+      // คำนวณ months จาก EXP จริง (เชื่อถือได้กว่า group tag)
+      const ed=parseExpDate(i.exp);
+      const mo=ed?((ed-now)/(1000*60*60*24*30.4)):999;
+      // สีตาม mo จริง
+      const expColor = mo<=0  ? '#B91C1C'       // หมดแล้ว — แดงเข้ม
+                     : mo<=6  ? 'var(--red)'     // 0–6 เดือน — แดง
+                     : mo<=12 ? 'var(--amber)'   // 6–12 เดือน — เหลือง/ส้ม
+                     :          'var(--teal)';    // >12 เดือน — เขียว
+      const rowCls   = mo<=0  ? 'exp-warn'
+                     : mo<=6  ? 'exp-warn'
+                     : mo<=12 ? 'exp-caution'
+                     :          '';
+      // label เดือนที่เหลือ
+      const moLabel  = mo<=0  ? '⛔ หมดแล้ว'
+                     : mo<1   ? `🔴 < 1 เดือน`
+                     : mo<=6  ? `🔴 ${Math.round(mo)} เดือน`
+                     : mo<=12 ? `🟡 ${Math.round(mo)} เดือน`
+                     :          `🟢 ${Math.round(mo)} เดือน`;
+      return `<tr class="${rowCls}" onclick="showDrugDetail('${sn}')">
+        <td>
+          <div class="sum-name">${i.name}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
+            <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">LOT: ${i.lot||'—'}</span>
+            <span style="background:${mo<=0?'#FEE2E2':mo<=6?'#FEE2E2':mo<=12?'#FFF3DC':'#E9F7EF'};
+                         color:${expColor};padding:1px 7px;border-radius:6px;
+                         font-size:9px;font-weight:700;white-space:nowrap;">${moLabel}</span>
+          </div>
+        </td>
+        <td style="font-size:12px;color:${expColor};font-weight:700;
+                   white-space:nowrap;font-family:'IBM Plex Mono',monospace;">
+          ${fmtExp(i.exp)||'—'}
+        </td>
+        <td>
+          <div class="sum-qty" style="color:${expColor};">${Math.round(i.qty)}</div>
+          <div class="sum-unit">${i.unit}</div>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
 }
 
 function showDrugDetail(name){
@@ -4577,6 +4626,32 @@ function exitQuickScanMode(){
   if(t&&id&&on){const b=document.getElementById('line-badge');if(b)b.style.display='block';}
 })();
 initLogin();
+
+// ══ ป้องกันหน้าจอเด้งเมื่อแคปหน้าจอ (iOS) ════════════════════
+// เมื่อ app เข้า background (screenshot / switch app) ไม่ reload
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'hidden'){
+    // บันทึก scroll position ไว้
+    window._savedScrollY = window.scrollY;
+  } else if(document.visibilityState === 'visible'){
+    // กลับมา → restore position โดยไม่ reload
+    if(typeof window._savedScrollY === 'number'){
+      requestAnimationFrame(()=>window.scrollTo(0, window._savedScrollY));
+    }
+  }
+});
+
+// ป้องกัน iOS PWA เด้งออกเมื่อกด share/screenshot
+window.addEventListener('pageshow', function(e){
+  // ถ้า page มาจาก back-forward cache → ไม่ทำอะไร
+  if(e.persisted){ /* keep state */ }
+});
+
+// ปิด export menu popup เมื่อ scroll
+document.addEventListener('scroll', function(){
+  const m=document.getElementById('export-menu-popup');
+  if(m)m.remove();
+}, {passive:true});
 
 </script>
 </body>
