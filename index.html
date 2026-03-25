@@ -3380,13 +3380,55 @@ function printInventory(){
 function copyInventoryText(){
   if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง','warning');return;}
   const nm={};
+  const now=new Date();now.setHours(0,0,0,0);
   _allStockItems.forEach(i=>{
-    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0};
+    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',exp:''};
     nm[i.name].qty+=i.qty;
+    const ed=parseExpDate(fmtExp(i.exp));
+    if(ed){const old=parseExpDate(nm[i.name].exp);if(!old||ed<old)nm[i.name].exp=i.exp;}
+    if(i.group)nm[i.name].group=i.group;
   });
-  const lines=Object.values(nm).map(r=>`${r.code}\t${r.name}\t${Math.round(r.qty)} ${r.unit}`);
-  const text=`รายการยาคงคลัง PCU สะบ้าย้อย (${todayTH()})\n${'─'.repeat(40)}\n${lines.join('\n')}`;
-  navigator.clipboard.writeText(text).then(()=>showAlert('คัดลอกรายการยาคงคลังแล้ว ✓','success')).catch(()=>showAlert('ไม่สามารถคัดลอกได้','warning'));
+  // เรียง: แดง → เหลือง → เขียว → ชื่อ
+  const rows=Object.values(nm).sort((a,b)=>{
+    const go={สีแดง:0,แดง:0,สีเหลือง:1,เหลือง:1};
+    const ga=go[(a.group||'').trim()]??2,gb=go[(b.group||'').trim()]??2;
+    return ga-gb||a.name.localeCompare(b.name,'th');
+  });
+  rows.forEach(r=>{
+    const g=(r.group||'').trim();
+    if(g==='สีแดง'||g==='แดง'){r._expGrp='0–6 เดือน';}
+    else if(g==='สีเหลือง'||g==='เหลือง'){r._expGrp='6–12 เดือน';}
+    else{
+      const ed=parseExpDate(fmtExp(r.exp));
+      if(ed){const mo=(ed-now)/(1000*60*60*24*30.4);r._expGrp=mo<=6?'0–6 เดือน':mo<=12?'6–12 เดือน':'>12 เดือน';}
+      else r._expGrp='>12 เดือน';
+    }
+  });
+  const SEP=' | ';
+  const header=['#','รหัสยา','ชื่อยา','คงเหลือ','หน่วย','วันหมดอายุ','กลุ่มหมดอายุ'].join(SEP);
+  const divider='─'.repeat(72);
+  const lines=rows.map((r,i)=>[
+    String(i+1).padStart(3,' '),
+    (r.code||'—').padEnd(12,' '),
+    r.name,
+    String(Math.round(r.qty)).padStart(6,' '),
+    r.unit,
+    fmtExp(r.exp)||'—',
+    r._expGrp
+  ].join(SEP));
+  const text=[
+    `📦 รายการยาคงคลัง — PCU สะบ้าย้อย`,
+    `📅 ณ วันที่ ${todayTH()} · ${rows.length} รายการ`,
+    divider,
+    header,
+    divider,
+    ...lines,
+    divider,
+    `รวม ${rows.length} รายการ`
+  ].join('\n');
+  navigator.clipboard.writeText(text)
+    .then(()=>showAlert('คัดลอกรายการยาคงคลังแล้ว ✓ (ตัวคั่น |)','success'))
+    .catch(()=>showAlert('ไม่สามารถคัดลอกได้','warning'));
 }
 
 // ══════════════════════════════════════════════════════════════
