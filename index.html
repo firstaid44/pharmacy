@@ -1412,7 +1412,15 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         class="_srg" data-grp="green"
         style="padding:4px 12px;border-radius:16px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🟢 &gt;12 เดือน</button>
     </div>
-    <div id="stock-req-count" style="font-size:11px;color:var(--text3);margin-bottom:6px;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <span id="stock-req-count" style="font-size:11px;color:var(--text3);"></span>
+      <button id="stock-req-select-all-btn" onclick="toggleSelectAllReq()"
+        style="padding:4px 12px;border-radius:16px;border:1.5px solid var(--border2);
+               background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;
+               cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;">
+        ☑ เลือกทั้งหมด
+      </button>
+    </div>
     <div id="stock-req-list" style="max-height:46vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
     <div class="btn-row" style="margin-top:1rem;">
       <button class="btn" onclick="document.getElementById('stock-req-modal').classList.remove('open')">ยกเลิก</button>
@@ -1655,7 +1663,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version11.33.25.03.2569</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version12.01.25.03.2569</div>
     </div>
     <button onclick="openGlobalSearch()"
       id="gsearch-btn"
@@ -3387,7 +3395,84 @@ function filterStockReqList(q){
     el.style.display=(matchQ&&matchG)?'':'none';
     if(matchQ&&matchG)shown++;
   });
-  if(cnt)cnt.textContent=qLow||grp!=='all'?`พบ ${shown} รายการ`:`ทั้งหมด ${_stockReqAllRows.length} รายการ`;
+  _updateReqCount(shown);
+}
+
+function _updateReqCount(shown){
+  const cnt=document.getElementById('stock-req-count');
+  // นับที่ checked
+  const checked=document.querySelectorAll('[id^="src-"]:checked').length;
+  if(cnt){
+    const total=shown??_stockReqAllRows.length;
+    cnt.textContent=checked>0
+      ? `เลือกแล้ว ${checked} รายการ จาก ${total}`
+      : `ทั้งหมด ${total} รายการ`;
+    cnt.style.color=checked>0?'var(--blue)':'var(--text3)';
+    cnt.style.fontWeight=checked>0?'700':'400';
+  }
+  // อัปเดตปุ่มเลือกทั้งหมด
+  const btn=document.getElementById('stock-req-select-all-btn');
+  if(btn){
+    const visibleRows=_stockReqAllRows.filter(r=>r.el.style.display!=='none');
+    const allChecked=visibleRows.length>0&&visibleRows.every(r=>{
+      const idx=_stockReqAllRows.indexOf(r);
+      const cb=document.getElementById('src-'+idx);
+      return cb&&cb.checked;
+    });
+    if(allChecked){
+      btn.textContent='✕ ยกเลิกทั้งหมด';
+      btn.style.background='var(--blue-l)';
+      btn.style.borderColor='rgba(26,95,212,.4)';
+      btn.style.color='var(--blue)';
+    }else{
+      btn.textContent='☑ เลือกทั้งหมด';
+      btn.style.background='var(--surface2)';
+      btn.style.borderColor='var(--border2)';
+      btn.style.color='var(--text2)';
+    }
+  }
+}
+
+function toggleSelectAllReq(){
+  // หา rows ที่กำลังแสดงอยู่
+  const visibleRows=_stockReqAllRows.filter(r=>r.el.style.display!=='none');
+  if(!visibleRows.length)return;
+  // เช็คว่า checked ทั้งหมดหรือยัง
+  const allChecked=visibleRows.every(r=>{
+    const idx=_stockReqAllRows.indexOf(r);
+    const cb=document.getElementById('src-'+idx);
+    return cb&&cb.checked;
+  });
+  // toggle: ถ้าทั้งหมด checked → uncheck / ถ้าไม่ครบ → check ทั้งหมด
+  const shouldCheck=!allChecked;
+  visibleRows.forEach(r=>{
+    const idx=_stockReqAllRows.indexOf(r);
+    const cb=document.getElementById('src-'+idx);
+    const qi=document.getElementById('srqty-'+idx);
+    if(!cb)return;
+    cb.checked=shouldCheck;
+    if(qi){
+      if(shouldCheck){
+        qi.style.background='var(--blue-l)';
+        qi.style.borderColor='var(--blue)';
+        if(!qi.value||qi.value==='0') qi.value='1';
+        // addToCart ถ้ามีข้อมูล
+        const it=window._stockReqItems&&window._stockReqItems[idx];
+        if(it) addToCart(it.name,it.code,it.unit,Math.round(it.qty),it.exp,it._grp||'green',parseInt(qi.value)||1);
+      }else{
+        qi.style.background='var(--surface2)';
+        qi.style.borderColor='var(--border2)';
+      }
+    }
+    // highlight card
+    const row=document.getElementById('srr-'+idx);
+    if(row){
+      row.style.borderColor=shouldCheck?'rgba(26,95,212,.3)':'var(--border)';
+      row.style.background=shouldCheck?'var(--blue-l)':'var(--surface)';
+    }
+  });
+  _updateReqCount();
+  if(shouldCheck) showAlert(`เลือก ${visibleRows.length} รายการแล้ว ✓`,'success');
 }
 
 function filterStockReqByGroup(grp,btn){
@@ -3433,6 +3518,7 @@ function quickAddToReq(idx){
   if(it){
     addToCart(it.name,it.code,it.unit,Math.round(it.qty),it.exp,it._grp||'green',parseInt(qi.value)||1);
   }
+  _updateReqCount();
   // scroll row into view
   const row=document.getElementById('srr-'+idx);
   if(row)row.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -3936,7 +4022,10 @@ function openStockRequisition(){
     b.style.color=on?'var(--blue)':'var(--text2)';
   });
   const cntEl=document.getElementById('stock-req-count');
-  if(cntEl)cntEl.textContent=`ทั้งหมด ${items.length} รายการ`;
+  if(cntEl){cntEl.textContent=`ทั้งหมด ${items.length} รายการ`;cntEl.style.color='var(--text3)';cntEl.style.fontWeight='400';}
+  // reset select-all btn
+  const saBtn=document.getElementById('stock-req-select-all-btn');
+  if(saBtn){saBtn.textContent='☑ เลือกทั้งหมด';saBtn.style.background='var(--surface2)';saBtn.style.borderColor='var(--border2)';saBtn.style.color='var(--text2)';}
 
   modal.classList.add('open');
 }
