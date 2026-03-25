@@ -1525,7 +1525,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   <div class="header">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
-      <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
+      <div class="app-title">คลังยา PCU สะบ้าย้อย V.1.3</div>
       <div class="app-sub">ระบบบริหารจัดการยา</div>
     </div>
     <div class="conn-chip"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">กำลังเชื่อมต่อ</span></div>
@@ -4168,64 +4168,6 @@ function showTodayDetail(mode){
 }
 
 // ══ EXPIRING DETAIL MODAL ════════════════════════════════════
-function showExpiringDetail(){
-  if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
-  // รวม lot ทุก lot ต่อยา แล้วเอา exp ที่ใกล้สุด
-  const nm={};
-  _allStockItems.forEach(i=>{
-    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',earliestExp:null,exp:''};
-    nm[i.name].qty+=i.qty;
-    const ed=parseExpDate(i.exp);
-    if(ed&&(!nm[i.name].earliestExp||ed<nm[i.name].earliestExp)){nm[i.name].earliestExp=ed;nm[i.name].exp=i.exp;}
-    if(i.group)nm[i.name].group=i.group;
-  });
-  const now=new Date();now.setHours(0,0,0,0);
-  // กรองเฉพาะ ≤ 6 เดือน (กลุ่มแดง)
-  const expList=Object.values(nm).filter(i=>{
-    const g=(i.group||'').trim();
-    if(g==='สีแดง'||g==='แดง')return true;
-    if(!i.earliestExp)return false;
-    return(i.earliestExp-now)/(1000*60*60*24*30.4)<=6;
-  }).sort((a,b)=>(a.earliestExp||new Date(9999,0))-( b.earliestExp||new Date(9999,0)));
-
-  const modal=document.getElementById('drug-detail-modal');
-  const el=document.getElementById('drug-detail-content');
-  if(!modal||!el)return;
-
-  el.innerHTML=`
-    <div style="background:linear-gradient(135deg,#C0392B,#E74C3C);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;display:flex;align-items:center;gap:12px;">
-      <div style="font-size:28px;">⏰</div>
-      <div>
-        <div style="font-size:16px;font-weight:700;">ยาใกล้หมดอายุ (≤ 6 เดือน)</div>
-        <div style="font-size:12px;opacity:.8;margin-top:2px;">พบ ${expList.length} รายการ</div>
-      </div>
-    </div>
-    <table class="sum-table">
-      <thead><tr>
-        <th onclick="void(0)">ชื่อยา</th>
-        <th onclick="void(0)">EXP</th>
-        <th style="text-align:right;" onclick="void(0)">คงเหลือ</th>
-      </tr></thead>
-      <tbody>
-        ${expList.map(i=>{
-          const sn=i.name.replace(/'/g,"\'");
-          const mo=i.earliestExp?Math.round((i.earliestExp-now)/(1000*60*60*24*30.4)):999;
-          const c=mo<=0?'var(--red)':mo<=3?'#DC2626':mo<=6?'#D97706':'var(--teal)';
-          const tag=mo<=0?'⛔ หมดแล้ว':mo<=3?`🔴 ${mo} เดือน`:`🟠 ${mo} เดือน`;
-          return `<tr class="exp-warn" onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),200)">
-            <td><div class="sum-name" style="font-size:12px;">${i.name}</div>
-            <div style="font-size:11px;color:${c};font-weight:700;margin-top:2px;">${tag}</div></td>
-            <td style="font-size:12px;color:${c};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(i.exp)}</td>
-            <td><div class="sum-qty" style="color:${c};font-size:16px;">${Math.round(i.qty)}</div>
-            <div class="sum-unit">${i.unit}</div></td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
-  modal.classList.add('open');
-}
-
 // ══ EXPIRING DETAIL MODAL ════════════════════════════════════
 function showExpiringDetail(){
   if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
@@ -4245,36 +4187,121 @@ function showExpiringDetail(){
     return(i.earliestExp-now)/(1000*60*60*24*30.4)<=6;
   }).sort((a,b)=>(a.earliestExp||new Date(9999,0))-(b.earliestExp||new Date(9999,0)));
 
+  // เก็บ expList ไว้ใน window สำหรับ addAllExpiring
+  window._expListCache=expList;
+
   const modal=document.getElementById('drug-detail-modal');
   const el=document.getElementById('drug-detail-content');
   if(!modal||!el)return;
+
   el.innerHTML=`
-    <div style="background:linear-gradient(135deg,#C0392B,#E74C3C);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;display:flex;align-items:center;gap:12px;">
-      <div style="font-size:28px;">⏰</div>
-      <div>
-        <div style="font-size:16px;font-weight:700;">ยาใกล้หมดอายุ (≤ 6 เดือน)</div>
-        <div style="font-size:12px;opacity:.8;margin-top:2px;">พบ ${expList.length} รายการ</div>
+    <!-- Banner -->
+    <div style="background:linear-gradient(135deg,#C0392B,#E74C3C);border-radius:14px;padding:14px 16px;margin-bottom:12px;color:#fff;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:26px;flex-shrink:0;">⏰</div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;">ยาใกล้หมดอายุ (≤ 6 เดือน)</div>
+        <div style="font-size:11px;opacity:.8;margin-top:2px;">พบ ${expList.length} รายการ</div>
       </div>
+      <!-- ปุ่มเพิ่มทั้งหมดเข้าใบเบิก -->
+      <button onclick="addAllExpiring()"
+        style="padding:7px 12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.5);
+               background:rgba(255,255,255,.18);color:#fff;font-size:11px;font-weight:700;
+               cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;">
+        ＋ ทั้งหมด
+      </button>
     </div>
+    <!-- Table -->
     <table class="sum-table">
       <thead><tr>
-        <th>ชื่อยา</th><th>EXP</th><th style="text-align:right;">คงเหลือ</th>
+        <th>ชื่อยา</th>
+        <th style="white-space:nowrap;">EXP</th>
+        <th style="text-align:right;white-space:nowrap;">คงเหลือ</th>
+        <th style="width:64px;"></th>
       </tr></thead>
-      <tbody>${expList.map(i=>{
-        const sn=i.name.replace(/'/g,"\\'");
-        const mo=i.earliestExp?Math.round((i.earliestExp-now)/(1000*60*60*24*30.4)):999;
-        const clr=mo<=0?'var(--red)':mo<=3?'#DC2626':'#D97706';
-        const tag=mo<=0?'⛔ หมดแล้ว':mo<=3?`🔴 ${mo} เดือน`:`🟠 ${mo} เดือน`;
-        return `<tr class="exp-warn" style="cursor:pointer;" onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),220)">
-          <td><div class="sum-name" style="font-size:12px;">${i.name}</div>
-          <div style="font-size:11px;color:${clr};font-weight:700;margin-top:2px;">${tag}</div></td>
-          <td style="font-size:11px;color:${clr};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;">${fmtExp(i.exp)}</td>
-          <td><div class="sum-qty" style="color:${clr};font-size:16px;">${Math.round(i.qty)}</div>
-          <div class="sum-unit">${i.unit}</div></td>
-        </tr>`;
-      }).join('')}</tbody>
+      <tbody>
+        ${expList.map((i,idx)=>{
+          const sn=i.name.replace(/'/g,"\\'");
+          const mo=i.earliestExp?Math.round((i.earliestExp-now)/(1000*60*60*24*30.4)):999;
+          const clr=mo<=0?'var(--red)':mo<=3?'#DC2626':'#D97706';
+          const tag=mo<=0
+            ?'<span style="background:#FEE2E2;color:#C0392B;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:700;">⛔ หมดแล้ว</span>'
+            :mo<=3
+            ?`<span style="background:#FEE2E2;color:#DC2626;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:700;">🔴 ${mo} เดือน</span>`
+            :`<span style="background:#FFF3DC;color:#D97706;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:700;">🟠 ${mo} เดือน</span>`;
+          return `<tr class="exp-warn" id="exprow-${idx}">
+            <td onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),200)" style="cursor:pointer;">
+              <div class="sum-name" style="font-size:12px;">${i.name}</div>
+              <div style="margin-top:3px;">${tag}</div>
+            </td>
+            <td style="font-size:11px;color:${clr};font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;cursor:pointer;"
+                onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),200)">
+              ${fmtExp(i.exp)}
+            </td>
+            <td style="cursor:pointer;" onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),200)">
+              <div class="sum-qty" style="color:${clr};font-size:16px;">${Math.round(i.qty)}</div>
+              <div class="sum-unit">${i.unit}</div>
+            </td>
+            <td>
+              <button onclick="addSingleExpiring(${idx})"
+                style="padding:5px 8px;border-radius:8px;border:1.5px solid rgba(26,95,212,.25);
+                       background:var(--blue-l);color:var(--blue);font-size:10px;font-weight:700;
+                       cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .12s;
+                       display:block;width:100%;">
+                ＋ เบิก
+              </button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
     </table>`;
+
+  // อัปเดตปุ่มล่างของ modal
+  const addBtn=document.getElementById('drug-req-add-btn');
+  if(addBtn){
+    addBtn.textContent='＋ เพิ่มทั้งหมดเข้าใบเบิก';
+    addBtn.onclick=()=>addAllExpiring();
+  }
+
   modal.classList.add('open');
+}
+
+// เพิ่มยาชิ้นเดียวจาก expiring list เข้า cart
+function addSingleExpiring(idx){
+  const list=window._expListCache;
+  if(!list||!list[idx])return;
+  const i=list[idx];
+  const g=(i.group||'').trim();
+  const grp=(g==='สีแดง'||g==='แดง')?'red':(g==='สีเหลือง'||g==='เหลือง')?'yellow':'green';
+  addToCart(i.name,i.code,i.unit,Math.round(i.qty),i.exp,grp,1);
+  // highlight row
+  const row=document.getElementById('exprow-'+idx);
+  if(row){
+    const btn=row.querySelector('button');
+    if(btn){btn.textContent='✓ เพิ่มแล้ว';btn.style.background='var(--green-l)';btn.style.borderColor='rgba(30,138,74,.3)';btn.style.color='var(--green)';}
+  }
+}
+
+// เพิ่มยาทั้งหมดจาก expiring list เข้า cart
+function addAllExpiring(){
+  const list=window._expListCache;
+  if(!list||!list.length){showAlert('ไม่มีรายการยา','warning');return;}
+  list.forEach((i,idx)=>{
+    const g=(i.group||'').trim();
+    const grp=(g==='สีแดง'||g==='แดง')?'red':(g==='สีเหลือง'||g==='เหลือง')?'yellow':'green';
+    addToCart(i.name,i.code,i.unit,Math.round(i.qty),i.exp,grp,1);
+    // highlight all rows
+    const row=document.getElementById('exprow-'+idx);
+    if(row){
+      const btn=row.querySelector('button');
+      if(btn){btn.textContent='✓ เพิ่มแล้ว';btn.style.background='var(--green-l)';btn.style.borderColor='rgba(30,138,74,.3)';btn.style.color='var(--green)';}
+    }
+  });
+  showAlert(`เพิ่มยาใกล้หมดอายุ ${list.length} รายการเข้าใบเบิกแล้ว ✓`,'success');
+  // ปิด modal หลัง 800ms แล้วเปิด cart
+  setTimeout(()=>{
+    document.getElementById('drug-detail-modal').classList.remove('open');
+    setTimeout(()=>openCartModal(),200);
+  },800);
 }
 
 // ══ DISPENSE SEARCH จากคลัง ═══════════════════════════════════
