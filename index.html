@@ -1682,7 +1682,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.03.28.09.53</div>
+      <div class="app-sub">ระบบบริหารจัดการยา  Version2569.03.30.16.11</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -1925,6 +1925,23 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
   <!-- ══ คลังยา ══ -->
   <div class="page" id="page-stock">
     <div style="height:.75rem;"></div>
+
+    <!-- ── Sub-tab selector ── -->
+    <div style="display:flex;gap:6px;margin-bottom:12px;background:var(--surface);border-radius:14px;padding:5px;border:1px solid var(--border);box-shadow:var(--sh-xs);">
+      <button id="subtab-pcu" onclick="switchStockSubtab('pcu')"
+        style="flex:1;padding:9px 8px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;
+               background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(26,95,212,.3);">
+        🏥 คลังยา PCU
+      </button>
+      <button id="subtab-out" onclick="switchStockSubtab('out')"
+        style="flex:1;padding:9px 8px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;
+               background:transparent;color:var(--text3);">
+        📦 คลังยานอก
+      </button>
+    </div>
+
+    <!-- ══ View A: คลังยา PCU ══ -->
+    <div id="stock-view-pcu">
     <div style="position:relative;margin-bottom:12px;">
       <input class="form-input" id="stock-search" placeholder="🔍  ค้นหาชื่อยาหรือรหัสยา..." oninput="searchStock(this.value)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
       <div id="stock-sbox"></div>
@@ -1966,6 +1983,106 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="card" id="stock-summary-card"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
     <div class="section-hd" style="margin-top:4px;"><span class="section-title">แยกกลุ่มตามวันหมดอายุ</span></div>
     <div class="card" id="stock-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
+    </div><!-- end stock-view-pcu -->
+
+    <!-- ══ View B: คลังยานอก ══ -->
+    <div id="stock-view-out" style="display:none;">
+      <!-- Search -->
+      <div style="position:relative;margin-bottom:12px;">
+        <input class="form-input" id="outer-search"
+          placeholder="🔍  ค้นหาชื่อยาหรือรหัสยา..."
+          oninput="renderOuterStock()"
+          autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+      </div>
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:12px;">
+        <div class="stat-card c-amber">
+          <div class="stat-label">รายการยา</div>
+          <div class="stat-value sv-amber" id="out-total">—</div>
+        </div>
+        <div class="stat-card c-amber">
+          <div class="stat-label">เบิกออกรวม</div>
+          <div class="stat-value sv-amber" id="out-qty">—</div>
+        </div>
+      </div>
+      <!-- Header row -->
+      <div class="section-hd">
+        <span class="section-title">สรุปยาคลังยานอก</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <!-- Date range filter -->
+          <select id="out-date-filter" onchange="renderOuterStock()"
+            style="font-size:11px;padding:5px 10px;border-radius:10px;border:1px solid var(--border2);
+                   background:var(--surface2);color:var(--text2);font-family:inherit;cursor:pointer;">
+            <option value="all">ทั้งหมด</option>
+            <option value="today">วันนี้</option>
+            <option value="week">7 วันล่าสุด</option>
+            <option value="month">30 วันล่าสุด</option>
+          </select>
+          <button onclick="renderOuterStock()"
+            style="padding:5px 12px;border-radius:10px;border:1px solid var(--border2);
+                   background:var(--surface2);font-size:11px;font-weight:700;color:var(--text2);
+                   cursor:pointer;font-family:inherit;">↻</button>
+        </div>
+      </div>
+      <!-- Drug list -->
+      <div class="card" id="outer-stock-list">
+        <div class="empty"><div class="empty-icon">📦</div>กำลังโหลด...</div>
+      </div>
+    </div><!-- end stock-view-out -->
+
+  </div>
+
+  <!-- ══ คลังยานอก ══ -->
+  <div class="page" id="page-extstock">
+    <div style="height:.75rem;"></div>
+
+    <!-- Search + stats -->
+    <div style="position:relative;margin-bottom:10px;">
+      <input class="form-input" id="extstock-search"
+        placeholder="🔍  ค้นหาชื่อยาหรือรหัสยา..."
+        oninput="renderExtStock()"
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+        style="padding-left:14px;"/>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div style="background:var(--surface);border-radius:var(--r-md);padding:12px 10px 10px;border:1px solid var(--border);box-shadow:var(--sh-xs);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--purple);border-radius:var(--r-md) var(--r-md) 0 0;"></div>
+        <div class="stat-label">รายการยาทั้งหมด</div>
+        <div id="ext-total" style="font-size:24px;font-weight:700;color:var(--purple);letter-spacing:-1px;line-height:1;margin-top:6px;font-family:'IBM Plex Mono',monospace;">—</div>
+        <div style="font-size:9px;color:var(--text3);font-weight:600;margin-top:2px;text-transform:uppercase;">ชนิดยา</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--r-md);padding:12px 10px 10px;border:1px solid var(--border);box-shadow:var(--sh-xs);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--amber);border-radius:var(--r-md) var(--r-md) 0 0;"></div>
+        <div class="stat-label">เบิกให้คลังยานอก</div>
+        <div id="ext-disp-count" style="font-size:24px;font-weight:700;color:var(--amber);letter-spacing:-1px;line-height:1;margin-top:6px;font-family:'IBM Plex Mono',monospace;">—</div>
+        <div style="font-size:9px;color:var(--text3);font-weight:600;margin-top:2px;text-transform:uppercase;">รายการ</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--r-md);padding:12px 10px 10px;border:1px solid var(--border);box-shadow:var(--sh-xs);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal);border-radius:var(--r-md) var(--r-md) 0 0;"></div>
+        <div class="stat-label">วันอัพเดทล่าสุด</div>
+        <div id="ext-last-date" style="font-size:14px;font-weight:700;color:var(--teal);line-height:1;margin-top:8px;font-family:'IBM Plex Mono',monospace;">—</div>
+      </div>
+    </div>
+
+    <!-- Drug list card -->
+    <div class="section-hd">
+      <span class="section-title">🏠 สถานะยาคลังยานอก</span>
+      <button class="section-action" onclick="loadExtStock()">↻ รีเฟรช</button>
+    </div>
+    <div class="card" id="extstock-list">
+      <div class="loading"><div class="spin"></div>กำลังโหลด...</div>
+    </div>
+
+    <!-- Transaction log -->
+    <div class="section-hd" style="margin-top:4px;">
+      <span class="section-title">📋 ประวัติการเบิก</span>
+      <span id="ext-log-count" style="font-size:11px;color:var(--text3);"></span>
+    </div>
+    <div class="card" id="extstock-log">
+      <div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ</div>
+    </div>
   </div>
 
   <!-- ══ ประวัติ ══ -->
@@ -2175,16 +2292,16 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       </div>
       <span class="nav-label" style="font-size:8.5px;letter-spacing:-.2px;white-space:nowrap;">สรุปรับ-เบิก</span>
     </button>
-    <!-- ประวัติ: นาฬิกา -->
-    <button class="nav-item" onclick="switchTab('history',this)">
+    <!-- คลังยานอก -->
+    <button class="nav-item" onclick="switchTab('extstock',this)">
       <div class="nav-pill"></div>
       <div class="nav-icon-wrap">
         <svg viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="9"/>
-          <polyline points="12 7 12 12 15.5 14.5"/>
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
       </div>
-      <span class="nav-label">ประวัติ</span>
+      <span class="nav-label" style="font-size:8.5px;letter-spacing:-.2px;white-space:nowrap;">คลังยานอก</span>
       <span class="nav-badge" id="hist-badge" style="display:none;">0</span>
     </button>
   </div>
@@ -2281,7 +2398,7 @@ function switchTab(tab,el){
   document.getElementById('page-'+tab).classList.add('active');
   el.classList.add('active');
   if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();setTimeout(_setDispenseDocNum,300);}
-  if(tab==='stock')loadStock();
+  if(tab==='stock'){loadStock();switchStockSubtab('pcu');}
   if(tab==='history')renderHistory();
   if(tab==='line')loadLineSettings();
   if(tab==='summary')renderSummaryDrugPage(1);
@@ -3130,6 +3247,116 @@ function deleteReqLog(idx){
   try{const s=sessionStorage.getItem('_reqLog');if(s){reqLog=JSON.parse(s)||[];}}catch(e){}
   setTimeout(()=>renderReqLog(),200);
 })();
+
+// ══════════════════════════════════════════════════════════════
+// ══ คลังยานอก sub-tab ═══════════════════════════════════════
+function switchStockSubtab(tab){
+  const isPCU = tab==='pcu';
+  document.getElementById('stock-view-pcu').style.display = isPCU ? '' : 'none';
+  document.getElementById('stock-view-out').style.display  = isPCU ? 'none' : '';
+  const btnPCU = document.getElementById('subtab-pcu');
+  const btnOut = document.getElementById('subtab-out');
+  const base = 'flex:1;padding:9px 8px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;';
+  if(isPCU){
+    btnPCU.style.cssText = base+'background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(26,95,212,.3);';
+    btnOut.style.cssText  = base+'background:transparent;color:var(--text3);';
+  } else {
+    btnOut.style.cssText  = base+'background:var(--amber);color:#fff;box-shadow:0 2px 8px rgba(226,144,0,.3);';
+    btnPCU.style.cssText  = base+'background:transparent;color:var(--text3);';
+    if(!dispenseRows.length) loadDispense().then(()=>renderOuterStock());
+    else renderOuterStock();
+  }
+}
+
+function renderOuterStock(){
+  const el = document.getElementById('outer-stock-list');
+  if(!el) return;
+  if(!dispenseRows.length){
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📦</div>ยังไม่มีข้อมูล<br><span style="font-size:11px;color:var(--text3);">โหลดข้อมูลแท็บ "เบิกยาออก" ก่อน</span></div>';
+    return;
+  }
+  // เฉพาะ dest = คลังยานอก
+  let rows = dispenseRows.filter(d=>(d.dest||'').trim()==='คลังยานอก');
+  if(!rows.length){
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📦</div>ยังไม่มีการเบิกยาออกไปยังคลังยานอก</div>';
+    document.getElementById('out-total').textContent='0';
+    document.getElementById('out-qty').textContent='0';
+    return;
+  }
+  // date filter
+  const df = document.getElementById('out-date-filter')?.value||'all';
+  const today2 = new Date(); today2.setHours(0,0,0,0);
+  if(df!=='all'){
+    rows = rows.filter(d=>{
+      const p=fmtDate(d.date).split('/');
+      if(p.length!==3) return false;
+      const dt=new Date(p[2],p[1]-1,p[0]);
+      const diff=(today2-dt)/(1000*60*60*24);
+      if(df==='today') return diff<1&&diff>=0;
+      if(df==='week')  return diff<=7&&diff>=0;
+      if(df==='month') return diff<=30&&diff>=0;
+      return true;
+    });
+  }
+  // search
+  const q=(document.getElementById('outer-search')?.value||'').toLowerCase().trim();
+  if(q) rows=rows.filter(r=>r.name.toLowerCase().includes(q)||(r.code||'').toLowerCase().includes(q));
+  // group
+  const nm={};
+  rows.forEach(d=>{
+    if(!nm[d.name])nm[d.name]={name:d.name,code:d.code||'—',unit:d.unit||'',total:0,txns:[]};
+    const qty=parseFloat(d.qty)||0;
+    nm[d.name].total+=qty;
+    nm[d.name].txns.push({date:fmtDate(d.date),docNum:d.docNum||'—',qty,lot:d.lot||'—',exp:fmtExp(d.exp)||'—',requester:d.requester||'—'});
+  });
+  const drugs=Object.values(nm).sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  const totalQty=drugs.reduce((s,d)=>s+d.total,0);
+  document.getElementById('out-total').textContent=drugs.length;
+  document.getElementById('out-qty').textContent=Math.round(totalQty);
+  el.innerHTML=drugs.map((drug,ri)=>{
+    const uid='out_'+ri;
+    const sorted=[...drug.txns].sort((a,b)=>{
+      const pa=a.date.split('/'),pb=b.date.split('/');
+      return new Date(pa[2],pa[1]-1,pa[0])-new Date(pb[2],pb[1]-1,pb[0]);
+    });
+    const txnRows=sorted.map(t=>`
+      <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border-bottom:1px solid var(--border);font-size:11px;">
+        <div style="font-family:'IBM Plex Mono',monospace;color:var(--text3);min-width:70px;font-size:10px;">${t.date}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;color:var(--text2);flex:1;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.docNum}</div>
+        <div style="font-size:10px;color:var(--text3);min-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.requester}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--amber);min-width:34px;text-align:right;">${t.qty}</div>
+        <div style="font-size:10px;color:var(--text3);min-width:36px;">${drug.unit}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text4);min-width:60px;overflow:hidden;text-overflow:ellipsis;">${t.lot}</div>
+      </div>`).join('');
+    return `<div style="border-bottom:2px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:background .12s;"
+        onclick="const d=document.getElementById('${uid}');d.style.display=d.style.display==='none'?'block':'none';"
+        onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;">${drug.name}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">${drug.code} · ${drug.txns.length} รายการ</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0;">
+          <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;">รวม</div>
+          <div style="font-size:22px;font-weight:800;color:var(--amber);font-family:'IBM Plex Mono',monospace;line-height:1;">${Math.round(drug.total)}</div>
+          <div style="font-size:9px;color:var(--text3);font-weight:600;">${drug.unit}</div>
+        </div>
+        <span style="color:var(--text4);font-size:13px;transform:rotate(90deg);display:inline-block;">›</span>
+      </div>
+      <div id="${uid}" style="display:none;background:var(--surface2);border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface);border-bottom:1.5px solid var(--border2);">
+          <div style="font-size:8.5px;font-weight:700;color:var(--text3);text-transform:uppercase;min-width:70px;">วันที่</div>
+          <div style="font-size:8.5px;font-weight:700;color:var(--text3);text-transform:uppercase;flex:1;">เลขที่เอกสาร</div>
+          <div style="font-size:8.5px;font-weight:700;color:var(--text3);text-transform:uppercase;min-width:50px;">ผู้เบิก</div>
+          <div style="font-size:8.5px;font-weight:700;color:var(--amber);text-transform:uppercase;min-width:34px;text-align:right;">จำนวน</div>
+          <div style="font-size:8.5px;font-weight:700;color:var(--text3);text-transform:uppercase;min-width:36px;">หน่วย</div>
+          <div style="font-size:8.5px;font-weight:700;color:var(--text3);text-transform:uppercase;min-width:60px;">LOT</div>
+        </div>
+        ${txnRows}
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // ══════════════════════════════════════════════════════════════
 function addHistory(type,msg,detail){
@@ -5042,7 +5269,121 @@ function saveInventoryTextFile(){
   showAlert('บันทึกไฟล์ .txt แล้ว ✓','success');
 }
 
-// ══ DATE FILTER FUNCTIONS ════════════════════════════════════
+// ══ คลังยานอก — sub-tab ══════════════════════════════════════
+function switchStockSubtab(tab){
+  const isPcu=tab==='pcu';
+  // toggle views
+  document.getElementById('stock-view-pcu').style.display=isPcu?'':'none';
+  document.getElementById('stock-view-out').style.display=isPcu?'none':'';
+  // toggle buttons
+  const btnPcu=document.getElementById('subtab-pcu');
+  const btnOut=document.getElementById('subtab-out');
+  btnPcu.style.background=isPcu?'var(--blue)':'transparent';
+  btnPcu.style.color=isPcu?'#fff':'var(--text3)';
+  btnPcu.style.boxShadow=isPcu?'0 2px 8px rgba(26,95,212,.3)':'none';
+  btnOut.style.background=isPcu?'transparent':'#F59E0B';
+  btnOut.style.color=isPcu?'var(--text3)':'#fff';
+  btnOut.style.boxShadow=isPcu?'none':'0 2px 8px rgba(245,158,11,.3)';
+  if(!isPcu)renderOuterStock();
+}
+
+function renderOuterStock(){
+  const el=document.getElementById('outer-stock-list');
+  if(!el)return;
+
+  // กรองเฉพาะรายการที่ dest='คลังยานอก' จาก dispenseRows
+  let outerRows=dispenseRows.filter(d=>(d.dest||'').trim()==='คลังยานอก');
+
+  // date filter
+  const df=(document.getElementById('out-date-filter')||{}).value||'all';
+  if(df!=='all'){
+    const now=new Date();now.setHours(0,0,0,0);
+    const days={today:0,week:6,month:29}[df]??0;
+    const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-days);
+    outerRows=outerRows.filter(d=>{
+      const p=fmtDate(d.date).split('/');
+      if(p.length!==3)return true;
+      const rd=new Date(p[2],p[1]-1,p[0]);
+      return rd>=cutoff;
+    });
+  }
+
+  // search filter
+  const q=(document.getElementById('outer-search')?.value||'').toLowerCase().trim();
+  if(q)outerRows=outerRows.filter(d=>d.name.toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q));
+
+  if(!outerRows.length){
+    // อัปเดต stats
+    document.getElementById('out-total').textContent='0';
+    document.getElementById('out-qty').textContent='0';
+    el.innerHTML=dispenseRows.length?
+      '<div class="empty"><div class="empty-icon">📦</div>ไม่มีรายการเบิกไปคลังยานอก'+(q?'<br>ที่ตรงกับคำค้น':'')+'</div>':
+      '<div class="empty"><div class="empty-icon">📦</div>ยังไม่มีข้อมูล<br><span style="font-size:11px;color:var(--text4);">กดรีเฟรชในแท็บคลังยา หรือเปิดแอปใหม่</span></div>';
+    return;
+  }
+
+  // สร้าง stockMap สำหรับคลังยานอก
+  // นับยาที่เบิกออกไปคลังยานอก ต่อ name+lot
+  const nm=new Date();nm.setHours(0,0,0,0);
+  const outMap={};
+  outerRows.forEach(d=>{
+    const k=d.name+'||'+d.lot;
+    if(!outMap[k])outMap[k]={
+      name:d.name,code:d.code,unit:d.unit||'',
+      lot:d.lot,exp:fmtExp(d.exp)||'—',
+      qty:0,dates:[],docNums:[],requester:d.requester||'—'
+    };
+    outMap[k].qty+=parseFloat(d.qty)||0;
+    if(d.date)outMap[k].dates.push(fmtDate(d.date));
+    if(d.docNum&&d.docNum!=='—')outMap[k].docNums.push(d.docNum);
+  });
+
+  const items=Object.values(outMap).sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  const totalQty=items.reduce((s,i)=>s+i.qty,0);
+  document.getElementById('out-total').textContent=items.length;
+  document.getElementById('out-qty').textContent=Math.round(totalQty);
+
+  const now2=new Date();now2.setHours(0,0,0,0);
+  el.innerHTML=items.map(i=>{
+    const ed=parseExpDate(i.exp);
+    const mo=ed?Math.round((ed-now2)/(1000*60*60*24*30.4)):null;
+    const expColor=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=6?'var(--red)':mo<=12?'var(--amber)':'var(--teal)';
+    const expBg=mo===null?'var(--surface2)':mo<=0?'#FEE2E2':mo<=6?'#FEE2E2':mo<=12?'#FFF3DC':'#ECFDF5';
+    const lastDate=i.dates.length?i.dates[i.dates.length-1]:'—';
+    const docStr=i.docNums.length?i.docNums.join(', '):'—';
+    return `<div style="padding:13px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+      <!-- icon -->
+      <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#FFF3DC,#FEF9EC);
+                  border:1.5px solid rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;
+                  font-size:18px;flex-shrink:0;">📦</div>
+      <!-- drug info -->
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.name}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">
+          ${i.code||'—'} · LOT: <span style="font-weight:600;color:var(--text2);">${i.lot||'—'}</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;align-items:center;">
+          <!-- EXP badge -->
+          <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;
+                       background:${expBg};color:${expColor};">
+            EXP ${i.exp}
+          </span>
+          <!-- doc num -->
+          ${docStr!=='—'?`<span style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">📄 ${docStr}</span>`:''}
+          <!-- date -->
+          <span style="font-size:9px;color:var(--text4);">📅 ${lastDate}</span>
+        </div>
+      </div>
+      <!-- qty -->
+      <div style="text-align:center;flex-shrink:0;min-width:52px;">
+        <div style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.4px;">รับเข้าคลัง</div>
+        <div style="font-size:24px;font-weight:800;color:var(--amber);font-family:'IBM Plex Mono',monospace;line-height:1.1;">${Math.round(i.qty)}</div>
+        <div style="font-size:9px;color:var(--text4);font-weight:600;">${i.unit}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+// ══ คลังยานอก END ═════════════════════════════════════════════
 function applyReceiveDateFilter(){
   const inp=document.getElementById('recv-date-filter');
   _recvDateFilter=inp?inp.value:'';
