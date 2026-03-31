@@ -2752,7 +2752,25 @@ function showDrugDetail(name){
   dispenseRows.filter(d=>d.name===name).forEach(d=>{if(lotMap[d.lot])lotMap[d.lot].dispensed+=parseFloat(d.qty)||0;});
   const lotItems=Object.values(lotMap).sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
   const code=rLots[0].code||'',unit=rLots[0].unit||'';
-  const g=(rLots[0].group||'').trim(),isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
+  // คำนวณสถานะจาก EXP ของ LOT ที่ใกล้หมดอายุที่สุด (ถูกต้องกว่าใช้ group จาก receiveRows)
+  const now=new Date();now.setHours(0,0,0,0);
+  let earliestExp=null;
+  lotItems.forEach(l=>{
+    const ed=parseExpDate(fmtExp(l.exp));
+    if(ed&&(!earliestExp||ed<earliestExp))earliestExp=ed;
+  });
+  let isR=false,isY=false;
+  if(earliestExp){
+    const mo=(earliestExp-now)/(1000*60*60*24*30.4);
+    isR=mo<=6; isY=!isR&&mo<=12;
+  }
+  // fallback: ถ้ามี group ใน dispenseRows ให้ใช้
+  const dGroup=dispenseRows.filter(d=>d.name===name).map(d=>d.group||'').find(g=>g);
+  if(dGroup&&!earliestExp){
+    const g2=dGroup.trim();
+    isR=g2==='สีแดง'||g2==='แดง';
+    isY=g2==='สีเหลือง'||g2==='เหลือง';
+  }
   const sc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
   const statusLabel=isR?'หมดอายุ < 6 เดือน':isY?'หมดอายุ 6–12 เดือน':'หมดอายุ > 12 เดือน';
   const statusDot=isR?'#D93025':isY?'#C07000':'#1E8A4A';
@@ -2789,7 +2807,10 @@ function showDrugDetail(name){
     </tr></thead>
     <tbody>${lotItems.map(l=>{
       const ll=Math.max(0,Math.round(l.received-l.dispensed));
-      const lg=(l.group||'').trim(),lR=lg==='สีแดง'||lg==='แดง',lY=lg==='สีเหลือง'||lg==='เหลือง';
+      // คำนวณสีจาก EXP โดยตรง (ถูกต้องกว่า group field)
+      const led=parseExpDate(fmtExp(l.exp));
+      let lR=false,lY=false;
+      if(led){const lmo=(led-now)/(1000*60*60*24*30.4);lR=lmo<=6;lY=!lR&&lmo<=12;}
       const lc=lR?'var(--red)':lY?'var(--amber)':'var(--teal)';
       const lcl=lR?'exp-warn':lY?'exp-caution':'';
       return `<tr class="${lcl}">
