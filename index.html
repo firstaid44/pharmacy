@@ -1682,7 +1682,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.03.31.09.33</div>
+      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.03.31.09.58</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3309,27 +3309,35 @@ function renderOuterStock(){
   const q=(document.getElementById('outer-search')?.value||'').toLowerCase().trim();
 
   // ─── คำนวณ stock map ──────────────────────────────────────
-  // คลังยานอก = สิ่งที่เบิกจาก PCU ออกไป (รับเข้าคลังนอก)
-  // คงเหลือในคลังนอก = รับเข้า(จากPCU) - จ่ายออก(ยังไม่มีระบบ จึง = รับเข้า)
   const now=new Date();now.setHours(0,0,0,0);
   const stockMap={};
   allOut.forEach(d=>{
     const k=d.name+'||'+d.lot;
+    const expFmt=fmtExp(d.exp)||'—';  // สำหรับแสดงผล
+    const expRaw=d.exp||'';            // raw สำหรับ parseExpDate
     if(!stockMap[k])stockMap[k]={
       name:d.name,code:d.code||'—',unit:d.unit||'',
-      lot:d.lot||'—',exp:fmtExp(d.exp)||'—',
+      lot:d.lot||'—',
+      exp:expFmt,    // dd/MM/yyyy สำหรับแสดง
+      expRaw:expRaw, // raw สำหรับคำนวณ
       qty:0,txns:[]
     };
     const qty=parseFloat(d.qty)||0;
     stockMap[k].qty+=qty;
+    // เก็บ expRaw ที่ดีที่สุด (ไม่ว่าง)
+    if(!stockMap[k].expRaw&&expRaw)stockMap[k].expRaw=expRaw;
+    if(stockMap[k].exp==='—'&&expFmt!=='—')stockMap[k].exp=expFmt;
     stockMap[k].txns.push({date:fmtDate(d.date),docNum:d.docNum||'—',qty,requester:d.requester||'—'});
   });
   let items=Object.values(stockMap).filter(i=>i.qty>0);
   if(q)items=items.filter(i=>i.name.toLowerCase().includes(q)||(i.code||'').toLowerCase().includes(q)||(i.lot||'').toLowerCase().includes(q));
   items.sort((a,b)=>a.name.localeCompare(b.name,'th'));
 
+  // helper: parse exp ไม่ว่า format ไหน
+  const parseItemExp=i=>parseExpDate(i.exp)??parseExpDate(fmtExp(i.expRaw))??parseExpDate(i.expRaw);
+
   // stats
-  const expiring6=items.filter(i=>{const ed=parseExpDate(i.exp);return ed&&(ed-now)/(1000*60*60*24*30.4)<=6;}).length;
+  const expiring6=items.filter(i=>{const ed=parseItemExp(i);return ed&&(ed-now)/(1000*60*60*24*30.4)<=6;}).length;
   document.getElementById('out-total').textContent=items.length||'0';
   document.getElementById('out-expiring').textContent=expiring6;
   document.getElementById('out-qty').textContent=items.length?`${items.length} รายการ`:'';
@@ -3344,12 +3352,12 @@ function renderOuterStock(){
 
   // ─── 1) ยาใกล้หมดอายุ ──────────────────────────────────
   const expItems=items.filter(i=>{
-    const ed=parseExpDate(i.exp);
+    const ed=parseItemExp(i);
     if(!ed)return false;
     const mo=(ed-now)/(1000*60*60*24*30.4);
     return mo<=_outExpRangeMonths;
   }).sort((a,b)=>{
-    const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);
+    const ea=parseItemExp(a),eb=parseItemExp(b);
     return (ea||new Date(9999,0))-(eb||new Date(9999,0));
   });
   if(expEl){
@@ -3357,7 +3365,7 @@ function renderOuterStock(){
       expEl.innerHTML=`<div class="empty" style="padding:10px 0;"><div class="empty-icon" style="font-size:20px;">✓</div>ไม่มียาหมดอายุภายใน ${_outExpRangeMonths} เดือน</div>`;
     }else{
       expEl.innerHTML=expItems.map(i=>{
-        const ed=parseExpDate(i.exp);
+        const ed=parseItemExp(i);
         const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):null;
         const expColor=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=3?'var(--red)':mo<=6?'#E56A00':'var(--amber)';
         const badge=mo===null?'—':mo<=0?'หมดแล้ว':mo<=1?'< 1 เดือน':`${mo} เดือน`;
@@ -3382,7 +3390,7 @@ function renderOuterStock(){
   // ─── 2) สรุปยาคงคลัง ────────────────────────────────────
   listEl.innerHTML=items.map((drug,ri)=>{
     const uid='out_'+ri;
-    const ed=parseExpDate(drug.exp);
+    const ed=parseItemExp(drug);
     const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):null;
     const expColor=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=6?'var(--red)':mo<=12?'var(--amber)':'var(--teal)';
     const expBg=mo===null?'var(--surface2)':mo<=6?'#FEE2E2':mo<=12?'#FFF3DC':'#ECFDF5';
@@ -3432,7 +3440,7 @@ function renderOuterStock(){
   if(!grpEl)return;
   const red=[],yellow=[],green=[];
   items.forEach(i=>{
-    const ed=parseExpDate(i.exp);
+    const ed=parseItemExp(i);
     if(!ed){green.push(i);return;}
     const mo=(ed-now)/(1000*60*60*24*30.4);
     if(mo<=6)red.push(i);
@@ -3441,7 +3449,7 @@ function renderOuterStock(){
   });
   const makeGrp=(list,bg,label)=>{
     if(!list.length)return '';
-    const sorted=[...list].sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
+    const sorted=[...list].sort((a,b)=>{const ea=parseItemExp(a),eb=parseItemExp(b);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
     return `<div style="padding:10px 14px 6px;background:${bg};border-bottom:1px solid var(--border);">
       <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;">${label} · ${list.length} รายการ</div>
     </div>
