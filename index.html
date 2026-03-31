@@ -1682,7 +1682,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา</div>
+      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.03.31.09.23</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2876,7 +2876,7 @@ async function saveEdit(){
   if(editMode==='dispense')nd.requester=document.getElementById('edit-requester').value;
   closeEditModal();showAlert('กำลังบันทึกทับข้อมูลเดิม...','info');
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(nd)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(nd)});
     rows[idx]={...e,...nd};if(editMode==='receive')renderReceiveLog();else renderDispenseLog();
     addHistory('edit',`แก้ไข: ${e.name}`,`LOT: ${nd.lot} | ${nd.qty} ${nd.unit}`);
     showAlert(`แก้ไข "${e.name}" เรียบร้อย`,'success');
@@ -3089,7 +3089,7 @@ async function receiveStock(){
   btn.textContent='กำลังบันทึก...';btn.disabled=true;
   setSheet('amber','กำลังส่งข้อมูล...');clearReceiveForm();
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(entry)});
     setSheet('green','บันทึกสำเร็จ');
     showAlert(`✓ รับยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} เรียบร้อย`,'success');
     addHistory('in',`รับยาเข้า: ${name}`,`LOT: ${lot} | ${qty} ${unit} | จาก: ${source}${docNum?' | เลขที่: '+docNum:''}`);
@@ -3130,7 +3130,7 @@ async function dispenseStock(){
   btn.textContent='กำลังบันทึก...';btn.disabled=true;
   clearDispenseForm();
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(entry)});
     showAlert(`✓ เบิกยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} โดย ${requester}`,'success');
     addHistory('out',`เบิกยาออก: ${name}`,`LOT: ${lot} | ${qty} ${unit} | ผู้เบิก: ${requester} | เบิกให้: ${dest}${docNum?' | เลขที่: '+docNum:''}`);
     setTimeout(()=>loadDispense(),1500);
@@ -3426,7 +3426,7 @@ async function deleteRow(mode,idx){
   const payload={name:e.name,lot:e.lot,date:e.date,action:mode==='receive'?'delete_receive':'delete_dispense'};
   showAlert('กำลังลบข้อมูล...','info');
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
     rows.splice(idx,1);if(mode==='receive')renderReceiveLog();else renderDispenseLog();
     addHistory('edit',`ลบรายการ: ${e.name}`,`LOT: ${e.lot} | ${fmtDate(e.date)}`);
     showAlert(`ลบ "${e.name}" เรียบร้อย`,'success');
@@ -3550,7 +3550,7 @@ async function sendLineFlexDispense(data){
   if(!enabled||!token||!to)return;
   const payload={action:'send_line',line_token:token,line_to:to,flex:JSON.stringify(buildFlexMessage(data))};
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
     addLineLog('ok',data.name,data.qty,data.unit,data.requester,'ส่งถึง Apps Script แล้ว ✓');
     showAlert('📱 ส่งแจ้งเตือน LINE เรียบร้อย ✓','success');
   }catch(e){
