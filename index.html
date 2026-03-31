@@ -1682,7 +1682,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.03.31.09.58</div>
+      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.03.31.10.07</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3313,20 +3313,24 @@ function renderOuterStock(){
   const stockMap={};
   allOut.forEach(d=>{
     const k=d.name+'||'+d.lot;
-    const expFmt=fmtExp(d.exp)||'—';  // สำหรับแสดงผล
-    const expRaw=d.exp||'';            // raw สำหรับ parseExpDate
+    const expFmt=fmtExp(d.exp)||'—';
+    const expRaw=d.exp||'';
     if(!stockMap[k])stockMap[k]={
       name:d.name,code:d.code||'—',unit:d.unit||'',
       lot:d.lot||'—',
-      exp:expFmt,    // dd/MM/yyyy สำหรับแสดง
-      expRaw:expRaw, // raw สำหรับคำนวณ
+      exp:expFmt,
+      expRaw:expRaw,
+      group:d.group||'',          // M จาก Sheet
+      monthsLeft:d.monthsLeft||'', // L จาก Sheet
       qty:0,txns:[]
     };
     const qty=parseFloat(d.qty)||0;
     stockMap[k].qty+=qty;
-    // เก็บ expRaw ที่ดีที่สุด (ไม่ว่าง)
     if(!stockMap[k].expRaw&&expRaw)stockMap[k].expRaw=expRaw;
     if(stockMap[k].exp==='—'&&expFmt!=='—')stockMap[k].exp=expFmt;
+    // ใช้ group/monthsLeft ล่าสุดที่มีค่า
+    if(d.group)stockMap[k].group=d.group;
+    if(d.monthsLeft)stockMap[k].monthsLeft=d.monthsLeft;
     stockMap[k].txns.push({date:fmtDate(d.date),docNum:d.docNum||'—',qty,requester:d.requester||'—'});
   });
   let items=Object.values(stockMap).filter(i=>i.qty>0);
@@ -3336,8 +3340,26 @@ function renderOuterStock(){
   // helper: parse exp ไม่ว่า format ไหน
   const parseItemExp=i=>parseExpDate(i.exp)??parseExpDate(fmtExp(i.expRaw))??parseExpDate(i.expRaw);
 
-  // stats
-  const expiring6=items.filter(i=>{const ed=parseItemExp(i);return ed&&(ed-now)/(1000*60*60*24*30.4)<=6;}).length;
+  // helper: กลุ่มจาก Sheet หรือคำนวณเอง
+  const getGroup=i=>{
+    const g=(i.group||'').trim();
+    if(g)return g;
+    // fallback คำนวณจาก exp
+    const ed=parseItemExp(i);
+    if(!ed)return 'เขียว';
+    const mo=(ed-now)/(1000*60*60*24*30.4);
+    if(mo<=6)return 'แดง';
+    if(mo<=12)return 'เหลือง';
+    return 'เขียว';
+  };
+
+  // stats — ใช้ข้อมูล group จาก Sheet ถ้ามี
+  const expiring6=items.filter(i=>{
+    const g=getGroup(i);
+    if(g.includes('แดง'))return true;
+    const ed=parseItemExp(i);
+    return ed&&(ed-now)/(1000*60*60*24*30.4)<=6;
+  }).length;
   document.getElementById('out-total').textContent=items.length||'0';
   document.getElementById('out-expiring').textContent=expiring6;
   document.getElementById('out-qty').textContent=items.length?`${items.length} รายการ`:'';
@@ -3440,11 +3462,10 @@ function renderOuterStock(){
   if(!grpEl)return;
   const red=[],yellow=[],green=[];
   items.forEach(i=>{
-    const ed=parseItemExp(i);
-    if(!ed){green.push(i);return;}
-    const mo=(ed-now)/(1000*60*60*24*30.4);
-    if(mo<=6)red.push(i);
-    else if(mo<=12)yellow.push(i);
+    const g=getGroup(i);
+    // รองรับทั้งชื่อไทยเต็ม เช่น "สีแดง","แดง","เขียว","เหลือง" และ "เขียว"
+    if(g.includes('แดง')||g==='red')red.push(i);
+    else if(g.includes('เหลือง')||g==='yellow')yellow.push(i);
     else green.push(i);
   });
   const makeGrp=(list,bg,label)=>{
