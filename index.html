@@ -5765,15 +5765,13 @@ function clearDispenseDateFilter(){
       }
       ticks.innerHTML=t;
     }
-    // digital time
-    const hDisp=h%12||12;
-    const ampm=h<12?'AM':'PM';
+    // digital time — 24hr
     const hEl=document.getElementById('ls-dtime-h');
     const mEl=document.getElementById('ls-dtime-m');
     const apEl=document.getElementById('ls-dtime-ampm');
-    if(hEl)hEl.textContent=String(hDisp).padStart(2,'0');
+    if(hEl)hEl.textContent=String(h).padStart(2,'0');
     if(mEl)mEl.textContent=String(m).padStart(2,'0');
-    if(apEl)apEl.textContent=ampm;
+    if(apEl)apEl.style.display='none';
     // date
     const days=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
     const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
