@@ -1243,7 +1243,9 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
 /* ══ ANALYTICS DASHBOARD (scoped) ══════════════════════════ */
 .an-wrap{all:initial;display:block;font-family:'IBM Plex Sans Thai',sans-serif;}
 
-:root{
+#page-analytics,#page-analytics .an-wrap,#page-analytics .an-topbar,
+#page-analytics .an-sidebar-panel,#page-analytics .an-main-panel,
+#an-dov,.an-toast{
   --bg:#07101f;--bg2:#0c1628;--bg3:#111e38;--bg4:#162240;
   --bdr:rgba(61,214,245,.1);--bdr2:rgba(61,214,245,.2);--bdr3:rgba(61,214,245,.35);
   --ac:#3dd6f5;--a2:#7c6aff;--a3:#f97316;
@@ -1252,14 +1254,10 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
   --fn:'IBM Plex Sans Thai',sans-serif;--mo:'IBM Plex Mono',monospace;
   --r:5px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(61,214,245,.07),transparent),
-             radial-gradient(ellipse 50% 40% at 100% 80%,rgba(124,106,255,.05),transparent)}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+
+#page-analytics ::-webkit-scrollbar{width:4px;height:4px}
+#page-analytics ::-webkit-scrollbar-track{background:#07101f}
+#page-analytics ::-webkit-scrollbar-thumb{background:#162240;border-radius:2px}
 
 /* LAYOUT */
 .shell{display:grid;grid-template-columns:230px 1fr;grid-template-rows:58px 1fr;min-height:100vh;position:relative;z-index:1}
@@ -2191,7 +2189,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.04.02.12.23</div>
+      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.04.02.13.56</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
