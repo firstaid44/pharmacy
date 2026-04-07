@@ -933,7 +933,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   gap:9px;width:100%;max-width:230px;
 }
 .num-btn{
-  width:82px;height:82px;border-radius:50%;
+  aspect-ratio:1;border-radius:50%;
   border:1.5px solid rgba(255,255,255,.1);
   background:rgba(255,255,255,.07);
   color:#fff;font-size:18px;font-weight:600;
@@ -1243,9 +1243,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
 /* ══ ANALYTICS DASHBOARD (scoped) ══════════════════════════ */
 .an-wrap{all:initial;display:block;font-family:'IBM Plex Sans Thai',sans-serif;}
 
-#page-analytics,#page-analytics .an-wrap,#page-analytics .an-topbar,
-#page-analytics .an-sidebar-panel,#page-analytics .an-main-panel,
-#an-dov,.an-toast{
+:root{
   --bg:#07101f;--bg2:#0c1628;--bg3:#111e38;--bg4:#162240;
   --bdr:rgba(61,214,245,.1);--bdr2:rgba(61,214,245,.2);--bdr3:rgba(61,214,245,.35);
   --ac:#3dd6f5;--a2:#7c6aff;--a3:#f97316;
@@ -1254,10 +1252,14 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
   --fn:'IBM Plex Sans Thai',sans-serif;--mo:'IBM Plex Mono',monospace;
   --r:5px;
 }
-
-#page-analytics ::-webkit-scrollbar{width:4px;height:4px}
-#page-analytics ::-webkit-scrollbar-track{background:#07101f}
-#page-analytics ::-webkit-scrollbar-thumb{background:#162240;border-radius:2px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(61,214,245,.07),transparent),
+             radial-gradient(ellipse 50% 40% at 100% 80%,rgba(124,106,255,.05),transparent)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
 
 /* LAYOUT */
 .shell{display:grid;grid-template-columns:230px 1fr;grid-template-rows:58px 1fr;min-height:100vh;position:relative;z-index:1}
@@ -1788,7 +1790,6 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
         </div>
       </div>
       
-
       <!-- App name + tagline -->
       <div style="text-align:center;margin-bottom:1.1rem;animation:infoIn .5s .2s both;">
         <div class="ls-title" style="font-size:20px;margin-bottom:2px;">ระบบบริหารจัดการคลังยา</div>
@@ -2189,7 +2190,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.04.07.15.42</div>
+      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.04.07.15.57</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2865,16 +2866,24 @@ function parseDateStr(s){
   // 3) ISO datetime 2026-03-24T...
   m=s.match(/^(\d{4})-(\d{2})-(\d{2})[T ]/);
   if(m)return m[3]+'/'+m[2]+'/'+m[1];
-  // 4) "DayName MonName DD YYYY ..." เช่น "Sun Jan 01 2026 00:00:00 GMT+0700 (Indochina Time)"
+  // 4) "DayName MonName DD YYYY ..." — รองรับปีพ.ศ.ด้วย (เช่น 2569)
+  //    "Sun Jan 01 2569 00:00:00 GMT+0700 (Indochina Time)"
   m=s.match(/(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*[,\s]+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/i);
-  if(m){const mn=MN[m[1].toLowerCase()];if(mn)return m[2].padStart(2,'0')+'/'+mn+'/'+m[3];}
-  // 5) "DD MonName YYYY" เช่น "01 Jan 2026"
+  if(m){
+    const mn=MN[m[1].toLowerCase()];
+    if(mn){
+      let yr=parseInt(m[3]);
+      if(yr>2400)yr=yr-543; // แปลงปีพ.ศ. → ค.ศ.
+      return m[2].padStart(2,'0')+'/'+mn+'/'+yr;
+    }
+  }
+  // 5) "DD MonName YYYY"
   m=s.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/);
   if(m){const mn=MN[m[2].toLowerCase()];if(mn)return m[1].padStart(2,'0')+'/'+mn+'/'+m[3];}
   // 6) yyyy/MM/dd หรือ yyyy-M-d ทั่วไป
   m=s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
   if(m)return m[3].padStart(2,'0')+'/'+m[2].padStart(2,'0')+'/'+m[1];
-  // 7) DD/MM/YYYY ทั่วไป (เช่น 1/3/2026)
+  // 7) DD/MM/YYYY ทั่วไป
   m=s.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
   if(m)return m[1].padStart(2,'0')+'/'+m[2].padStart(2,'0')+'/'+m[3];
   // 8) JS Date parse fallback — ใช้ UTC ป้องกัน timezone shift
