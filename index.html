@@ -242,10 +242,10 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 /* ── SUGGEST ── */
 .suggest-wrap{position:relative;}
 .sbox{
-  position:absolute;top:100%;left:0;right:0;z-index:300;
+  position:fixed;z-index:9999;
   background:var(--surface);border:1px solid var(--border2);
   border-radius:var(--r-lg);max-height:240px;overflow-y:auto;
-  display:none;margin-top:5px;-webkit-overflow-scrolling:touch;
+  display:none;-webkit-overflow-scrolling:touch;
   box-shadow:var(--sh-lg);animation:dropIn .15s ease;
 }
 @keyframes dropIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
@@ -3430,6 +3430,14 @@ function parseExpToInputVal(raw){
   return '';
 }
 
+function _showSbox(box,inputEl){
+  const rect=inputEl.getBoundingClientRect();
+  box.style.top=(rect.bottom+4)+'px';
+  box.style.left=rect.left+'px';
+  box.style.width=rect.width+'px';
+  box.style.maxHeight=Math.min(240,window.innerHeight-rect.bottom-12)+'px';
+  box.style.display='block';
+}
 function searchDrug(val,boxId){
   const box=document.getElementById(boxId);
   if(!val.trim()){box.style.display='none';return;}
@@ -3447,7 +3455,9 @@ function searchDrug(val,boxId){
       <div class="si-sub">${d[0]}${unitInfo?' · '+unitInfo:''}</div>
     </div>`;
   }).join('');
-  box.style.display='block';
+  const inputId=boxId==='sbox-r'?'r-name':'d-name';
+  const inputEl=document.getElementById(inputId);
+  if(inputEl)_showSbox(box,inputEl);else box.style.display='block';
 }
 function pickDrug(name,code,boxId){
   const isD=boxId==='sbox-d',pfx=isD?'d':'r';
@@ -6872,9 +6882,10 @@ function searchDispenseDrug(val){
   if(!show.length){box.style.display='none';return;}
   box.innerHTML=show.map(d=>{
     const qty=d.qty!==null?` <span style="font-size:10px;color:var(--teal);font-weight:700;">(คงเหลือ ${Math.round(d.qty)} ${d.unit})</span>`:'';
-    return `<div class="si" ontouchstart="" onclick='pickDrug("${d.name.replace(/"/g,'\\"')}","${d.code.replace(/"/g,'\\"')}","sbox-d")'><div>${d.name}${qty}</div><div class="si-sub">${d.code}</div></div>`;
+    return `<div class="si" ontouchstart="" onclick='pickDrug("${d.name.replace(/"/g,'\\"')}","${(d.code||'').replace(/"/g,'\\"')}","sbox-d")'><div>${d.name}${qty}</div><div class="si-sub">${d.code||''}</div></div>`;
   }).join('');
-  box.style.display='block';
+  const dEl=document.getElementById('d-name');
+  if(dEl)_showSbox(box,dEl);else box.style.display='block';
 }
 
 // ══ EXPORT INVENTORY TO GOOGLE SHEET ══════════════════════════
