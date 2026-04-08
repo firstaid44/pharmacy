@@ -9,31 +9,23 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* ── Green theme (inspired by modern app UI) ── */
-  --primary:#1C6B45;        /* deep forest green */
-  --primary-d:#145235;      /* darker */
-  --primary-l:#E8F5EE;      /* light tint */
-  --primary-m:#2D8A5A;      /* mid */
-  --accent:#F97316;         /* orange accent */
-  --accent-l:#FFF0E6;
-  --bg:#FFFFFF;             /* white */
+  --bg:#F0F4F8;
   --surface:#FFFFFF;
-  --surface2:#F5F6F7;
-  --border:rgba(0,0,0,.06);
-  --border2:rgba(0,0,0,.11);
-  /* keep existing semantic colors */
+  --surface2:#F7F9FC;
+  --border:rgba(0,0,0,.07);
+  --border2:rgba(0,0,0,.12);
   --blue:#1A5FD4;--blue-d:#1347A8;--blue-l:#EBF2FF;
   --teal:#0B9E72;--teal-l:#E6F7F2;
   --red:#D93025;--red-l:#FDECEA;
   --amber:#C07000;--amber-l:#FFF3DC;
   --purple:#6B3FC4;--purple-l:#F3EEFF;
-  --green:#1C6B45;--green-l:#E8F5EE;
-  --text1:#111827;--text2:#374151;--text3:#6B7280;--text4:#D1D5DB;
-  --sh-xs:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03);
-  --sh-sm:0 2px 8px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.03);
-  --sh-md:0 4px 16px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04);
-  --sh-lg:0 12px 40px rgba(0,0,0,.10),0 4px 12px rgba(0,0,0,.05);
-  --r-sm:10px;--r-md:14px;--r-lg:20px;--r-xl:28px;
+  --green:#1E8A4A;--green-l:#E9F7EF;
+  --text1:#0F1923;--text2:#4A5568;--text3:#94A3B8;--text4:#C4CDD8;
+  --sh-xs:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh-sm:0 2px 8px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);
+  --sh-md:0 4px 16px rgba(0,0,0,.09),0 2px 6px rgba(0,0,0,.04);
+  --sh-lg:0 12px 40px rgba(0,0,0,.12),0 4px 12px rgba(0,0,0,.05);
+  --r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:24px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{
@@ -43,92 +35,119 @@ body{
 }
 body::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:none;
+  background:radial-gradient(ellipse at 15% 0%,rgba(26,95,212,.05) 0%,transparent 55%),
+             radial-gradient(ellipse at 85% 100%,rgba(11,158,114,.05) 0%,transparent 55%);
 }
 .app{max-width:430px;margin:0 auto;padding-bottom:calc(84px + env(safe-area-inset-bottom));position:relative;z-index:1;}
 
 /* ── HEADER ── */
 .header{
-  background:var(--primary);
-  padding:calc(.75rem + env(safe-area-inset-top)) 1rem .85rem;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  padding:calc(.75rem + env(safe-area-inset-top)) 1rem .75rem;
   display:flex;align-items:center;gap:10px;
-  position:sticky;top:0;z-index:200;
-  box-shadow:0 2px 12px rgba(28,107,69,.25);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;
 }
 .logo{
-  width:40px;height:40px;background:rgba(255,255,255,.18);
-  border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  border:1.5px solid rgba(255,255,255,.25);
+  width:38px;height:38px;background:linear-gradient(140deg,#1A5FD4,#0B9E72);
+  border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(26,95,212,.28);
 }
-.logo svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.2;}
+.logo svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;}
 .header-text{flex:1;min-width:0;}
-.app-title{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.app-sub{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px;font-weight:500;}
+.app-title{font-size:13px;font-weight:700;color:var(--text1);letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.app-sub{font-size:10px;color:var(--text3);margin-top:1px;font-weight:400;}
 .conn-chip{
-  display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;
-  background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);
-  font-size:11px;font-weight:700;color:#fff;white-space:nowrap;transition:all .3s;
+  display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;
+  background:var(--surface2);border:1px solid var(--border);
+  font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;transition:all .3s;
   flex-shrink:0;
 }
-.conn-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.5);flex-shrink:0;transition:background .3s;}
-.conn-dot.ok{background:#6EF0A8;box-shadow:0 0 0 2px rgba(110,240,168,.3);}
-.conn-dot.err{background:#FF8080;}
+.conn-dot{border-radius:50%;background:#FFC107;flex-shrink:0;transition:background .3s;}
+.conn-dot.ok{background:var(--teal);box-shadow:0 0 0 3px rgba(11,158,114,.15);}
+.conn-dot.err{background:var(--red);}
 
 /* ── BOTTOM NAV ── */
 .bottom-nav{
-  position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));
-  left:50%;transform:translateX(-50%);
-  width:calc(100% - 32px);max-width:398px;
-  background:var(--primary);
-  border-radius:28px;
-  display:grid;grid-template-columns:repeat(6,1fr);
-  padding:6px;z-index:200;
-  box-shadow:0 8px 32px rgba(28,107,69,.4),0 2px 8px rgba(0,0,0,.15);
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;
+  background:rgba(10,18,28,.96);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border-top:1px solid rgba(255,255,255,.07);
+  display:grid;grid-template-columns:repeat(5,1fr);
+  padding-bottom:env(safe-area-inset-bottom);z-index:200;
+  box-shadow:0 -4px 24px rgba(0,0,0,.35);
 }
-/* fix app padding for floating nav */
-.app{padding-bottom:calc(96px + env(safe-area-inset-bottom));}
 .nav-item{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:8px 4px 6px;cursor:pointer;gap:2px;
+  padding:9px 4px 8px;cursor:pointer;gap:3px;
   -webkit-appearance:none;background:transparent;border:none;
-  color:rgba(255,255,255,.45);position:relative;
-  border-radius:22px;
-  transition:color .18s,background .18s;
+  color:rgba(255,255,255,.32);position:relative;
+  transition:color .2s;
 }
-.nav-item.active{
-  color:#fff;
-  background:rgba(255,255,255,.18);
-}
+.nav-item.active{color:#fff;}
+/* icon wrap — active ได้ bg pill */
 .nav-icon-wrap{
-  width:38px;height:28px;border-radius:12px;
+  width:42px;height:28px;border-radius:14px;
   display:flex;align-items:center;justify-content:center;
-  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+  position:relative;transition:background .22s,transform .22s cubic-bezier(.34,1.56,.64,1);
 }
-.nav-item.active .nav-icon-wrap{transform:translateY(-1px);}
+.nav-item.active .nav-icon-wrap{
+  background:rgba(74,158,255,.18);
+  transform:translateY(-1px);
+}
+.nav-item:nth-child(2).active .nav-icon-wrap{background:rgba(251,113,60,.18);}
+.nav-item:nth-child(3).active .nav-icon-wrap{background:rgba(16,185,129,.18);}
+.nav-item:nth-child(4).active .nav-icon-wrap{background:rgba(168,85,247,.18);}
+.nav-item:nth-child(5).active .nav-icon-wrap{background:rgba(6,199,85,.18);}
 .nav-item svg{
-  width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;
+  width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;
+  transition:filter .2s;
 }
-.nav-item.active svg{stroke:#fff;}
+/* active glow per tab */
+.nav-item.active svg{filter:drop-shadow(0 0 5px rgba(74,158,255,.7));}
+.nav-item:nth-child(2).active svg{filter:drop-shadow(0 0 5px rgba(251,113,60,.8));}
+.nav-item:nth-child(3).active svg{filter:drop-shadow(0 0 5px rgba(16,185,129,.7));}
+.nav-item:nth-child(4).active svg{filter:drop-shadow(0 0 5px rgba(168,85,247,.7));}
+.nav-item:nth-child(5).active svg{filter:drop-shadow(0 0 5px rgba(6,199,85,.8));}
+/* active label color per tab */
+.nav-item.active .nav-label{color:#4A9EFF;}
+.nav-item:nth-child(2).active .nav-label{color:#FB713C;}
+.nav-item:nth-child(3).active .nav-label{color:#10B981;}
+.nav-item:nth-child(4).active .nav-label{color:#A855F7;}
+.nav-item:nth-child(5).active .nav-label{color:#06C755;}
 .nav-label{
-  font-size:8.5px;font-weight:700;letter-spacing:.1px;
-  color:inherit;white-space:nowrap;
+  font-size:9px;font-weight:700;letter-spacing:.2px;
+  color:rgba(255,255,255,.32);transition:color .2s;
+  white-space:nowrap;
 }
-.nav-pill{display:none;}
+/* pill indicator */
+.nav-pill{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:0;height:2.5px;border-radius:0 0 3px 3px;
+  transition:width .28s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-item.active .nav-pill{width:28px;}
+.nav-item:nth-child(1).active .nav-pill{background:#4A9EFF;}
+.nav-item:nth-child(2).active .nav-pill{background:#FB713C;}
+.nav-item:nth-child(3).active .nav-pill{background:#10B981;}
+.nav-item:nth-child(4).active .nav-pill{background:#A855F7;}
+.nav-item:nth-child(5).active .nav-pill{background:#06C755;}
 .nav-badge{
-  background:#FF6B6B;color:#fff;border-radius:10px;
+  background:var(--red);color:#fff;border-radius:10px;
   font-size:9px;font-weight:700;padding:1px 5px;min-width:16px;text-align:center;
-  position:absolute;top:2px;right:calc(50% - 22px);
-  border:1.5px solid var(--primary);
+  position:absolute;top:4px;right:calc(50% - 24px);
+  border:1.5px solid rgba(10,18,28,.96);
 }
 .nav-line-badge{
-  position:absolute;top:2px;right:calc(50% - 22px);
-  width:7px;height:7px;border-radius:50%;background:#6EF0A8;
-  border:1.5px solid var(--primary);display:none;
+  position:absolute;top:4px;right:calc(50% - 24px);
+  width:8px;height:8px;border-radius:50%;background:#06C755;
+  border:1.5px solid rgba(10,18,28,.96);display:none;
+  box-shadow:0 0 0 2px rgba(6,199,85,.3);
 }
 
 /* ── PAGES ── */
 .page{display:none;padding:1rem;}
-.page.active{display:block;animation:pageIn .25s cubic-bezier(.34,1.1,.64,1);}
+.page.active{display:block;animation:pageIn .22s ease;}
 @keyframes pageIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
 /* ── ALERT ── */
@@ -148,29 +167,29 @@ body::before{
 
 /* ── CARDS ── */
 .card{
-  background:var(--surface);border-radius:var(--r-xl);
-  border:1.5px solid var(--border);overflow:hidden;
-  margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03);
+  background:var(--surface);border-radius:var(--r-lg);
+  border:1px solid var(--border);overflow:hidden;
+  margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);
 }
 .card-body{padding:1rem 1rem .875rem;}
 
 /* ── STATS ── */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
 .stat-card{
-  background:var(--surface);border-radius:var(--r-xl);
-  padding:16px 14px 14px;border:1.5px solid var(--border);
+  background:var(--surface);border-radius:var(--r-lg);
+  padding:16px 14px 14px;border:1px solid var(--border);
   box-shadow:var(--sh-sm);position:relative;overflow:hidden;
   transition:transform .12s,box-shadow .12s;
 }
 .stat-card:active{transform:scale(.97);}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--ac,var(--primary));border-radius:var(--r-xl) var(--r-xl) 0 0;}
-.stat-card.c-blue{--ac:var(--primary);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--ac,var(--blue));border-radius:var(--r-lg) var(--r-lg) 0 0;}
+.stat-card.c-blue{--ac:var(--blue);}
 .stat-card.c-teal{--ac:var(--teal);}
-.stat-card.c-amber{--ac:var(--accent);}
+.stat-card.c-amber{--ac:#E29000;}
 .stat-card.c-red{--ac:var(--red);}
 .stat-label{font-size:10px;color:var(--text3);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
 .stat-value{font-size:32px;font-weight:700;color:var(--text1);letter-spacing:-1.5px;line-height:1;font-family:'IBM Plex Mono',monospace;}
-.sv-blue{color:var(--primary);}.sv-teal{color:var(--teal);}.sv-amber{color:var(--amber);}.sv-red{color:var(--red);}
+.sv-blue{color:var(--blue);}.sv-teal{color:var(--teal);}.sv-amber{color:var(--amber);}.sv-red{color:var(--red);}
 
 /* ── SECTION ── */
 .section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
@@ -180,7 +199,7 @@ body::before{
 .date-filter-input{
   font-size:13px;padding:5px 9px;
   border:1.5px solid #c5d3e8;border-radius:8px;
-  color:var(--blue);background:#F5F8FF;
+  color:var(--blue);background:#f0f6ff;
   cursor:pointer;outline:none;
   font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
   transition:border-color .15s,box-shadow .15s;
@@ -194,12 +213,12 @@ body::before{
   transition:all .15s;-webkit-appearance:none;
 }
 .date-filter-clear:active{opacity:.7;}
-.section-title{font-size:16px;font-weight:800;color:var(--text1);}
+.section-title{font-size:15px;font-weight:700;color:var(--text1);}
 .section-action{
-  font-size:12px;color:var(--primary);cursor:pointer;
+  font-size:12px;color:var(--blue);cursor:pointer;
   padding:5px 12px;border-radius:20px;
-  border:1px solid rgba(28,107,69,.2);background:var(--primary-l);
-  -webkit-appearance:none;font-weight:700;transition:all .15s;font-family:inherit;
+  border:1px solid rgba(26,95,212,.2);background:var(--blue-l);
+  -webkit-appearance:none;font-weight:600;transition:all .15s;font-family:inherit;
 }
 .section-action:active{opacity:.7;}
 
@@ -216,8 +235,7 @@ body::before{
   transition:border-color .18s,box-shadow .18s;min-height:48px;
   box-shadow:0 1px 2px rgba(0,0,0,.04);
 }
-.form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(28,107,69,.1),0 1px 2px rgba(0,0,0,.04);}
-.form-input{border-radius:var(--r-md);}
+.form-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,95,212,.1),0 1px 2px rgba(0,0,0,.04);}
 .form-input[readonly]{background:var(--surface2);color:var(--text3);box-shadow:none;}
 input[type="date"].form-input{min-height:48px;line-height:1.2;}
 select.form-input{
@@ -230,22 +248,22 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .input-with-scan .form-input{flex:1;}
 .scan-btn{
   padding:0 16px;border-radius:var(--r-md);min-height:48px;
-  border:1.5px solid rgba(28,107,69,.2);background:var(--primary-l);
+  border:1.5px solid rgba(26,95,212,.2);background:linear-gradient(135deg,var(--blue-l),#d6e8ff);
   cursor:pointer;display:flex;align-items:center;gap:6px;
-  font-size:12px;font-weight:700;color:var(--primary);
+  font-size:12px;font-weight:700;color:var(--blue);
   -webkit-appearance:none;white-space:nowrap;flex-shrink:0;transition:all .15s;
-  font-family:inherit;box-shadow:0 1px 3px rgba(28,107,69,.1);
+  font-family:inherit;box-shadow:0 1px 3px rgba(26,95,212,.12);
 }
-.scan-btn svg{width:15px;height:15px;stroke:var(--primary);fill:none;stroke-width:2;}
+.scan-btn svg{width:15px;height:15px;stroke:var(--blue);fill:none;stroke-width:2;}
 .scan-btn:active{transform:scale(.97);opacity:.85;}
 
 /* ── SUGGEST ── */
 .suggest-wrap{position:relative;}
 .sbox{
-  position:fixed;z-index:9999;
+  position:absolute;top:100%;left:0;right:0;z-index:300;
   background:var(--surface);border:1px solid var(--border2);
   border-radius:var(--r-lg);max-height:240px;overflow-y:auto;
-  display:none;-webkit-overflow-scrolling:touch;
+  display:none;margin-top:5px;-webkit-overflow-scrolling:touch;
   box-shadow:var(--sh-lg);animation:dropIn .15s ease;
 }
 @keyframes dropIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
@@ -265,12 +283,12 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 }
 .btn:active{transform:scale(.97);opacity:.8;}
 .btn-primary{
-  flex:2;background:linear-gradient(150deg,#2D8A5A,var(--primary) 60%,var(--primary-d));
+  flex:2;background:linear-gradient(150deg,#2D78F5,#1A5FD4 60%,#1347A8);
   color:#fff;border-color:transparent;
-  box-shadow:0 4px 16px rgba(28,107,69,.3);
-  letter-spacing:.2px;border-radius:var(--r-md);
+  box-shadow:0 4px 16px rgba(26,95,212,.35);
+  letter-spacing:.2px;
 }
-.btn-primary:active{box-shadow:0 2px 8px rgba(28,107,69,.15);transform:scale(.97);}
+.btn-primary:active{box-shadow:0 2px 8px rgba(26,95,212,.2);transform:scale(.97);}
 .btn:disabled{opacity:.4;}
 
 /* ── LOG ── */
@@ -280,8 +298,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .log-name{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:5px;line-height:1.35;padding-right:128px;}
 .log-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px;}
 .pill{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
-.pill-gray{background:#F0F1F3;color:#64748B;}
-.pill-blue{background:var(--primary-l);color:var(--primary);}
+.pill-gray{background:#F0F2F5;color:#64748B;}
+.pill-blue{background:var(--blue-l);color:var(--blue);}
 .pill-amber{background:var(--amber-l);color:var(--amber);}
 .pill-green{background:var(--green-l);color:var(--green);}
 .pill-red{background:var(--red-l);color:var(--red);}
@@ -291,8 +309,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .log-note{font-size:12px;color:var(--text3);margin-top:3px;}
 .edit-btn{
   position:absolute;top:14px;right:74px;padding:5px 11px;border-radius:8px;
-  border:1px solid rgba(28,107,69,.2);background:var(--primary-l);
-  font-size:12px;color:var(--primary);cursor:pointer;font-weight:700;font-family:inherit;
+  border:1px solid rgba(26,95,212,.2);background:var(--blue-l);
+  font-size:12px;color:var(--blue);cursor:pointer;font-weight:700;font-family:inherit;
 }
 .del-btn{
   position:absolute;top:14px;right:14px;padding:5px 10px;border-radius:8px;
@@ -326,7 +344,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   border-bottom:1px solid var(--border);text-align:left;background:var(--surface2);
   cursor:pointer;user-select:none;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px;
 }
-.sum-table th:hover{background:#EDEEF0;}
+.sum-table th:hover{background:#EDF2F7;}
 .sum-table th.sort-asc::after{content:' ↑';color:var(--blue);}
 .sum-table th.sort-desc::after{content:' ↓';color:var(--blue);}
 .sum-table td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
@@ -345,7 +363,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   background:var(--surface2);font-size:12px;font-weight:700;color:var(--text2);
   cursor:pointer;-webkit-appearance:none;transition:all .15s;font-family:inherit;
 }
-.exp-range-btn.active{background:var(--primary-l);color:var(--primary);border-color:rgba(28,107,69,.3);font-weight:700;}
+.exp-range-btn.active{background:var(--red-l);color:var(--red);border-color:rgba(217,48,37,.3);}
 
 /* ── GROUP LIST ── */
 .group-hd{padding:9px 14px;font-size:10px;font-weight:800;color:#fff;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
@@ -355,7 +373,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 }
 .group-drug-item:last-child{border-bottom:none;}
 .group-drug-item:hover{background:var(--surface2);}
-.group-drug-item:active{background:#EDEEF0;}
+.group-drug-item:active{background:#EDF2F7;}
 .group-drug-num{font-size:11px;font-weight:700;color:var(--text4);min-width:24px;font-family:'IBM Plex Mono',monospace;}
 .group-drug-name{font-size:14px;font-weight:700;color:var(--text1);flex:1;line-height:1.35;}
 .group-drug-exp{font-size:11px;color:var(--text3);margin-top:3px;font-family:'IBM Plex Mono',monospace;letter-spacing:.2px;}
@@ -649,41 +667,30 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   position:fixed;inset:0;z-index:1000;overflow:hidden;
   display:flex;flex-direction:column;align-items:center;
   font-family:'IBM Plex Sans Thai',-apple-system,sans-serif;
-  background:linear-gradient(160deg,#0B1120 0%,#0D1B2A 40%,#091822 100%);
+  background:#060D18;
 }
 #login-screen.hidden{display:none;}
 
-/* soft glow bg */
+/* animated mesh background */
 #login-screen::before{
   content:'';position:absolute;inset:0;pointer-events:none;
   background:
-    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(26,95,212,.4) 0%,transparent 60%),
-    radial-gradient(ellipse 60% 50% at 10% 100%, rgba(11,158,114,.25) 0%,transparent 55%),
-    radial-gradient(ellipse 50% 40% at 90% 80%, rgba(168,85,246,.18) 0%,transparent 50%);
-  animation:bgPulse 10s ease-in-out infinite alternate;
+    radial-gradient(ellipse 120% 70% at 50% -30%, rgba(26,95,212,.55) 0%,transparent 55%),
+    radial-gradient(ellipse 70% 50% at -20% 80%, rgba(11,158,114,.3) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 110% 60%, rgba(107,63,196,.2) 0%,transparent 50%);
+  animation:bgPulse 8s ease-in-out infinite alternate;
 }
-@keyframes bgPulse{from{opacity:.75}to{opacity:1}}
-/* subtle dots pattern */
+@keyframes bgPulse{
+  0%{opacity:.8;}
+  100%{opacity:1;}
+}
+/* grid lines overlay */
 #login-screen::after{
   content:'';position:absolute;inset:0;pointer-events:none;
-  background-image:radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px);
-  background-size:28px 28px;
-}
-
-/* ซ่อน bg decoration ใน PIN step */
-#login-screen.pin-mode::before{opacity:0;}
-#login-screen.pin-mode .ls-bubble{display:none!important;}
-.ls-bubble{
-  position:absolute;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.15),transparent);
-  border:1px solid rgba(255,255,255,.06);
-  animation:floatUp linear infinite;
-}
-@keyframes floatUp{
-  0%{transform:translateY(0) scale(1);opacity:0;}
-  15%{opacity:1;}
-  85%{opacity:.5;}
-  100%{transform:translateY(-100vh) scale(.6);opacity:0;}
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:40px 40px;
 }
 
 /* ── STEP CONTAINER ── */
@@ -697,18 +704,16 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 #step-user{
   width:100%;max-width:420px;
   flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-start;
-  padding:calc(env(safe-area-inset-top)+1.2rem) 1.25rem calc(env(safe-area-inset-bottom)+1.5rem);
+  align-items:center;justify-content:center;
+  padding:calc(env(safe-area-inset-top)+1rem) 1.5rem calc(env(safe-area-inset-bottom)+1.5rem);
   overflow-y:auto;-webkit-overflow-scrolling:touch;
   animation:stepIn .35s cubic-bezier(.34,1.2,.64,1);
-  gap:0;
 }
 /* ── STEP 2: PIN ── */
 #step-pin{
   position:absolute;inset:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:1rem 1.5rem calc(env(safe-area-inset-bottom)+1.5rem);
-  max-width:360px;margin:0 auto;
   animation:stepIn .35s cubic-bezier(.34,1.2,.64,1);
 }
 @keyframes stepIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
@@ -716,47 +721,26 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 /* ── CENTER LOGO BLOCK ── */
 .ls-center-logo{
   display:flex;flex-direction:column;align-items:center;
-  margin-bottom:1.2rem;
-  animation:logoPop .6s cubic-bezier(.34,1.6,.64,1) both;
+  margin-bottom:2rem;
+  animation:logoPop .55s cubic-bezier(.34,1.6,.64,1) both;
 }
-@keyframes logoPop{from{opacity:0;transform:scale(.7) translateY(-20px)}to{opacity:1;transform:none}}
+@keyframes logoPop{from{opacity:0;transform:scale(.7) translateY(-16px)}to{opacity:1;transform:none}}
 
+/* pill logo SVG wrapper */
 .ls-pill-logo{
-  width:100px;height:100px;
-  margin-bottom:.8rem;
-  filter:drop-shadow(0 8px 30px rgba(26,95,212,.55));
+  width:120px;height:120px;
+  margin-bottom:1.1rem;
+  filter:drop-shadow(0 8px 24px rgba(26,95,212,.45));
 }
 
 .ls-title{
-  font-size:22px;font-weight:800;color:#fff;
-  letter-spacing:-.5px;line-height:1.2;text-align:center;
+  font-size:20px;font-weight:800;color:#fff;
+  letter-spacing:-.4px;line-height:1.25;text-align:center;
 }
 .ls-sub{
-  font-size:12px;color:rgba(255,255,255,.45);
-  font-weight:500;margin-top:3px;text-align:center;
-  letter-spacing:.5px;
+  font-size:13px;color:rgba(255,255,255,.5);
+  font-weight:500;margin-top:4px;text-align:center;
 }
-
-/* ── INFO CARDS ROW ── */
-.ls-info-row{
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-  gap:8px;width:100%;margin-bottom:1.25rem;
-  animation:infoIn .5s cubic-bezier(.34,1.2,.64,1) .15s both;
-}
-@keyframes infoIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.ls-info-card{
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;padding:11px 8px;
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  text-align:center;
-  backdrop-filter:blur(10px);
-  transition:background .15s;
-}
-.ls-info-card:active{background:rgba(255,255,255,.1);}
-.ls-info-icon{font-size:18px;line-height:1;}
-.ls-info-val{font-size:18px;font-weight:800;color:#fff;font-family:'IBM Plex Mono',monospace;line-height:1;}
-.ls-info-lbl{font-size:9.5px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.6px;line-height:1.2;}
 
 /* ── DROPDOWN USER SELECT ── */
 .ls-select-wrap{
@@ -875,84 +859,84 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 
 /* ── PIN SCREEN ── */
 .pin-back-row{
-  width:100%;display:flex;align-items:center;margin-bottom:1rem;
+  width:100%;display:flex;align-items:center;margin-bottom:1.75rem;
 }
 .pin-back-btn{
   display:flex;align-items:center;gap:6px;
   background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
-  border-radius:10px;padding:6px 12px;
-  color:rgba(255,255,255,.7);cursor:pointer;font-size:12px;font-weight:600;
+  border-radius:10px;padding:7px 13px;
+  color:rgba(255,255,255,.7);cursor:pointer;font-size:13px;font-weight:600;
   font-family:inherit;transition:all .15s;
 }
 .pin-back-btn:active{background:rgba(255,255,255,.14);}
 
 .pin-avatar-wrap{
-  width:52px;height:52px;border-radius:16px;
-  background:linear-gradient(135deg,var(--primary),var(--teal));
+  width:72px;height:72px;border-radius:22px;
+  background:linear-gradient(135deg,#1A5FD4,#0B9E72);
   display:flex;align-items:center;justify-content:center;
-  font-size:22px;font-weight:700;color:#fff;
-  box-shadow:0 6px 20px rgba(28,107,69,.4),0 0 0 1px rgba(255,255,255,.1);
-  margin-bottom:.65rem;
+  font-size:28px;font-weight:700;color:#fff;
+  box-shadow:0 8px 32px rgba(26,95,212,.4),0 0 0 1px rgba(255,255,255,.1);
+  margin-bottom:1rem;
   animation:avatarIn .4s cubic-bezier(.34,1.6,.64,1);
 }
 @keyframes avatarIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
 .pin-name{
-  font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px;
-  text-align:center;margin-bottom:2px;
+  font-size:20px;font-weight:700;color:#fff;letter-spacing:-.4px;
+  text-align:center;margin-bottom:4px;
 }
 .pin-hint{
-  font-size:11px;color:rgba(255,255,255,.4);text-align:center;
-  margin-bottom:1.1rem;font-weight:500;
+  font-size:12px;color:rgba(255,255,255,.4);text-align:center;
+  margin-bottom:2rem;font-weight:500;
 }
 .pin-hint strong{color:rgba(255,255,255,.7);font-weight:700;}
 
 /* PIN dots */
 .pin-dots{
-  display:flex;justify-content:center;gap:14px;margin-bottom:1.25rem;
+  display:flex;justify-content:center;gap:16px;margin-bottom:2rem;
 }
 .pin-dot{
-  width:13px;height:13px;border-radius:50%;
+  width:16px;height:16px;border-radius:50%;
   border:2px solid rgba(255,255,255,.18);background:transparent;
   transition:all .2s cubic-bezier(.34,1.4,.64,1);
 }
 .pin-dot.filled{
   background:#4A9EFF;border-color:#4A9EFF;
-  box-shadow:0 0 10px rgba(74,158,255,.7);
+  box-shadow:0 0 16px rgba(74,158,255,.7);
   transform:scale(1.15);
 }
 .pin-dot.error{
   background:#FF4444;border-color:#FF4444;
-  box-shadow:0 0 10px rgba(255,68,68,.6);
+  box-shadow:0 0 16px rgba(255,68,68,.6);
   animation:shake .4s ease;
 }
-@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 
 /* Numpad */
 .numpad{
-  display:grid;grid-template-columns:repeat(3,64px);
-  gap:8px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;width:100%;max-width:290px;
 }
 .num-btn{
-  width:64px;height:64px;border-radius:50%;
+  aspect-ratio:1;border-radius:50%;
   border:1.5px solid rgba(255,255,255,.1);
   background:rgba(255,255,255,.07);
-  color:#fff;font-size:16px;font-weight:600;
+  color:#fff;font-size:22px;font-weight:600;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   font-family:'IBM Plex Mono',monospace;
   -webkit-appearance:none;transition:all .12s;
-  box-shadow:0 2px 6px rgba(0,0,0,.25);
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
 }
 .num-btn:active{
   background:rgba(74,158,255,.3);
   border-color:rgba(74,158,255,.6);
   transform:scale(.88);
-  box-shadow:0 0 14px rgba(74,158,255,.4);
+  box-shadow:0 0 20px rgba(74,158,255,.4);
 }
-.num-btn.del{font-size:17px;color:rgba(255,255,255,.5);}
+.num-btn.del{font-size:20px;color:rgba(255,255,255,.5);}
 .num-btn.empty{visibility:hidden;}
 .login-err{
-  font-size:12px;color:#FF7070;text-align:center;
-  font-weight:700;min-height:20px;margin-top:10px;
+  font-size:13px;color:#FF7070;text-align:center;
+  font-weight:700;min-height:22px;margin-top:16px;
   letter-spacing:.2px;
 }
 
@@ -1239,575 +1223,91 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
 .user-row-name{font-size:14px;font-weight:700;color:var(--text1);flex:1;}
 .user-row-role{font-size:11px;color:var(--text3);margin-top:1px;}
 .reset-pin-btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(192,112,0,.2);background:var(--amber-l);font-size:12px;color:var(--amber);cursor:pointer;font-weight:700;font-family:inherit;}
-
-/* ══ ANALYTICS DASHBOARD (scoped) ══════════════════════════ */
-.an-wrap{
-  all:initial;display:block;font-family:'IBM Plex Sans Thai',sans-serif;
-  --bg:#07101f;--bg2:#0c1628;--bg3:#111e38;--bg4:#162240;
-  --bdr:rgba(61,214,245,.1);--bdr2:rgba(61,214,245,.2);--bdr3:rgba(61,214,245,.35);
-  --ac:#3dd6f5;--a2:#7c6aff;--a3:#f97316;
-  --gr:#34d399;--rd:#f87171;--yl:#fbbf24;--pk:#f472b6;
-  --tx:#ddeeff;--tx2:#9dbbd8;--tx3:#5578a0;
-  --fn:'IBM Plex Sans Thai',sans-serif;--mo:'IBM Plex Mono',monospace;
-  --r:5px;
-  color:var(--tx);
-}
-
-/* LAYOUT */
-.shell{display:grid;grid-template-columns:230px 1fr;grid-template-rows:58px 1fr;min-height:100vh;position:relative;z-index:1}
-
-/* TOPBAR */
-.topbar{grid-column:1/-1;display:flex;align-items:center;gap:.9rem;padding:0 1.4rem;
-  background:rgba(7,16,31,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);
-  position:sticky;top:0;z-index:200;height:58px}
-.logo{display:flex;align-items:center;gap:.6rem;flex-shrink:0}
-.logo-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--ac);
-  display:flex;align-items:center;justify-content:center}
-.logo-dot::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--ac);
-  box-shadow:0 0 10px var(--ac);animation:glow 2s infinite alternate}
-@keyframes glow{from{opacity:.5;box-shadow:0 0 6px var(--ac)}to{box-shadow:0 0 16px var(--ac)}}
-.logo h1{font-size:.95rem;font-weight:700;letter-spacing:.03em}
-.logo p{font-size:.72rem;color:var(--tx3);font-family:var(--mo)}
-.topbar-info{flex:1;display:flex;align-items:center;gap:.75rem;min-width:0}
-.api-badge{font-size:.72rem;font-family:var(--mo);padding:.2rem .55rem;border-radius:3px;
-  background:rgba(61,214,245,.1);border:1px solid rgba(61,214,245,.25);color:var(--ac);
-  white-space:nowrap;flex-shrink:0}
-.api-url-text{font-size:.72rem;font-family:var(--mo);color:var(--tx3);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.topbar-btns{display:flex;gap:.45rem}
-.btn{padding:.4rem .95rem;border-radius:var(--r);border:1px solid var(--bdr2);background:transparent;
-  color:var(--tx2);font-family:var(--fn);font-size:.85rem;cursor:pointer;transition:all .18s;white-space:nowrap}
-.btn:hover{border-color:var(--ac);color:var(--ac)}
-.btn-p{background:var(--ac);border-color:var(--ac);color:#000;font-weight:700}
-.btn-p:hover{background:#6ee7fa}
-.btn:disabled{opacity:.3;pointer-events:none}
-#pill{font-size:.75rem;font-family:var(--mo);padding:.22rem .6rem;border-radius:20px;
-  border:1px solid var(--bdr2);color:var(--tx3)}
-#pill.loading{color:var(--yl);border-color:rgba(251,191,36,.3);animation:blink .8s infinite}
-#pill.ok{color:var(--gr);border-color:rgba(52,211,153,.3)}
-#pill.error{color:var(--rd);border-color:rgba(248,113,113,.3)}
-@keyframes blink{50%{opacity:.35}}
-
-/* SIDEBAR */
-.sidebar{background:var(--bg2);border-right:1px solid var(--bdr);padding:.85rem .7rem;
-  display:flex;flex-direction:column;gap:.25rem;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto}
-.nl{font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.13em;
-  padding:.55rem .65rem .25rem;margin-top:.5rem}
-.ni{display:flex;align-items:center;gap:.55rem;padding:.58rem .72rem;border-radius:var(--r);
-  cursor:pointer;transition:all .15s;color:var(--tx2);font-size:.9rem;border:1px solid transparent;user-select:none}
-.ni:hover{background:var(--bg3);color:var(--tx)}
-.ni.active{background:rgba(61,214,245,.1);border-color:var(--bdr2);color:var(--ac);font-weight:600}
-.ni-ic{font-size:1rem;width:18px;text-align:center;flex-shrink:0}
-.nbadge{margin-left:auto;font-size:.68rem;background:var(--bg4);border:1px solid var(--bdr);
-  color:var(--tx3);padding:.1rem .38rem;border-radius:20px;font-family:var(--mo)}
-.nbadge.hot{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.3);color:var(--rd)}
-
-/* CONTENT */
-.content{padding:1.4rem;overflow-y:auto;height:calc(100vh - 58px)}
-.page{display:none}.page.active{display:block;animation:fU .3s ease}
-@keyframes fU{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* EMPTY / LOADER */
-.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:58vh;color:var(--tx3);gap:.9rem;text-align:center}
-.empty-ic{font-size:3.5rem;opacity:.25}
-.empty p{font-size:.95rem}
-.spin-wrap{display:flex;flex-direction:column;align-items:center;gap:.9rem;padding:5rem}
-.spin{width:32px;height:32px;border:2px solid var(--bdr2);border-top-color:var(--ac);
-  border-radius:50%;animation:sp .65s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-
-/* KPI GRID */
-.kpig{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));
-  gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:var(--r);
-  overflow:hidden;margin-bottom:1.35rem}
-.kpi{background:var(--bg2);padding:1rem 1.1rem;cursor:pointer;transition:background .15s;
-  position:relative;overflow:hidden}
-.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
-  background:transparent;transition:background .25s}
-.kpi:hover::after,.kpi.hl::after{background:var(--ac)}
-.kpi:hover{background:var(--bg3)}
-.kl{font-size:.72rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem}
-.kv{font-size:1.6rem;font-weight:700;font-family:var(--mo);line-height:1;color:var(--ac)}
-.ks{font-size:.7rem;color:var(--tx3);margin-top:.25rem;font-family:var(--mo)}
-
-/* SECTION */
-.sec{display:flex;align-items:center;gap:.55rem;margin:1.3rem 0 .8rem}
-.sec-ln{flex:1;height:1px;background:var(--bdr)}
-.sec-t{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);white-space:nowrap}
-
-/* CARD */
-.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:1.1rem}
-.ct{font-size:.78rem;font-weight:700;color:var(--tx2);text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:.85rem;display:flex;align-items:center;gap:.4rem}
-.ct .ca{color:var(--ac)}
-
-/* GRIDS */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.9rem}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem;margin-bottom:.9rem}
-.g21{display:grid;grid-template-columns:2fr 1fr;gap:.9rem;margin-bottom:.9rem}
-.g12{display:grid;grid-template-columns:1fr 2fr;gap:.9rem;margin-bottom:.9rem}
-.s2{grid-column:span 2}.s3{grid-column:span 3}
-
-/* CHART HEIGHTS */
-.h180 canvas{max-height:180px}
-.h240 canvas{max-height:240px}
-.h300 canvas{max-height:300px}
-.h340 canvas{max-height:340px}
-.h360 canvas{max-height:360px}
-
-/* TABLE */
-.tw{overflow:auto}
-.tw.mh400{max-height:400px}
-.tw.mh480{max-height:480px}
-table{width:100%;border-collapse:collapse;font-size:.85rem}
-thead th{background:var(--bg3);color:var(--tx2);padding:.52rem .8rem;text-align:left;
-  border-bottom:1px solid var(--bdr2);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
-  position:sticky;top:0;z-index:2;white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
-thead th:hover{color:var(--ac)}
-tbody tr{border-bottom:1px solid var(--bdr);transition:background .12s;cursor:pointer}
-tbody tr:hover{background:var(--bg3)}
-td{padding:.5rem .8rem;color:var(--tx2);font-family:var(--mo);font-size:.82rem;white-space:nowrap}
-td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;max-width:220px}
-
-/* BADGES & TAGS */
-.rb{display:inline-flex;align-items:center;justify-content:center;
-  width:24px;height:24px;border-radius:3px;background:var(--bg3);
-  border:1px solid var(--bdr2);font-size:.72rem;color:var(--tx3)}
-.rb.g{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.35);color:var(--yl)}
-.rb.s{background:rgba(148,163,184,.1);border-color:rgba(148,163,184,.25);color:#94a3b8}
-.rb.b{background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.3);color:var(--a3)}
-.tag{display:inline-block;padding:.15rem .5rem;border-radius:3px;font-size:.72rem;font-weight:600}
-.tag.high{background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:var(--rd)}
-.tag.medium{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:var(--yl)}
-.tag.low{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--gr)}
-.tag.up{background:rgba(248,113,113,.12);color:var(--rd)}
-.tag.down{background:rgba(52,211,153,.1);color:var(--gr)}
-.tag.flat{background:rgba(74,96,128,.15);color:var(--tx3)}
-
-/* BAR ROW */
-.br{display:flex;align-items:center;gap:.45rem}
-.bt{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;min-width:44px}
-.bf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--a2),var(--ac));transition:width .5s}
-.bf.or{background:linear-gradient(90deg,var(--a3),var(--yl))}
-
-/* FILTER BAR */
-.fb{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;
-  background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);
-  padding:.65rem 1rem;margin-bottom:.9rem}
-.fb label{font-size:.72rem;color:var(--tx2);font-family:var(--mo);text-transform:uppercase;letter-spacing:.07em;flex-shrink:0}
-.fi{background:var(--bg2);border:1px solid var(--bdr2);border-radius:3px;
-  padding:.38rem .65rem;color:var(--tx);font-family:var(--mo);font-size:.82rem;outline:none;transition:border-color .18s}
-.fi:focus{border-color:var(--ac)}
-.fi-s{width:76px}.fi-m{width:145px}
-.fi-lg{flex:1;min-width:160px}
-.fi-tag{font-size:.72rem;font-family:var(--mo);padding:.2rem .5rem;border-radius:3px;
-  background:rgba(61,214,245,.08);border:1px solid rgba(61,214,245,.2);color:var(--ac);margin-left:auto}
-
-/* SEARCH */
-.sw{position:relative;margin-bottom:.7rem}
-.sw.inline{margin-bottom:0;flex:1;min-width:160px}
-.si{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:.82rem;pointer-events:none}
-.sn{width:100%;background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--r);
-  padding:.4rem .75rem .4rem 2rem;color:var(--tx);font-family:var(--mo);font-size:.82rem;outline:none;transition:border-color .18s}
-.sn:focus{border-color:var(--ac)}
-
-/* DRILL OVERLAY */
-.dov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;
-  display:none;align-items:center;justify-content:center;padding:1.5rem}
-.dov.open{display:flex}
-.dp{background:var(--bg2);border:1px solid var(--bdr2);border-radius:8px;
-  width:min(940px,100%);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;
-  box-shadow:0 12px 80px rgba(0,0,0,.7),0 0 0 1px rgba(61,214,245,.08)}
-.dh{display:flex;align-items:center;gap:.8rem;padding:1rem 1.25rem;border-bottom:1px solid var(--bdr);flex-shrink:0}
-.dh h2{font-size:1.05rem;font-weight:700;flex:1}
-.dh .ds{font-size:.76rem;color:var(--tx3);font-family:var(--mo)}
-.dc{background:none;border:1px solid var(--bdr2);border-radius:3px;
-  color:var(--tx2);cursor:pointer;font-size:.9rem;padding:.22rem .55rem;transition:all .15s}
-.dc:hover{border-color:var(--rd);color:var(--rd)}
-.db{padding:1.2rem;overflow-y:auto;flex:1}
-.dkpi{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:1rem}
-.dk{background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:.7rem .9rem;flex:1;min-width:110px}
-.dkl{font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.09em}
-.dkv{font-size:1.2rem;font-weight:700;font-family:var(--mo);margin-top:.2rem}
-
-/* MONTH CHIPS */
-.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:.5rem}
-.mc{background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;
-  padding:.58rem .75rem;cursor:pointer;transition:all .18s}
-.mc:hover,.mc.active{border-color:var(--ac);background:rgba(61,214,245,.06)}
-.mcy{font-size:.72rem;color:var(--tx3);font-family:var(--mo)}
-.mcn{font-size:1.2rem;font-weight:700;font-family:var(--mo);color:var(--ac)}
-.mcs{font-size:.7rem;color:var(--tx3);margin-top:.12rem}
-
-/* TOAST */
-.toast{position:fixed;bottom:1.3rem;right:1.3rem;z-index:999;
-  background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--r);
-  padding:.6rem 1rem;font-size:.82rem;color:var(--tx2);font-family:var(--mo);
-  transform:translateY(50px);opacity:0;transition:all .28s;pointer-events:none;max-width:340px}
-.toast.show{transform:translateY(0);opacity:1}
-
-/* SCATTER LEGEND */
-.sl{display:flex;gap:.9rem;margin-top:.55rem;font-size:.72rem;color:var(--tx3);font-family:var(--mo);flex-wrap:wrap}
-.sl-d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:.28rem;vertical-align:middle}
-
-/* EXPORT BTN */
-.xbtn{font-size:.72rem;font-family:var(--mo);padding:.2rem .55rem;border-radius:3px;
-  border:1px solid var(--bdr);background:transparent;color:var(--tx3);cursor:pointer;transition:all .15s;margin-left:auto}
-.xbtn:hover{border-color:var(--gr);color:var(--gr)}
-
-/* RESPONSIVE */
-@media(max-width:900px){
-  .shell{grid-template-columns:1fr}
-  .sidebar{display:none}
-  .g2,.g3,.g21,.g12{grid-template-columns:1fr}
-  .s2,.s3{grid-column:span 1}
-}
-
-/* ── analytics layout ── */
-.an-wrap{display:flex;height:100%;gap:0;background:#07101f;border-radius:16px;overflow:hidden;min-height:80vh;}
-.an-sidebar-panel{width:180px;flex-shrink:0;background:#0c1628;border-right:1px solid rgba(61,214,245,.1);padding:.75rem .5rem;display:flex;flex-direction:column;gap:.2rem;overflow-y:auto;}
-.an-main-panel{flex:1;min-width:0;overflow-y:auto;padding:1rem;background:#07101f;}
-.an-topbar{display:flex;align-items:center;gap:.7rem;padding:.6rem 1rem;background:rgba(7,16,31,.95);border-bottom:1px solid rgba(61,214,245,.1);flex-shrink:0;}
-.an-page{display:none;}.an-page.active{display:block;animation:fU .3s ease;}
 </style>
 </head>
 <body>
 
-  <!-- ══ วิเคราะห์ OPD Dashboard ══════════════════════════════ -->
-  <div class="page" id="page-analytics">
-    <div style="height:.25rem;"></div>
-    <!-- mini topbar ภายใน page -->
-    <div class="an-topbar" style="border-radius:14px 14px 0 0;margin-bottom:0;">
-      <div style="display:flex;align-items:center;gap:.5rem;flex:1;min-width:0;">
-        <div style="width:20px;height:20px;border-radius:50%;border:2px solid #3dd6f5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <div style="width:6px;height:6px;border-radius:50%;background:#3dd6f5;animation:an-glow 2s infinite alternate;"></div>
-        </div>
-        <span style="font-size:13px;font-weight:700;color:#ddeeff;">Drug OPD Analytics</span>
-        <span style="font-size:10px;color:#5578a0;font-family:'IBM Plex Mono',monospace;">PCU สะบ้าย้อย</span>
-      </div>
-      <button class="btn btn-p" id="an-fetchBtn" onclick="fetchAnalyticsData()" style="font-size:11px;padding:.3rem .7rem;">↺ โหลด</button>
-      <span id="an-pill" style="font-size:10px;font-family:'IBM Plex Mono',monospace;padding:.18rem .5rem;border-radius:20px;border:1px solid rgba(61,214,245,.25);color:#5578a0;white-space:nowrap;">รอโหลด…</span>
-    </div>
-    <div class="an-wrap">
-      <!-- sidebar -->
-      <div class="an-sidebar-panel">
-        <div class="nl">Overview</div>
-  <div class="an-ni active" data-page="ov" onclick="goPage('ov',this)"><span class="ni-ic">📊</span>ภาพรวม</div>
-  <div class="an-ni" data-page="tr" onclick="goPage('tr',this)"><span class="ni-ic">📈</span>Trend</div>
-  <div class="nl">ข้อมูล</div>
-  <div class="an-ni" data-page="dr" onclick="goPage('dr',this)"><span class="ni-ic">💊</span>ยาทั้งหมด<span class="nbadge" id="nb-dr">—</span></div>
-  <div class="an-ni" data-page="cl" onclick="goPage('cl',this)"><span class="ni-ic">🏥</span>คลินิก<span class="nbadge" id="nb-cl">—</span></div>
-  <div class="an-ni" data-page="mo" onclick="goPage('mo',this)"><span class="ni-ic">📅</span>รายเดือน<span class="nbadge" id="nb-mo">—</span></div>
-  <div class="nl">วิเคราะห์</div>
-  <div class="an-ni" data-page="fc" onclick="goPage('fc',this)"><span class="ni-ic">🔮</span>Forecast<span class="nbadge hot" id="nb-fc">—</span></div>
-  <div class="an-ni" data-page="ur" onclick="goPage('ur',this)"><span class="ni-ic">⚡</span>Usage Rate</div>
-      </div>
-      <!-- main content -->
-      <div class="an-main-panel">
-        <!-- OV -->
-<div class="an-page active" id="an-page-ov">
-  <div class="empty" id="ov-empty">
-    <div class="spin" style="width:40px;height:40px;border-width:3px"></div>
-    <p style="font-size:.85rem;color:var(--tx3)">กำลังโหลดข้อมูลจาก Google Sheets…</p>
-  </div>
-  <div id="ov-data" style="display:none">
-    <div class="kpig" id="ov-kpi"></div>
-    <div class="g21">
-      <div class="card"><div class="ct">รายการจ่ายยา + ผู้ป่วย <span class="ca">(รายวัน · คลิกแถบ)</span>
-        <button class="xbtn" onclick="xChart('dailyTrend')">⬇PNG</button></div>
-        <div class="h300"><canvas id="dailyTrend"></canvas></div></div>
-      <div class="card"><div class="ct">Top 8 ยา <span class="ca">(คลิกชิ้น)</span></div>
-        <div class="h300"><canvas id="topPie"></canvas></div></div>
-    </div>
-    <div class="g3">
-      <div class="card"><div class="ct">มูลค่า/วัน</div><div class="h180"><canvas id="costLine"></canvas></div></div>
-      <div class="card"><div class="ct">รายเดือน <span class="ca">(คลิก)</span></div><div class="h180"><canvas id="mBar"></canvas></div></div>
-      <div class="card"><div class="ct">คลินิก</div><div class="h180"><canvas id="clBar"></canvas></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- TREND -->
-<div class="an-page" id="an-page-tr">
-  <div class="fb">
-    <label>แกรนูล</label>
-    <select class="fi" id="tGran" onchange="renderTr()"><option value="daily">รายวัน</option><option value="monthly" selected>รายเดือน</option></select>
-    <label>Metric</label>
-    <select class="fi" id="tMet" onchange="renderTr()">
-      <option value="count">รายการ</option><option value="patients">ผู้ป่วย</option>
-      <option value="qty">ปริมาณ</option><option value="cost">มูลค่า</option>
-    </select>
-    <label>Type</label>
-    <select class="fi" id="tType" onchange="renderTr()">
-      <option value="bar">Bar</option><option value="line">Line</option><option value="area">Area</option>
-    </select>
-    <span class="fi-tag" id="tInfo">—</span>
-  </div>
-  <div class="card" style="margin-bottom:.9rem">
-    <div class="ct" id="tTitle">Trend</div><div class="h340"><canvas id="tMain"></canvas></div>
-  </div>
-  <div class="g2">
-    <div class="card"><div class="ct">MoM % เปลี่ยนแปลง</div><div class="h240"><canvas id="momC"></canvas></div></div>
-    <div class="card"><div class="ct">ผู้ป่วย vs มูลค่า <span class="ca">(Scatter)</span></div><div class="h240"><canvas id="pvC"></canvas></div></div>
-  </div>
-</div>
-
-<!-- DRUGS -->
-<div class="an-page" id="an-page-dr">
-  <div class="fb">
-    <div class="sw inline"><span class="si">🔍</span><input class="sn" id="drSearch" placeholder="ค้นหายา…" oninput="renderDr()"></div>
-    <label>เรียงตาม</label>
-    <select class="fi fi-m" id="drSort" onchange="renderDr()">
-      <option value="qty">ปริมาณรวม</option><option value="avg">เฉลี่ย/เดือน</option><option value="name">ชื่อ A-Z</option>
-    </select>
-    <span class="fi-tag" id="drCount">—</span>
-  </div>
-  <div class="card">
-    <div class="ct">รายการยาทั้งหมด <span class="ca">(คลิกแถวเพื่อ Drill-down)</span></div>
-    <div class="tw mh480">
-      <table><thead><tr>
-        <th>#</th><th onclick="sDr('name')">ชื่อยา / หน่วย</th>
-        <th onclick="sDr('qty')">รวม(หน่วย)</th>
-        <th onclick="sDr('avg')">เฉลี่ย/เดือน<br><span style="font-weight:400;font-size:.62rem">(active)</span></th>
-        <th>เฉลี่ย/เดือน<br><span style="font-weight:400;font-size:.62rem">(รวมทุก mo)</span></th>
-        <th>เฉลี่ย/วัน</th>
-        <th>Availability</th>
-        <th>สัดส่วน</th><th>Trend</th>
-      </tr></thead><tbody id="drTb"></tbody></table>
-    </div>
-  </div>
-</div>
-
-<!-- CLINICS -->
-<div class="an-page" id="an-page-cl">
-  <div class="g21">
-    <div class="card">
-      <div class="ct">คลินิก / แผนก <span class="ca">(คลิกแถว)</span></div>
-      <div class="tw mh480"><table><thead><tr><th>#</th><th>คลินิก</th><th>รายการ</th><th>สัดส่วน</th></tr></thead>
-        <tbody id="clTb"></tbody></table></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:.9rem">
-      <div class="card"><div class="ct">สัดส่วนคลินิก</div><div class="h240"><canvas id="clPie"></canvas></div></div>
-      <div class="card" id="clDetail" style="display:none">
-        <div class="ct" id="clDetailT">รายละเอียด</div>
-        <div id="clDetailB"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MONTHLY -->
-<div class="an-page" id="an-page-mo">
-  <div class="mg" id="moGrid" style="margin-bottom:.9rem"></div>
-  <div class="g2" id="moDetail" style="display:none">
-    <div class="card"><div class="ct" id="moDetailT">Top 10 ยา</div><div class="h300"><canvas id="moBar"></canvas></div></div>
-    <div class="card"><div class="ct">KPI เดือนนี้</div><div class="dkpi" id="moKpi" style="flex-direction:column;gap:.45rem"></div></div>
-  </div>
-</div>
-
-<!-- FORECAST -->
-<div class="an-page" id="an-page-fc">
-  <div class="fb">
-    <label>ขอบฟ้า</label>
-    <select class="fi" id="fcH" onchange="renderFc()"><option value="1">1 mo</option><option value="3" selected>3 mo</option><option value="6">6 mo</option></select>
-    <label>กรอง</label>
-    <select class="fi" id="fcF" onchange="renderFc()">
-      <option value="all">ทั้งหมด</option><option value="high">🔴 High</option>
-      <option value="medium">🟡 Medium</option><option value="low">🟢 Low</option>
-      <option value="up">▲ Trend ขึ้น</option><option value="down">▼ Trend ลง</option>
-    </select>
-    <div class="sw inline"><span class="si">🔍</span><input class="sn" id="fcSearch" placeholder="ค้นหา…" oninput="renderFc()"></div>
-    <label>แสดง</label>
-    <input type="number" class="fi fi-s" id="fcN" value="50" min="5" max="500" onchange="renderFc()">
-    <span class="fi-tag">WMA-3 + LR</span>
-  </div>
-  <div class="kpig" id="fcKpi" style="margin-bottom:.9rem"></div>
-  <div class="g21" style="margin-bottom:.9rem">
-    <div class="card">
-      <div class="ct">แนะนำเบิก Top 20 <span class="ca">(คลิกแถบ)</span>
-        <button class="xbtn" onclick="xChart('fcBar')">⬇PNG</button></div>
-      <div class="h360"><canvas id="fcBar"></canvas></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:.9rem">
-      <div class="card"><div class="ct">Urgency <span class="ca">(คลิกกรอง)</span></div><div class="h180"><canvas id="fcUrgPie"></canvas></div></div>
-      <div class="card"><div class="ct">Trend <span class="ca">(คลิกกรอง)</span></div><div class="h180"><canvas id="fcTrPie"></canvas></div></div>
-    </div>
-  </div>
-  <div class="card" style="margin-bottom:.9rem">
-    <div class="ct">Slope vs Variability <span class="ca">(คลิกจุด = Drill-down)</span></div>
-    <div class="h300"><canvas id="fcScat"></canvas></div>
-    <div class="sl">
-      <span><span class="sl-d" style="background:var(--rd)"></span>High</span>
-      <span><span class="sl-d" style="background:var(--yl)"></span>Medium</span>
-      <span><span class="sl-d" style="background:var(--gr)"></span>Low</span>
-      <span style="margin-left:auto">X = slope %/mo · Y = CV%</span>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ct">ตารางประมาณการ <span class="ca">(คลิกแถว)</span>
-      <button class="xbtn" onclick="xCSV()">⬇CSV</button></div>
-    <div class="tw mh480">
-      <table><thead><tr>
-        <th>#</th><th>ชื่อยา</th>
-        <th onclick="sFC('avg')">เฉลี่ย/mo<br><span style="font-weight:400;font-size:.62rem">(active)</span></th>
-        <th>เฉลี่ย/วัน</th>
-        <th onclick="sFC('slope')">Slope</th>
-        <th onclick="sFC('cv')">CV%</th>
-        <th>Availability</th>
-        <th>Trend</th>
-        <th onclick="sFC('proj')">คาดการณ์</th>
-        <th onclick="sFC('rec')">แนะนำเบิก</th>
-        <th>Buffer</th>
-        <th onclick="sFC('urgency')">Urgency</th>
-      </tr></thead><tbody id="fcTb"></tbody></table>
-    </div>
-    <p style="font-size:.72rem;color:var(--tx3);font-family:var(--mo);margin-top:.55rem;line-height:1.6">
-      WMA-3 (น้ำหนัก 3:2:1) + Linear Regression Slope · Buffer +20% เมื่อ CV>30%, +10% ทั่วไป · High = slope↑ &amp; CV>25%
-    </p>
-  </div>
-</div>
-
-<!-- USAGE RATE -->
-<div class="an-page" id="an-page-ur">
-  <div class="fb">
-    <div class="sw inline"><span class="si">🔍</span><input class="sn" id="urSearch" placeholder="ค้นหา…" oninput="renderUr()"></div>
-    <label>เรียงตาม</label>
-    <select class="fi fi-m" id="urSort" onchange="renderUr()">
-      <option value="daily">เฉลี่ย/วัน</option><option value="avg">เฉลี่ย/เดือน</option>
-      <option value="cv">CV%</option><option value="slope">Slope</option>
-    </select>
-    <span class="fi-tag" id="urCount">—</span>
-  </div>
-  <div class="g21" style="margin-bottom:.9rem">
-    <div class="card"><div class="ct">Usage Rate Top 20 <span class="ca">(หน่วย/วัน · คลิก)</span></div><div class="h360"><canvas id="urBar"></canvas></div></div>
-    <div class="card"><div class="ct">Slope Top 15 <span class="ca">(abs · คลิก)</span></div><div class="h360"><canvas id="urSlope"></canvas></div></div>
-  </div>
-  <div class="card">
-    <div class="ct">Usage Rate ทุกตัว <span class="ca">(คลิกแถว)</span></div>
-    <div class="tw mh480">
-      <table><thead><tr>
-        <th>#</th><th>ชื่อยา / หน่วย</th>
-        <th onclick="sUR('daily')">เฉลี่ย/วัน</th>
-        <th onclick="sUR('avg')">เฉลี่ย/เดือน<br><span style="font-weight:400;font-size:.62rem">(active)</span></th>
-        <th>เฉลี่ย/เดือน<br><span style="font-weight:400;font-size:.62rem">(รวม)</span></th>
-        <th onclick="sUR('slope')">Slope/mo</th>
-        <th onclick="sUR('cv')">CV%</th>
-        <th>Availability</th>
-        <th>Trend</th><th>Sparkline</th>
-      </tr></thead><tbody id="urTb"></tbody></table>
-    </div>
-  </div>
-</div>
-      </div>
-    </div>
-    <!-- drill overlay + toast -->
-    <div class="dov" id="an-dov" onclick="cDrill(event)">
-  <div class="dp">
-    <div class="dh">
-      <div><h2 id="dTitle">—</h2><div class="ds" id="dSub"></div></div>
-      <button class="dc" onclick="cDrill()">✕ ปิด</button>
-    </div>
-    <div class="db">
-      <div class="dkpi" id="dKpi"></div>
-      <div class="g2">
-        <div><div style="font-size:.72rem;color:var(--tx3);margin-bottom:.45rem;font-family:var(--mo);text-transform:uppercase;letter-spacing:.08em">ประวัติรายเดือน</div>
-          <div style="height:190px"><canvas id="dHistC"></canvas></div></div>
-        <div id="dFcastWrap"><div style="font-size:.72rem;color:var(--tx3);margin-bottom:.45rem;font-family:var(--mo);text-transform:uppercase;letter-spacing:.08em">คาดการณ์ 6 เดือน</div>
-          <div style="height:190px"><canvas id="dFcastC"></canvas></div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="an-toast"></div>
-  </div>
-
 <!-- ══ LOGIN SCREEN v3 ══ -->
 <div id="login-screen">
-
-  <!-- Floating bubbles decoration -->
-  <div class="ls-bubble" style="width:180px;height:180px;left:-40px;top:10%;animation-duration:18s;animation-delay:0s;"></div>
-  <div class="ls-bubble" style="width:100px;height:100px;right:-20px;top:30%;animation-duration:14s;animation-delay:3s;"></div>
-  <div class="ls-bubble" style="width:60px;height:60px;left:15%;bottom:20%;animation-duration:10s;animation-delay:6s;"></div>
-
   <div class="ls-steps">
 
     <!-- ── STEP 1: เลือกชื่อ ── -->
     <div id="step-user">
 
-      <!-- Analog Clock -->
+      <!-- Center Logo Block -->
       <div class="ls-center-logo">
-        <div id="ls-clock-wrap" style="position:relative;width:200px;height:200px;margin-bottom:1rem;animation:logoPop .6s cubic-bezier(.34,1.6,.64,1) both;">
-          <!-- SVG clock -->
-          <svg id="ls-clock-svg" viewBox="0 0 200 200" width="200" height="200" style="position:absolute;inset:0;">
-            <defs>
-              <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#A855F7"/>
-                <stop offset="50%" stop-color="#6366F1"/>
-                <stop offset="100%" stop-color="#38BDF8"/>
-              </linearGradient>
-            </defs>
-            <!-- outer circle (track) -->
-            <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="2"/>
-            <!-- arc indicator — drawn by JS -->
-            <circle id="ls-arc" cx="100" cy="100" r="88"
-              fill="none" stroke="url(#arcGrad)" stroke-width="3"
-              stroke-linecap="round" stroke-dasharray="0 553"
-              transform="rotate(-90 100 100)" style="transition:stroke-dasharray .5s ease;"/>
-            <!-- tick marks -->
-            <g id="ls-ticks"></g>
-            <!-- hour hand -->
-            <line id="ls-hour" x1="100" y1="100" x2="100" y2="42"
-              stroke="rgba(255,255,255,.9)" stroke-width="3" stroke-linecap="round"/>
-            <!-- minute hand -->
-            <line id="ls-min" x1="100" y1="100" x2="100" y2="28"
-              stroke="rgba(255,255,255,.75)" stroke-width="2" stroke-linecap="round"/>
-            <!-- second hand -->
-            <line id="ls-sec" x1="100" y1="108" x2="100" y2="24"
-              stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round"/>
-            <!-- center dot -->
-            <circle cx="100" cy="100" r="4" fill="#fff"/>
-            <circle cx="100" cy="100" r="2" fill="#38BDF8"/>
-          </svg>
-        </div>
-        <!-- Digital time below clock -->
-        <div style="text-align:center;animation:infoIn .5s .3s both;">
-          <div id="ls-digital-time" style="font-size:44px;font-weight:300;color:#fff;letter-spacing:-1px;font-family:'IBM Plex Mono',monospace;line-height:1;">
-            <span id="ls-dtime-h">00</span><span style="opacity:.6;animation:blink 1s step-end infinite;">.</span><span id="ls-dtime-m">00</span>
-            <span id="ls-dtime-ampm" style="font-size:16px;font-weight:500;color:rgba(255,255,255,.5);margin-left:4px;vertical-align:middle;letter-spacing:.5px;">AM</span>
-          </div>
-          <div id="ls-date-th" style="font-size:13px;font-weight:400;color:rgba(255,255,255,.45);margin-top:6px;letter-spacing:.3px;"></div>
-        </div>
-      </div>
-      
-      <!-- App name + tagline -->
-      <div style="text-align:center;margin-bottom:1.1rem;animation:infoIn .5s .2s both;">
-        <div class="ls-title" style="font-size:20px;margin-bottom:2px;">ระบบบริหารจัดการคลังยา</div>
+        <!-- Pill Logo SVG (inspired by capsule drug icon) -->
+        <svg class="ls-pill-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Shadow/glow -->
+          <ellipse cx="100" cy="185" rx="55" ry="8" fill="rgba(0,0,0,.25)"/>
+
+          <!-- Capsule left half (amber/gold) -->
+          <path d="M62 80 Q62 48 100 48 L100 132 Q62 132 62 100 Z" fill="#F59E0B"/>
+          <path d="M62 80 Q62 48 100 48 L100 132 Q62 132 62 100 Z" fill="url(#goldGrad)"/>
+          <!-- Capsule right half (red) -->
+          <path d="M138 80 Q138 48 100 48 L100 132 Q138 132 138 100 Z" fill="#EF4444"/>
+          <path d="M138 80 Q138 48 100 48 L100 132 Q138 132 138 100 Z" fill="url(#redGrad)"/>
+          <!-- Capsule divider line -->
+          <line x1="100" y1="48" x2="100" y2="132" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+          <!-- Capsule highlight -->
+          <ellipse cx="83" cy="68" rx="10" ry="6" fill="rgba(255,255,255,.3)" transform="rotate(-20 83 68)"/>
+
+          <!-- Plus signs floating -->
+          <!-- top center red -->
+          <g fill="#EF4444">
+            <rect x="96" y="20" width="8" height="24" rx="4"/>
+            <rect x="88" y="28" width="24" height="8" rx="4"/>
+          </g>
+          <!-- top-left amber -->
+          <g fill="#F59E0B" opacity=".85">
+            <rect x="50" y="44" width="6" height="18" rx="3"/>
+            <rect x="43" y="51" width="20" height="6" rx="3"/>
+          </g>
+          <!-- top-right green -->
+          <g fill="#10B981" opacity=".85">
+            <rect x="144" y="38" width="6" height="18" rx="3"/>
+            <rect x="137" y="45" width="20" height="6" rx="3"/>
+          </g>
+          <!-- small x marks -->
+          <g stroke="#10B981" stroke-width="3" stroke-linecap="round" opacity=".7">
+            <line x1="68" y1="114" x2="76" y2="122"/>
+            <line x1="76" y1="114" x2="68" y2="122"/>
+          </g>
+          <g stroke="#F59E0B" stroke-width="3" stroke-linecap="round" opacity=".7">
+            <line x1="124" y1="50" x2="132" y2="58"/>
+            <line x1="132" y1="50" x2="124" y2="58"/>
+          </g>
+          <g stroke="#EF4444" stroke-width="3" stroke-linecap="round" opacity=".6">
+            <line x1="56" y1="140" x2="64" y2="148"/>
+            <line x1="64" y1="140" x2="56" y2="148"/>
+          </g>
+
+          <!-- Text: DRUG Stock -->
+          <text x="100" y="158" text-anchor="middle" font-family="'IBM Plex Mono', Arial Black, sans-serif"
+            font-size="20" font-weight="900" fill="#1E2D40" letter-spacing="2">DRUG Stock</text>
+          <!-- Text: PCU Sabayou -->
+          <text x="100" y="176" text-anchor="middle" font-family="'IBM Plex Mono', Arial, sans-serif"
+            font-size="11" font-weight="600" fill="#4A5568" letter-spacing="1.5">PCU Sabayou</text>
+
+          <!-- Gradients -->
+          <defs>
+            <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FCD34D"/>
+              <stop offset="100%" stop-color="#D97706"/>
+            </linearGradient>
+            <linearGradient id="redGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#F87171"/>
+              <stop offset="100%" stop-color="#DC2626"/>
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <!-- App name below logo -->
+        <div class="ls-title">ระบบบริหารจัดการคลังยา</div>
         <div class="ls-sub">PCU สะบ้าย้อย</div>
       </div>
 
-      <!-- Info cards row — live stats -->
-      <div class="ls-info-row" id="ls-info-row">
-        <div class="ls-info-card">
-          <div class="ls-info-icon">💊</div>
-          <div class="ls-info-val" id="ls-stat-drugs">—</div>
-          <div class="ls-info-lbl">รายการยา</div>
-        </div>
-        <div class="ls-info-card">
-          <div class="ls-info-icon">📦</div>
-          <div class="ls-info-val" id="ls-stat-recv">—</div>
-          <div class="ls-info-lbl">รับเข้าวันนี้</div>
-        </div>
-        <div class="ls-info-card">
-          <div class="ls-info-icon">⚠️</div>
-          <div class="ls-info-val" id="ls-stat-exp" style="color:#F87171;">—</div>
-          <div class="ls-info-lbl">ใกล้หมดอายุ</div>
-        </div>
-      </div>
-
-      <!-- Dropdown select -->
+      <!-- Dropdown select — wrapper มี z-index สูงให้ dropdown ลอยเหนือทุกอย่าง -->
       <div class="ls-select-wrap">
         <span class="ls-select-label">ผู้ใช้งาน</span>
         <div class="ls-select-box" id="user-grid">
@@ -1822,6 +1322,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
               <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
           </button>
+          <!-- dropdown ลอยออก ไม่กดทับ QR button -->
           <div class="ls-dropdown" id="ls-dropdown"></div>
         </div>
         <button class="ls-confirm-btn" id="ls-confirm-btn" onclick="confirmUserSelect()" type="button">
@@ -1829,9 +1330,11 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
         </button>
       </div>
 
-      <!-- Quick Scan -->
+      <!-- Quick Scan (no login) — อยู่นอก ls-select-wrap เพื่อไม่ถูก dropdown ทับ -->
       <div class="ls-quick-scan-wrap">
-        <div class="ls-divider"><span class="ls-divider-text">หรือเบิกด่วน</span></div>
+        <div class="ls-divider">
+          <span class="ls-divider-text">หรือเบิกด่วน</span>
+        </div>
         <button class="ls-qr-btn" onclick="quickScanDispense()" type="button">
           <span class="ls-qr-btn-pulse"></span>
           <svg viewBox="0 0 24 24">
@@ -1845,10 +1348,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
         </button>
       </div>
 
-      <!-- Version -->
-      <div id="app-version" style="font-size:10px;color:rgba(255,255,255,.18);margin-top:auto;padding-top:.75rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;"></div>
-
-    </div><!-- end step-user -->
+    </div>
 
     <!-- ── STEP 2: PIN ── -->
     <div id="step-pin" style="display:none;">
@@ -2182,7 +1682,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา   Version2569.04.07.20.55</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.04.08.10.11</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2399,7 +1899,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
         <div class="form-group"><label class="form-label">หมายเหตุ</label><textarea class="form-input" id="d-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
         <div class="btn-row">
           <button class="btn" onclick="clearDispenseForm()">ล้าง</button>
-          <button class="btn btn-primary" id="d-save-btn" onclick="dispenseStock()" style="background:linear-gradient(135deg,var(--accent),#e8620f);">เบิกยาออก</button>
+          <button class="btn btn-primary" id="d-save-btn" onclick="dispenseStock()" style="background:linear-gradient(135deg,#E84040,#C0392B);">เบิกยาออก</button>
         </div>
       </div>
     </div>
@@ -2425,23 +1925,6 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
   <!-- ══ คลังยา ══ -->
   <div class="page" id="page-stock">
     <div style="height:.75rem;"></div>
-
-    <!-- ── Sub-tab selector ── -->
-    <div style="display:flex;gap:6px;margin-bottom:12px;background:var(--surface);border-radius:14px;padding:5px;border:1px solid var(--border);box-shadow:var(--sh-xs);">
-      <button id="subtab-pcu" onclick="switchStockSubtab('pcu')"
-        style="flex:1;padding:9px 8px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;
-               background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(28,107,69,.3);">
-        🏥 คลังยา PCU
-      </button>
-      <button id="subtab-out" onclick="switchStockSubtab('out')"
-        style="flex:1;padding:9px 8px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;
-               background:transparent;color:var(--text3);">
-        📦 คลังยานอก
-      </button>
-    </div>
-
-    <!-- ══ View A: คลังยา PCU ══ -->
-    <div id="stock-view-pcu">
     <div style="position:relative;margin-bottom:12px;">
       <input class="form-input" id="stock-search" placeholder="🔍  ค้นหาชื่อยาหรือรหัสยา..." oninput="searchStock(this.value)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
       <div id="stock-sbox"></div>
@@ -2483,116 +1966,6 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="card" id="stock-summary-card"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
     <div class="section-hd" style="margin-top:4px;"><span class="section-title">แยกกลุ่มตามวันหมดอายุ</span></div>
     <div class="card" id="stock-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
-    </div><!-- end stock-view-pcu -->
-
-    <!-- ══ View B: คลังยานอก ══ -->
-    <div id="stock-view-out" style="display:none;">
-      <!-- Search -->
-      <div style="position:relative;margin-bottom:10px;">
-        <input class="form-input" id="outer-search"
-          placeholder="🔍  ค้นหาชื่อยาหรือรหัสยา..."
-          oninput="renderOuterStock()"
-          autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
-      </div>
-      <!-- Stats row -->
-      <div class="stats-grid" style="margin-bottom:10px;">
-        <div class="stat-card c-amber">
-          <div class="stat-label">รายการยาทั้งหมด</div>
-          <div class="stat-value sv-amber" id="out-total">—</div>
-        </div>
-        <div class="stat-card c-red" onclick="renderOuterStock()" style="cursor:pointer;" title="คลิกเพื่อรีเฟรช">
-          <div class="stat-label">ใกล้หมดอายุ <span style="font-size:9px;">⤵</span></div>
-          <div class="stat-value sv-red" id="out-expiring">—</div>
-          <div style="font-size:9px;color:var(--red);opacity:.7;margin-top:4px;">≤ 6 เดือน</div>
-        </div>
-      </div>
-
-      <!-- ยาใกล้หมดอายุ -->
-      <div class="card" style="padding:1rem;margin-bottom:4px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <span class="section-title">ยาใกล้หมดอายุ</span>
-          <button class="section-action" onclick="renderOuterStock()">↻ รีเฟรช</button>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-          <button class="exp-range-btn active" data-out-months="1" onclick="setOutExpRange(this,1)">≤ 1 เดือน</button>
-          <button class="exp-range-btn" data-out-months="3" onclick="setOutExpRange(this,3)">≤ 3 เดือน</button>
-          <button class="exp-range-btn" data-out-months="6" onclick="setOutExpRange(this,6)">≤ 6 เดือน</button>
-          <button class="exp-range-btn" data-out-months="12" onclick="setOutExpRange(this,12)">≤ 12 เดือน</button>
-        </div>
-        <div id="out-expiring-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
-      </div>
-
-      <!-- สรุปยาคงคลัง -->
-      <div class="section-hd">
-        <span class="section-title">สรุปยาคงคลังยานอก</span>
-        <span id="out-qty" style="font-size:11px;color:var(--text3);"></span>
-      </div>
-      <div class="card" id="outer-stock-list">
-        <div class="loading"><div class="spin"></div>กำลังโหลด...</div>
-      </div>
-
-      <!-- แยกกลุ่มตามวันหมดอายุ -->
-      <div class="section-hd" style="margin-top:4px;">
-        <span class="section-title">แยกกลุ่มตามวันหมดอายุ</span>
-      </div>
-      <div class="card" id="out-group-list">
-        <div class="loading"><div class="spin"></div>กำลังโหลด...</div>
-      </div>
-    </div><!-- end stock-view-out -->
-
-  </div>
-
-  <!-- ══ คลังยานอก ══ -->
-  <div class="page" id="page-extstock">
-    <div style="height:.75rem;"></div>
-
-    <!-- Search + stats -->
-    <div style="position:relative;margin-bottom:10px;">
-      <input class="form-input" id="extstock-search"
-        placeholder="🔍  ค้นหาชื่อยาหรือรหัสยา..."
-        oninput="renderExtStock()"
-        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
-        style="padding-left:14px;"/>
-    </div>
-
-    <!-- Stats -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
-      <div style="background:var(--surface);border-radius:var(--r-md);padding:12px 10px 10px;border:1px solid var(--border);box-shadow:var(--sh-xs);position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--purple);border-radius:var(--r-md) var(--r-md) 0 0;"></div>
-        <div class="stat-label">รายการยาทั้งหมด</div>
-        <div id="ext-total" style="font-size:24px;font-weight:700;color:var(--purple);letter-spacing:-1px;line-height:1;margin-top:6px;font-family:'IBM Plex Mono',monospace;">—</div>
-        <div style="font-size:9px;color:var(--text3);font-weight:600;margin-top:2px;text-transform:uppercase;">ชนิดยา</div>
-      </div>
-      <div style="background:var(--surface);border-radius:var(--r-md);padding:12px 10px 10px;border:1px solid var(--border);box-shadow:var(--sh-xs);position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--amber);border-radius:var(--r-md) var(--r-md) 0 0;"></div>
-        <div class="stat-label">เบิกให้คลังยานอก</div>
-        <div id="ext-disp-count" style="font-size:24px;font-weight:700;color:var(--amber);letter-spacing:-1px;line-height:1;margin-top:6px;font-family:'IBM Plex Mono',monospace;">—</div>
-        <div style="font-size:9px;color:var(--text3);font-weight:600;margin-top:2px;text-transform:uppercase;">รายการ</div>
-      </div>
-      <div style="background:var(--surface);border-radius:var(--r-md);padding:12px 10px 10px;border:1px solid var(--border);box-shadow:var(--sh-xs);position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal);border-radius:var(--r-md) var(--r-md) 0 0;"></div>
-        <div class="stat-label">วันอัพเดทล่าสุด</div>
-        <div id="ext-last-date" style="font-size:14px;font-weight:700;color:var(--teal);line-height:1;margin-top:8px;font-family:'IBM Plex Mono',monospace;">—</div>
-      </div>
-    </div>
-
-    <!-- Drug list card -->
-    <div class="section-hd">
-      <span class="section-title">🏠 สถานะยาคลังยานอก</span>
-      <button class="section-action" onclick="loadExtStock()">↻ รีเฟรช</button>
-    </div>
-    <div class="card" id="extstock-list">
-      <div class="loading"><div class="spin"></div>กำลังโหลด...</div>
-    </div>
-
-    <!-- Transaction log -->
-    <div class="section-hd" style="margin-top:4px;">
-      <span class="section-title">📋 ประวัติการเบิก</span>
-      <span id="ext-log-count" style="font-size:11px;color:var(--text3);"></span>
-    </div>
-    <div class="card" id="extstock-log">
-      <div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ</div>
-    </div>
   </div>
 
   <!-- ══ ประวัติ ══ -->
@@ -2802,51 +2175,27 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       </div>
       <span class="nav-label" style="font-size:8.5px;letter-spacing:-.2px;white-space:nowrap;">สรุปรับ-เบิก</span>
     </button>
-    <!-- คลังยานอก -->
-    <button class="nav-item" onclick="switchTab('extstock',this)">
+    <!-- ประวัติ: นาฬิกา -->
+    <button class="nav-item" onclick="switchTab('history',this)">
       <div class="nav-pill"></div>
       <div class="nav-icon-wrap">
         <svg viewBox="0 0 24 24">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
+          <circle cx="12" cy="12" r="9"/>
+          <polyline points="12 7 12 12 15.5 14.5"/>
         </svg>
       </div>
-      <span class="nav-label" style="font-size:8.5px;letter-spacing:-.2px;white-space:nowrap;">คลังยานอก</span>
+      <span class="nav-label">ประวัติ</span>
       <span class="nav-badge" id="hist-badge" style="display:none;">0</span>
-    </button>
-    <!-- วิเคราะห์ OPD Dashboard -->
-    <button class="nav-item" onclick="switchTab('analytics',this)">
-      <div class="nav-pill"></div>
-      <div class="nav-icon-wrap">
-        <svg viewBox="0 0 24 24">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
-      </div>
-      <span class="nav-label" style="font-size:8px;letter-spacing:-.2px;white-space:nowrap;">วิเคราะห์</span>
     </button>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyiH9Es7y5RfKU31kMaIikz6BTjPCb18WeX_5N1QaNSoomp_MEcT1R6eds_vfPNsoOy/exec';
-let drugDB=[["1000016", "ALLOPURINOL 100 มก.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1000122", "Enalapril 5 mg. (E5)/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1000184", "METFORMIN 500 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1000284", "Spironolactone 25 MG./TAB กส.", "", "", "ยาแผนปัจจุบัน", 1],["1019001", "GLIPIZIDE 5 MG. /TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["110104480112", "FOLIC ACID 5MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1419041", "GEMfibrozil 300 MG./CAPSULES", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1440105", "AMLODIPINE 5 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1460151", "ENALAPRIL 20 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1500016", "Metoprolol 100 MG./TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1500035", "METOCLOPRAMIDE 10 mg TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1530008", "ASPIRIN 81 MG./TAB. กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1ALB", "ALBENDAZOLE 200 MG./TAB (San San)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1AMIT", "AMITRIPTYLINE10 MG./ TAB(HK)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1AMO", "AMOXICILLIN 500 MG./CAPSULES (องค์การเภสัชMOX)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1AMX", "Amoxicillin 250 mg./cap (องค์การเภสัชMOX)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1BUF", "IBUPROFEN 400 MG./TAB(I-Profen)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1CAL", "CALCIUM 1250 MG. tab.(Cal-star)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1CET", "PARACETAMOL 500 MG./TAB(Masapara)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1DCL", "DICLOXACILLIN 250 MG. /CAPSULES", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1DEXT", "DEXTROMETHORPHANE", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1DIC", "DICLOFENAC SODIUM 25 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1DIM", "DIMENHYDRENATE 50 MG.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1DOM", "DOMPERIDONE10 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1FBC", "FERROUS FUMARATE 200 MG./TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1GABA", "GABAPENTIN 100 mg GPO", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1HOC", "HYOSCINE-N-BUTYLBROMIDE 10 .MG/TAB(VS)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1lDC", "LIDOCAIN 2 %", "", "", "ยาแผนปัจจุบัน", 1],["1LST2", "LOSARTAN 50 MG.(Berlin)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1MET", "METRONIDAZOLE 400 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1MTV", "MTV (MULTIVITAMIN) TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1NAPRO", "NAPROXEN 250 MG TAB(Nasin)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1NOC", "NORFLOXACIN 400 MG./TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1OME", "OMEPRAZOLE 20 MG./CAPSULES", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1ORS", "ORS เด็ก(baby-LyteH)", "กล่อง", "ซอง", "ยาแผนปัจจุบัน", 1],["1PARA325", "PARACETAMOL 325 MG(AU)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1STC", "SIMETHICONE 80 MG/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1TFD", "TRIFERDINE TAB. กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1VIB", "VITAMIN B COMPLEX TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1VIC", "VITAMIN C 50 MG CIBIC-50", "กล่อง", "ซอง", "ยาแผนปัจจุบัน", 3],["2DOMP", "DOMPERIDONE SUSPENSION", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2MCAR", "MIXT.CARMINATIVE", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2MILK", "MILK OF MAGNESIA(GPO)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2MTUS", "BROWN MIXTURE GPO", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2MTVS", "MULTI VITAMIN SYR.(syn o vits)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2ORS", "ORS ผู้ใหญ่(T.O.S)", "กล่อง", "ซอง", "ยาแผนปัจจุบัน", 1],["2SALB", "SALBUTAMOL SYR.(sabumol)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2SOAT", "BENZYL BENZOATE 30 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3ALB", "ALBENDAZOLE SYR. (FALBEN)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3ALM", "ALUM MILK GEL(BOWA GEL ED)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3AMI", "AMOXICILLIN 125 MG. /SYR.(Manmox)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3ANAL", "ANAGESIC BALM (นีโอติก้า)", "กล่อง", "หลอด", "ยาแผนปัจจุบัน", 1],["3AOM", "AMMONNIUM CARBONATE SYR .", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3CALA", "CALAMINE LOTION", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3DCL", "DICLOXACILLIN 62.5 MG./SYR.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3HYO", "HYOSCINE 5 MG./SYR.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3SIM", "SIMETHICONE ORAL DROPS 40 MG.(Gas-med)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3TET", "DIPTHERIA AND TESANUS VACCINE", "", "", "ยาแผนปัจจุบัน", 1],["3TRIA002", "TA CREAM 0.02%(ไมโครไนซ์ ฟอร์ม)", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["3TRIA01", "TA CREAM 0.1% (ไตรโนแมน)", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["3WHFO", "WHITFIELD OINTMENT", "", "", "ยาแผนปัจจุบัน", 1],["4AMS", "AMMONIA 450 ML.(วิทยาศรม)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4BEN", "BENZYL BENZOAT 450 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4CET", "PARACETAMOL 120 MG./SYR. (THOHO)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4CRP", "CHLORAMPHENICOL *EYE OINTMENT 1% 5 Gm.", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["4CTC", "CLOTRIMAZOLE CREAM(Mazole)", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["4DEXA", "Dexamethasone inj. 4mg./1ml.", "", "", "ยาแผนปัจจุบัน", 1],["4GEN", "GENTAMYCIN EYE 3 MG. /DROP", "แพ็ค", "ขวด", "ยาแผนปัจจุบัน", 1],["4HSC", "CHLORHEXIDINE(hibi scrub) 450 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4HSC2", "CHLORHEXIDINE 30 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4OPA", "ANTAZOLINE HCI BP (Hista oph)", "แพ็ค", "ขวด", "ยาแผนปัจจุบัน", 1],["4POV", "POVIDONE IODINE 15 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4SLV", "SILVERDERM CREAM 25 G.", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["4TRI", "TRIAMCINOLONE ORAL", "แพ็ค", "ซอง", "ยาแผนปัจจุบัน", 1],["5ACH", "ALCOHOL 70% 450ml.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["5COL", "COLCHICINE 0.6 MG. tab.", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 1],["5CPM", "CHLORPHENIRAMINE 4 MG./TAB (MALEATE)", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 3],["5HCT", "HCTZ-Hydrochlorothiazide 25 MG.TAB กส.", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 1],["5NOL", "NSS. SODIUM CHLORIDE IRRIGATION 1000 MG.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["5PNL", "PROPRANOLOL 10 MG./TAB กส.", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 1],["5PVD", "POVIDONE-IODINE 450 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["6CPM", "CHLORPHENIRAMINE 2 MG./SY (GPO)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["ACV CREAM", "ACYCLOVIR CREAM 1 GM", "แพ็ค", "ซอง", "ยาแผนปัจจุบัน", 1],["ATO", "ATORVASTATIN 40 MG/TAB กส.", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 5],["BET-1N", "BETAMETHASONE+N cream 5 gm(GPO) )", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["BET-SA", "BETAMETHASONE+SA cream 5 gm", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["Beta", "Betahistine 6 mg.(SPS)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["BRO TAB", "BROMHEXINE HCI 8 MG TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["BROM2", "BROMHEXINE SYRUP 60 ML Patar Lab", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["BUD", "BUDESONIDE MDI 200 MCG", "", "", "ยาแผนปัจจุบัน", 1],["CAP RED", "CLOPIDOGREL 75 MG.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["CAR", "DOXAZOSIN 2MG./Tab กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["Carve", "Carvedilol 6.25 mg.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["CEP SYR", "CEPHALEXIN 125 MG SYR", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["CHL", "Chloramphenicol OINTMENT 1%(ขี้ผึ้ง ยูนีซัน)", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["CPM INJ", "CHLORPHENIRAMINE INJ.", "", "", "ยาแผนปัจจุบัน", 1],["DIMEN INJ", "DIMEN INJ", "", "", "ยาแผนปัจจุบัน", 1],["DP CRP", "DIPOTASSIUM CLORAZEPATE 5 MG CAP", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["FER", "Ferrous Fumarate 76 mg./5ml (GPO)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["FERDEK Syrub", "FERROUS FUMARATE 15mg/0.6 ml Syrub", "กล่อง", "ขวด", "ยาแผนปัจจุบัน", 1],["FLU125", "FLUTICASONE 125 MCG INHALOR", "", "", "ยาแผนปัจจุบัน", 1],["FLU20", "FLUOXETIN 20 MG/TAB กส.(Pharmaland)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["FURO", "FUROSEMIDE 40 MG TAB กส", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["Griss500", "GRISEOFULVIN 500 MG. TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["HY251", "Hydralazine 25 mg (APRESZINE)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["HYZ", "HYDROXYZINE 10 mg tab", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["ING TRA", "TRAMADOL INJ 50MG/ML", "", "", "ยาแผนปัจจุบัน", 1],["ISO", "ISOSORBIDE DINITRATE 10 MG/TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["KTCNZ", "KETOCONAZOLE 200 mg tab กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["LORA", "LORATADINE 10 mg tab", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["MNDP", "MANIDIPINE HYDOCHLORIDE", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["NI20", "NIFEDIPINE 20 MG SR/CAP", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["NORET5MG", "NORETHISTERONE 5 MG TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["PIO1", "PIOGLITAZONE 30 MG./Tab (UTMOS 30 )", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["PNSL", "PREDNISOLONE 5 MG/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["POLY E", "POLYOPH EYE DROP 5 ml(OPSACIN)", "แพ็ค", "ขวด", "ยาแผนปัจจุบัน", 1],["PROCT TAB", "PROCTOSEDYL SUPPOSITORIES TAB", "", "เม็ด", "ยาแผนปัจจุบัน", 1],["RANI INJ", "RANITIDINE INJ", "", "", "ยาแผนปัจจุบัน", 1],["SIM3", "Simvastatin 40 mg", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["TETRA", "0.5%TETRACAINE HCL", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["THE", "THEOPHYLLINE 200 MG SR/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["TOL50", "TOLPERISONE HCL 50MG/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["TRIAM LO1", "T.A. LOTION 0.1%(starlone)", "กล่อง", "ขวด", "ยาแผนปัจจุบัน", 1],["1AMY", "ยาอมมะแว้ง รสบ๊วย", "กล่อง", "ซอง", "ยาสมุนไพร", 1],["1PTL", "ฟ้าทะลายโจรแคปซูล 400 mg./tab.", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["1SENN", "ยาระบายมะขามแขก(senna7.5)", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["1VAN", "เจลว่านหางจระเข้", "กล่อง", "หลอด", "ยาสมุนไพร", 1],["3PET", "สมุนไพรเพชรสังฆาต", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["410000000239140020182750", "เถาวัลย์เปรียง", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["4.1003E+18", "ยาเหลืองปิดสมุทร", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["4.101E+18", "ยาจันทน์ลีลา", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["4.2002E+18", "สมุนไพรขิง", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["4.2003E+18", "ชาสมุนไพรชุมเห็ดเทศ", "กล่อง", "ซอง", "ยาสมุนไพร", 1],["HERB1", "ฟ้าทะลายโจร ชนิดแคปซูล 500mg", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["HERB2", "ขมิ้นชัน ชนิดแคปซูล 500 mg", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["SHT1", "สมุนไพรสหัฐธารา", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["6014", "ENAF - 150(UMEDA)", "กล่อง", "ขวด", "ยาคุมกำเนิด", 1],["6023", "FMP(เจนนี่ ไทยนครพัฒนา)", "กล่อง", "เม็ด", "ยาคุมกำเนิด", 1],["6024", "R-DENT(ไทยนครพัฒนา)", "กล่อง", "เม็ด", "ยาคุมกำเนิด", 1],["6028", "FREELOX", "กล่อง", "กล่อง", "ยาคุมกำเนิด", 1],["6033", "EXLUTON(เดลิต้อน พอนด์เคมีคอล)", "กล่อง", "เม็ด", "ยาคุมกำเนิด", 1]];
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyvfohKGqK9svtBMg50BcM8LTZVATzZO7SmeGy3v0lXPJAAI6IuyvlU-mPuR1iYDbmY/exec';
+const drugDB=[["1000016", "ALLOPURINOL 100 มก.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1000122", "Enalapril 5 mg. (E5)/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1000184", "METFORMIN 500 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1000284", "Spironolactone 25 MG./TAB กส.", "", "", "ยาแผนปัจจุบัน", 1],["1019001", "GLIPIZIDE 5 MG. /TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["110104480112", "FOLIC ACID 5MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1419041", "GEMfibrozil 300 MG./CAPSULES", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1440105", "AMLODIPINE 5 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1460151", "ENALAPRIL 20 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1500016", "Metoprolol 100 MG./TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1500035", "METOCLOPRAMIDE 10 mg TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1530008", "ASPIRIN 81 MG./TAB. กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1ALB", "ALBENDAZOLE 200 MG./TAB (San San)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1AMIT", "AMITRIPTYLINE10 MG./ TAB(HK)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1AMO", "AMOXICILLIN 500 MG./CAPSULES (องค์การเภสัชMOX)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1AMX", "Amoxicillin 250 mg./cap (องค์การเภสัชMOX)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1BUF", "IBUPROFEN 400 MG./TAB(I-Profen)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1CAL", "CALCIUM 1250 MG. tab.(Cal-star)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1CET", "PARACETAMOL 500 MG./TAB(Masapara)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1DCL", "DICLOXACILLIN 250 MG. /CAPSULES", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1DEXT", "DEXTROMETHORPHANE", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1DIC", "DICLOFENAC SODIUM 25 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1DIM", "DIMENHYDRENATE 50 MG.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1DOM", "DOMPERIDONE10 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1FBC", "FERROUS FUMARATE 200 MG./TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1GABA", "GABAPENTIN 100 mg GPO", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1HOC", "HYOSCINE-N-BUTYLBROMIDE 10 .MG/TAB(VS)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1lDC", "LIDOCAIN 2 %", "", "", "ยาแผนปัจจุบัน", 1],["1LST2", "LOSARTAN 50 MG.(Berlin)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1MET", "METRONIDAZOLE 400 MG./TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1MTV", "MTV (MULTIVITAMIN) TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1NAPRO", "NAPROXEN 250 MG TAB(Nasin)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1NOC", "NORFLOXACIN 400 MG./TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1OME", "OMEPRAZOLE 20 MG./CAPSULES", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1ORS", "ORS เด็ก(baby-LyteH)", "กล่อง", "ซอง", "ยาแผนปัจจุบัน", 1],["1PARA325", "PARACETAMOL 325 MG(AU)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1STC", "SIMETHICONE 80 MG/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["1TFD", "TRIFERDINE TAB. กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["1VIB", "VITAMIN B COMPLEX TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["1VIC", "VITAMIN C 50 MG CIBIC-50", "กล่อง", "ซอง", "ยาแผนปัจจุบัน", 3],["2DOMP", "DOMPERIDONE SUSPENSION", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2MCAR", "MIXT.CARMINATIVE", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2MILK", "MILK OF MAGNESIA(GPO)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2MTUS", "BROWN MIXTURE GPO", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2MTVS", "MULTI VITAMIN SYR.(syn o vits)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2ORS", "ORS ผู้ใหญ่(T.O.S)", "กล่อง", "ซอง", "ยาแผนปัจจุบัน", 1],["2SALB", "SALBUTAMOL SYR.(sabumol)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["2SOAT", "BENZYL BENZOATE 30 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3ALB", "ALBENDAZOLE SYR. (FALBEN)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3ALM", "ALUM MILK GEL(BOWA GEL ED)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3AMI", "AMOXICILLIN 125 MG. /SYR.(Manmox)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3ANAL", "ANAGESIC BALM (นีโอติก้า)", "กล่อง", "หลอด", "ยาแผนปัจจุบัน", 1],["3AOM", "AMMONNIUM CARBONATE SYR .", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3CALA", "CALAMINE LOTION", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3DCL", "DICLOXACILLIN 62.5 MG./SYR.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3HYO", "HYOSCINE 5 MG./SYR.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3SIM", "SIMETHICONE ORAL DROPS 40 MG.(Gas-med)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["3TET", "DIPTHERIA AND TESANUS VACCINE", "", "", "ยาแผนปัจจุบัน", 1],["3TRIA002", "TA CREAM 0.02%(ไมโครไนซ์ ฟอร์ม)", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["3TRIA01", "TA CREAM 0.1% (ไตรโนแมน)", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["3WHFO", "WHITFIELD OINTMENT", "", "", "ยาแผนปัจจุบัน", 1],["4AMS", "AMMONIA 450 ML.(วิทยาศรม)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4BEN", "BENZYL BENZOAT 450 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4CET", "PARACETAMOL 120 MG./SYR. (THOHO)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4CRP", "CHLORAMPHENICOL *EYE OINTMENT 1% 5 Gm.", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["4CTC", "CLOTRIMAZOLE CREAM(Mazole)", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["4DEXA", "Dexamethasone inj. 4mg./1ml.", "", "", "ยาแผนปัจจุบัน", 1],["4GEN", "GENTAMYCIN EYE 3 MG. /DROP", "แพ็ค", "ขวด", "ยาแผนปัจจุบัน", 1],["4HSC", "CHLORHEXIDINE(hibi scrub) 450 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4HSC2", "CHLORHEXIDINE 30 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4OPA", "ANTAZOLINE HCI BP (Hista oph)", "แพ็ค", "ขวด", "ยาแผนปัจจุบัน", 1],["4POV", "POVIDONE IODINE 15 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["4SLV", "SILVERDERM CREAM 25 G.", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["4TRI", "TRIAMCINOLONE ORAL", "แพ็ค", "ซอง", "ยาแผนปัจจุบัน", 1],["5ACH", "ALCOHOL 70% 450ml.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["5COL", "COLCHICINE 0.6 MG. tab.", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 1],["5CPM", "CHLORPHENIRAMINE 4 MG./TAB (MALEATE)", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 3],["5HCT", "HCTZ-Hydrochlorothiazide 25 MG.TAB กส.", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 1],["5NOL", "NSS. SODIUM CHLORIDE IRRIGATION 1000 MG.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["5PNL", "PROPRANOLOL 10 MG./TAB กส.", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 1],["5PVD", "POVIDONE-IODINE 450 ML.", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["6CPM", "CHLORPHENIRAMINE 2 MG./SY (GPO)", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["ACV CREAM", "ACYCLOVIR CREAM 1 GM", "แพ็ค", "ซอง", "ยาแผนปัจจุบัน", 1],["ATO", "ATORVASTATIN 40 MG/TAB กส.", "ลัง", "เม็ด", "ยาแผนปัจจุบัน", 5],["BET-1N", "BETAMETHASONE+N cream 5 gm(GPO)", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["BET-SA", "BETAMETHASONE+SA cream 5 gm", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["Beta", "Betahistine 6 mg.(SPS)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["BRO TAB", "BROMHEXINE HCI 8 MG TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["BROM2", "BROMHEXINE SYRUP 60 ML Patar Lab", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["BUD", "BUDESONIDE MDI 200 MCG", "", "", "ยาแผนปัจจุบัน", 1],["CAP RED", "CLOPIDOGREL 75 MG.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["CAR", "DOXAZOSIN 2MG./Tab กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["Carve", "Carvedilol 6.25 mg.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["CEP SYR", "CEPHALEXIN 125 MG SYR", "ลัง", "ขวด", "ยาแผนปัจจุบัน", 1],["CHL", "Chloramphenicol OINTMENT 1%(ขี้ผึ้ง ยูนีซัน)", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["CPM INJ", "CHLORPHENIRAMINE INJ.", "", "", "ยาแผนปัจจุบัน", 1],["DIMEN INJ", "DIMEN INJ", "", "", "ยาแผนปัจจุบัน", 1],["DP CRP", "DIPOTASSIUM CLORAZEPATE 5 MG CAP", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["FER", "Ferrous Fumarate 76 mg./5ml (GPO)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["FERDEK Syrub", "FERROUS FUMARATE 15mg/0.6 ml Syrub", "กล่อง", "ขวด", "ยาแผนปัจจุบัน", 1],["FLU125", "FLUTICASONE 125 MCG INHALOR", "", "", "ยาแผนปัจจุบัน", 1],["FLU20", "FLUOXETIN 20 MG/TAB กส.(Pharmaland)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["FURO", "FUROSEMIDE 40 MG TAB กส", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["Griss500", "GRISEOFULVIN 500 MG. TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["HY251", "Hydralazine 25 mg (APRESZINE)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["HYZ", "HYDROXYZINE 10 mg tab", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["ING TRA", "TRAMADOL INJ 50MG/ML", "", "", "ยาแผนปัจจุบัน", 1],["ISO", "ISOSORBIDE DINITRATE 10 MG/TAB กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["KTCNZ", "KETOCONAZOLE 200 mg tab กส.", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["LORA", "LORATADINE 10 mg tab", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["MNDP", "MANIDIPINE HYDOCHLORIDE", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["NI20", "NIFEDIPINE 20 MG SR/CAP", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["NORET5MG", "NORETHISTERONE 5 MG TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["PIO1", "PIOGLITAZONE 30 MG./Tab (UTMOS 30)", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 3],["PNSL", "PREDNISOLONE 5 MG/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["POLY E", "POLYOPH EYE DROP 5 ml(OPSACIN)", "แพ็ค", "ขวด", "ยาแผนปัจจุบัน", 1],["PROCT TAB", "PROCTOSEDYL SUPPOSITORIES TAB", "", "เม็ด", "ยาแผนปัจจุบัน", 1],["RANI INJ", "RANITIDINE INJ", "", "", "ยาแผนปัจจุบัน", 1],["SIM3", "Simvastatin 40 mg", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 5],["TETRA", "0.5%TETRACAINE HCL", "แพ็ค", "หลอด", "ยาแผนปัจจุบัน", 1],["THE", "THEOPHYLLINE 200 MG SR/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["TOL50", "TOLPERISONE HCL 50MG/TAB", "กล่อง", "เม็ด", "ยาแผนปัจจุบัน", 1],["TRIAM LO1", "T.A. LOTION 0.1%(starlone)", "กล่อง", "ขวด", "ยาแผนปัจจุบัน", 1],["1AMY", "ยาอมมะแว้ง รสบ๊วย", "กล่อง", "ซอง", "ยาสมุนไพร", 1],["1PTL", "ฟ้าทะลายโจรแคปซูล 400 mg./tab.", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["1SENN", "ยาระบายมะขามแขก(senna7.5)", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["1VAN", "เจลว่านหางจระเข้", "กล่อง", "หลอด", "ยาสมุนไพร", 1],["3PET", "สมุนไพรเพชรสังฆาต", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["410000000239140020182750", "เถาวัลย์เปรียง", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["4.1003E+18", "ยาเหลืองปิดสมุทร", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["4.101E+18", "ยาจันทน์ลีลา", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["4.2002E+18", "สมุนไพรขิง", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["4.2003E+18", "ชาสมุนไพรชุมเห็ดเทศ", "กล่อง", "ซอง", "ยาสมุนไพร", 1],["HERB1", "ฟ้าทะลายโจร ชนิดแคปซูล 500mg", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["HERB2", "ขมิ้นชัน ชนิดแคปซูล 500 mg", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["SHT1", "สมุนไพรสหัฐธารา", "กล่อง", "เม็ด", "ยาสมุนไพร", 1],["6014", "ENAF - 150(UMEDA)", "กล่อง", "ขวด", "ยาคุมกำเนิด", 1],["6023", "FMP(เจนนี่ ไทยนครพัฒนา)", "กล่อง", "เม็ด", "ยาคุมกำเนิด", 1],["6024", "R-DENT(ไทยนครพัฒนา)", "กล่อง", "เม็ด", "ยาคุมกำเนิด", 1],["6028", "FREELOX", "กล่อง", "กล่อง", "ยาคุมกำเนิด", 1],["6033", "EXLUTON(เดลิต้อน พอนด์เคมีคอล)", "กล่อง", "เม็ด", "ยาคุมกำเนิด", 1]];
 
-// ── โหลดฐานข้อมูลยาจาก Google Sheet "MedicineDB" ──────────────
-async function loadDrugDB(){
-  try{
-    const r=await fetch(SCRIPT_URL+'?action=medicinedb&t='+Date.now(),{redirect:'follow'});
-    const j=await r.json();
-    if(j.status==='ok'&&Array.isArray(j.rows)&&j.rows.length){
-      drugDB=j.rows; // [code, name, unitPack, unitSub, type, min]
-    }
-  }catch(e){
-    // ใช้ข้อมูล hardcoded เป็น fallback
-  }
-}
-
-let receiveRows=[],dispenseRows=[],outerStockRows=[],historyLog=[],lineLog2=[],reqLog=[];
+let receiveRows=[],dispenseRows=[],historyLog=[],lineLog2=[],reqLog=[];
 let editMode='receive';
 let _recvDateFilter='';   // กรองวันที่รับยา (yyyy-MM-dd)
 let _dispDateFilter='';   // กรองวันที่เบิก
@@ -2856,52 +2205,72 @@ let _expRangeMonths=1,_allStockItems=[];
 
 (()=>{const n=new Date();document.getElementById('s-date').textContent=String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();})();
 function todayTH(){const n=new Date();return String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();}
-// ── parseDateStr: universal date parser → dd/MM/yyyy ──────────
-function parseDateStr(s){
-  if(!s||s==='—'||s==='-')return null;
-  s=String(s).trim();
-  const MN={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',
-             jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
-  // 1) dd/MM/yyyy หรือ d/M/yyyy
-  let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if(m)return m[1].padStart(2,'0')+'/'+m[2].padStart(2,'0')+'/'+m[3];
-  // 2) yyyy-MM-dd
-  m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if(m)return m[3]+'/'+m[2]+'/'+m[1];
-  // 3) ISO datetime 2026-03-24T...
-  m=s.match(/^(\d{4})-(\d{2})-(\d{2})[T ]/);
-  if(m)return m[3]+'/'+m[2]+'/'+m[1];
-  // 4) "DayName MonName DD YYYY ..." — รองรับปีพ.ศ.ด้วย (เช่น 2569)
-  //    "Sun Jan 01 2569 00:00:00 GMT+0700 (Indochina Time)"
-  m=s.match(/(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*[,\s]+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/i);
-  if(m){
-    const mn=MN[m[1].toLowerCase()];
-    if(mn){
-      let yr=parseInt(m[3]);
-      if(yr>2400)yr=yr-543; // แปลงปีพ.ศ. → ค.ศ.
-      return m[2].padStart(2,'0')+'/'+mn+'/'+yr;
-    }
-  }
-  // 5) "DD MonName YYYY"
-  m=s.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/);
-  if(m){const mn=MN[m[2].toLowerCase()];if(mn)return m[1].padStart(2,'0')+'/'+mn+'/'+m[3];}
-  // 6) yyyy/MM/dd หรือ yyyy-M-d ทั่วไป
-  m=s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-  if(m)return m[3].padStart(2,'0')+'/'+m[2].padStart(2,'0')+'/'+m[1];
-  // 7) DD/MM/YYYY ทั่วไป
-  m=s.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-  if(m)return m[1].padStart(2,'0')+'/'+m[2].padStart(2,'0')+'/'+m[3];
-  // 8) JS Date parse fallback — ใช้ UTC ป้องกัน timezone shift
-  try{const dt=new Date(s);if(!isNaN(dt.getTime()))return String(dt.getUTCDate()).padStart(2,'0')+'/'+String(dt.getUTCMonth()+1).padStart(2,'0')+'/'+dt.getUTCFullYear();}catch(x){}
-  return null;
-}
 function fmtExp(e){
   if(!e||e==='—'||e==='-')return '—';
-  return parseDateStr(String(e).trim())||String(e).trim();
+  try{
+    // dd/MM/yyyy
+    if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(e.trim())){
+      const p=e.trim().split('/');
+      return p[0].padStart(2,'0')+'/'+p[1].padStart(2,'0')+'/'+p[2];
+    }
+    // yyyy-MM-dd
+    if(/^\d{4}-\d{2}-\d{2}$/.test(e.trim())){
+      const p=e.trim().split('-');
+      return p[2]+'/'+p[1]+'/'+p[0];
+    }
+    // ดึง yyyy-MM-dd หรือ dd MMM yyyy จาก string GMT/Indochina
+    const isoM=e.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if(isoM)return isoM[3].padStart(2,'0')+'/'+isoM[2].padStart(2,'0')+'/'+isoM[1];
+    // "Sat Aug 29 2026 ..."  → ดึง day month year จาก string โดยตรง ไม่แปลง timezone
+    const wdM=e.match(/\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/);
+    if(wdM){
+      const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+      const m=months[wdM[1]]||'??';
+      return wdM[2].padStart(2,'0')+'/'+m+'/'+wdM[3];
+    }
+  }catch(x){}
+  return e;
 }
+// แปลงวันที่ทุกรูปแบบ → dd/MM/yyyy (ใช้กับ e.date จาก Sheet)
 function fmtDate(d){
   if(!d||d==='—'||d==='-')return '—';
-  return parseDateStr(String(d).trim())||String(d).trim();
+  const s=String(d).trim();
+  // dd/MM/yyyy อยู่แล้ว
+  if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){
+    const p=s.split('/');
+    return p[0].padStart(2,'0')+'/'+p[1].padStart(2,'0')+'/'+p[2];
+  }
+  // yyyy-MM-dd
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+    const p=s.split('-');
+    return p[2]+'/'+p[1]+'/'+p[0];
+  }
+  // ISO datetime: 2026-03-24T... หรือ yyyy-MM-ddTHH:mm
+  const isoFull=s.match(/^(\d{4})-(\d{2})-(\d{2})[T ]/);
+  if(isoFull)return isoFull[3]+'/'+isoFull[2]+'/'+isoFull[1];
+  // ดึง yyyy-MM-dd / yyyy/MM/dd ทั่วไป
+  const isoM=s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if(isoM)return isoM[3].padStart(2,'0')+'/'+isoM[2].padStart(2,'0')+'/'+isoM[1];
+  // Google Sheets full string: "Tue Mar 24 2026 00:00:00 GMT+0700 (Indochina Time)"
+  // หรือ "Mon, 24 Mar 2026 00:00:00 GMT"
+  const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  // pattern: "DayName MonthName Date Year"
+  const wdM=s.match(/(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z,]*\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/i);
+  if(wdM){const m=months[wdM[1].charAt(0).toUpperCase()+wdM[1].slice(1,3).toLowerCase()]||'??';return wdM[2].padStart(2,'0')+'/'+m+'/'+wdM[3];}
+  // pattern: "Date MonthName Year" เช่น "24 Mar 2026"
+  const dmy=s.match(/(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/);
+  if(dmy){const m=months[dmy[2].charAt(0).toUpperCase()+dmy[2].slice(1,3).toLowerCase()]||'??';return dmy[1].padStart(2,'0')+'/'+m+'/'+dmy[3];}
+  // JS Date parse fallback (แต่ไม่เอา timezone มาทำให้วันผิด)
+  try{
+    const dt=new Date(s);
+    if(!isNaN(dt.getTime())){
+      // ใช้ UTC เพื่อหลีกเลี่ยง timezone shift
+      const day=String(dt.getUTCDate()).padStart(2,'0');
+      const mon=String(dt.getUTCMonth()+1).padStart(2,'0');
+      return day+'/'+mon+'/'+dt.getUTCFullYear();
+    }
+  }catch(x){}
+  return d;
 }
 function parseExpDate(e){if(!e)return null;try{let d,m,y;if(e.includes('/')){const p=e.split('/');if(p.length!==3)return null;d=parseInt(p[0]);m=parseInt(p[1])-1;y=parseInt(p[2]);}else if(e.includes('-')){const p=e.split('-');if(p.length!==3)return null;y=parseInt(p[0]);m=parseInt(p[1])-1;d=parseInt(p[2]);}else return null;if(isNaN(d)||isNaN(m)||isNaN(y))return null;return new Date(y,m,d,0,0,0,0);}catch(x){return null;}}
 
@@ -2912,12 +2281,7 @@ function switchTab(tab,el){
   document.getElementById('page-'+tab).classList.add('active');
   el.classList.add('active');
   if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();setTimeout(_setDispenseDocNum,300);}
-  if(tab==='stock'){loadStock();switchStockSubtab('pcu');}
-  if(tab==='extstock')loadExtStock();
-  if(tab==='analytics'){
-    // โหลดข้อมูลครั้งแรกถ้ายังไม่มี
-    if(!window._anLoaded){window._anLoaded=true;setTimeout(fetchAnalyticsData,200);}
-  }
+  if(tab==='stock')loadStock();
   if(tab==='history')renderHistory();
   if(tab==='line')loadLineSettings();
   if(tab==='summary')renderSummaryDrugPage(1);
@@ -3240,25 +2604,7 @@ function showDrugDetail(name){
   dispenseRows.filter(d=>d.name===name).forEach(d=>{if(lotMap[d.lot])lotMap[d.lot].dispensed+=parseFloat(d.qty)||0;});
   const lotItems=Object.values(lotMap).sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
   const code=rLots[0].code||'',unit=rLots[0].unit||'';
-  // คำนวณสถานะจาก EXP ของ LOT ที่ใกล้หมดอายุที่สุด (ถูกต้องกว่าใช้ group จาก receiveRows)
-  const now=new Date();now.setHours(0,0,0,0);
-  let earliestExp=null;
-  lotItems.forEach(l=>{
-    const ed=parseExpDate(fmtExp(l.exp));
-    if(ed&&(!earliestExp||ed<earliestExp))earliestExp=ed;
-  });
-  let isR=false,isY=false;
-  if(earliestExp){
-    const mo=(earliestExp-now)/(1000*60*60*24*30.4);
-    isR=mo<=6; isY=!isR&&mo<=12;
-  }
-  // fallback: ถ้ามี group ใน dispenseRows ให้ใช้
-  const dGroup=dispenseRows.filter(d=>d.name===name).map(d=>d.group||'').find(g=>g);
-  if(dGroup&&!earliestExp){
-    const g2=dGroup.trim();
-    isR=g2==='สีแดง'||g2==='แดง';
-    isY=g2==='สีเหลือง'||g2==='เหลือง';
-  }
+  const g=(rLots[0].group||'').trim(),isR=g==='สีแดง'||g==='แดง',isY=g==='สีเหลือง'||g==='เหลือง';
   const sc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
   const statusLabel=isR?'หมดอายุ < 6 เดือน':isY?'หมดอายุ 6–12 เดือน':'หมดอายุ > 12 เดือน';
   const statusDot=isR?'#D93025':isY?'#C07000':'#1E8A4A';
@@ -3295,10 +2641,7 @@ function showDrugDetail(name){
     </tr></thead>
     <tbody>${lotItems.map(l=>{
       const ll=Math.max(0,Math.round(l.received-l.dispensed));
-      // คำนวณสีจาก EXP โดยตรง (ถูกต้องกว่า group field)
-      const led=parseExpDate(fmtExp(l.exp));
-      let lR=false,lY=false;
-      if(led){const lmo=(led-now)/(1000*60*60*24*30.4);lR=lmo<=6;lY=!lR&&lmo<=12;}
+      const lg=(l.group||'').trim(),lR=lg==='สีแดง'||lg==='แดง',lY=lg==='สีเหลือง'||lg==='เหลือง';
       const lc=lR?'var(--red)':lY?'var(--amber)':'var(--teal)';
       const lcl=lR?'exp-warn':lY?'exp-caution':'';
       return `<tr class="${lcl}">
@@ -3415,7 +2758,7 @@ async function saveEdit(){
   if(editMode==='dispense')nd.requester=document.getElementById('edit-requester').value;
   closeEditModal();showAlert('กำลังบันทึกทับข้อมูลเดิม...','info');
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(nd)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(nd)});
     rows[idx]={...e,...nd};if(editMode==='receive')renderReceiveLog();else renderDispenseLog();
     addHistory('edit',`แก้ไข: ${e.name}`,`LOT: ${nd.lot} | ${nd.qty} ${nd.unit}`);
     showAlert(`แก้ไข "${e.name}" เรียบร้อย`,'success');
@@ -3431,19 +2774,11 @@ function parseExpToInputVal(raw){
   return '';
 }
 
-function _showSbox(box,inputEl){
-  const rect=inputEl.getBoundingClientRect();
-  box.style.top=(rect.bottom+4)+'px';
-  box.style.left=rect.left+'px';
-  box.style.width=rect.width+'px';
-  box.style.maxHeight=Math.min(240,window.innerHeight-rect.bottom-12)+'px';
-  box.style.display='block';
-}
 function searchDrug(val,boxId){
   const box=document.getElementById(boxId);
   if(!val.trim()){box.style.display='none';return;}
   const q=val.toLowerCase();
-  const hits=drugDB.filter(d=>d[1].toLowerCase().includes(q)||(d[0]||'').toLowerCase().includes(q)).slice(0,10);
+  const hits=drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q)).slice(0,10);
   if(!hits.length){box.style.display='none';return;}
   box.innerHTML=hits.map(d=>{
     const type=d[4]||'';
@@ -3456,9 +2791,7 @@ function searchDrug(val,boxId){
       <div class="si-sub">${d[0]}${unitInfo?' · '+unitInfo:''}</div>
     </div>`;
   }).join('');
-  const inputId=boxId==='sbox-r'?'r-name':'d-name';
-  const inputEl=document.getElementById(inputId);
-  if(inputEl)_showSbox(box,inputEl);else box.style.display='block';
+  box.style.display='block';
 }
 function pickDrug(name,code,boxId){
   const isD=boxId==='sbox-d',pfx=isD?'d':'r';
@@ -3638,7 +2971,7 @@ async function receiveStock(){
   btn.textContent='กำลังบันทึก...';btn.disabled=true;
   setSheet('amber','กำลังส่งข้อมูล...');clearReceiveForm();
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(entry)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
     setSheet('green','บันทึกสำเร็จ');
     showAlert(`✓ รับยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} เรียบร้อย`,'success');
     addHistory('in',`รับยาเข้า: ${name}`,`LOT: ${lot} | ${qty} ${unit} | จาก: ${source}${docNum?' | เลขที่: '+docNum:''}`);
@@ -3679,7 +3012,7 @@ async function dispenseStock(){
   btn.textContent='กำลังบันทึก...';btn.disabled=true;
   clearDispenseForm();
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(entry)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
     showAlert(`✓ เบิกยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} โดย ${requester}`,'success');
     addHistory('out',`เบิกยาออก: ${name}`,`LOT: ${lot} | ${qty} ${unit} | ผู้เบิก: ${requester} | เบิกให้: ${dest}${docNum?' | เลขที่: '+docNum:''}`);
     setTimeout(()=>loadDispense(),1500);
@@ -3799,238 +3132,6 @@ function deleteReqLog(idx){
 })();
 
 // ══════════════════════════════════════════════════════════════
-// ══ คลังยานอก sub-tab ═══════════════════════════════════════
-function switchStockSubtab(tab){
-  const isPCU = tab==='pcu';
-  document.getElementById('stock-view-pcu').style.display = isPCU ? '' : 'none';
-  document.getElementById('stock-view-out').style.display  = isPCU ? 'none' : '';
-  const btnPCU = document.getElementById('subtab-pcu');
-  const btnOut = document.getElementById('subtab-out');
-  const base = 'flex:1;padding:9px 8px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;';
-  if(isPCU){
-    btnPCU.style.cssText = base+'background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(28,107,69,.3);';
-    btnOut.style.cssText  = base+'background:transparent;color:var(--text3);';
-  } else {
-    btnOut.style.cssText  = base+'background:var(--amber);color:#fff;box-shadow:0 2px 8px rgba(226,144,0,.3);';
-    btnPCU.style.cssText  = base+'background:transparent;color:var(--text3);';
-    if(!dispenseRows.length) loadDispense().then(()=>renderOuterStock());
-    else renderOuterStock();
-  }
-}
-
-let _outExpRangeMonths=1;
-function setOutExpRange(btn,months){
-  _outExpRangeMonths=months;
-  document.querySelectorAll('[data-out-months]').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderOuterStock();
-}
-
-function renderOuterStock(){
-  const listEl=document.getElementById('outer-stock-list');
-  const expEl=document.getElementById('out-expiring-list');
-  const grpEl=document.getElementById('out-group-list');
-  if(!listEl)return;
-
-  // ─ ต้องมี dispenseRows ─
-  if(!dispenseRows.length){
-    const msg='<div class="empty"><div class="empty-icon">📦</div>ยังไม่มีข้อมูล<br><span style="font-size:11px;color:var(--text3);">กดรีเฟรชในแท็บคลังยา</span></div>';
-    if(listEl)listEl.innerHTML=msg;
-    if(expEl)expEl.innerHTML=msg;
-    if(grpEl)grpEl.innerHTML=msg;
-    return;
-  }
-
-  // กรองเฉพาะ dest=คลังยานอก
-  const allOut=dispenseRows.filter(d=>(d.dest||'').trim()==='คลังยานอก');
-
-  // search
-  const q=(document.getElementById('outer-search')?.value||'').toLowerCase().trim();
-
-  // ─── คำนวณ stock map ──────────────────────────────────────
-  const now=new Date();now.setHours(0,0,0,0);
-  const stockMap={};
-  allOut.forEach(d=>{
-    const k=d.name+'||'+d.lot;
-    const expFmt=fmtExp(d.exp)||'—';
-    const expRaw=d.exp||'';
-    if(!stockMap[k])stockMap[k]={
-      name:d.name,code:d.code||'—',unit:d.unit||'',
-      lot:d.lot||'—',
-      exp:expFmt,
-      expRaw:expRaw,
-      group:d.group||'',          // M จาก Sheet
-      monthsLeft:d.monthsLeft||'', // L จาก Sheet
-      qty:0,txns:[]
-    };
-    const qty=parseFloat(d.qty)||0;
-    stockMap[k].qty+=qty;
-    if(!stockMap[k].expRaw&&expRaw)stockMap[k].expRaw=expRaw;
-    if(stockMap[k].exp==='—'&&expFmt!=='—')stockMap[k].exp=expFmt;
-    // ใช้ group/monthsLeft ล่าสุดที่มีค่า
-    if(d.group)stockMap[k].group=d.group;
-    if(d.monthsLeft)stockMap[k].monthsLeft=d.monthsLeft;
-    stockMap[k].txns.push({date:fmtDate(d.date),docNum:d.docNum||'—',qty,requester:d.requester||'—'});
-  });
-  let items=Object.values(stockMap).filter(i=>i.qty>0);
-  if(q)items=items.filter(i=>i.name.toLowerCase().includes(q)||(i.code||'').toLowerCase().includes(q)||(i.lot||'').toLowerCase().includes(q));
-  items.sort((a,b)=>a.name.localeCompare(b.name,'th'));
-
-  // helper: parse exp ไม่ว่า format ไหน
-  const parseItemExp=i=>parseExpDate(i.exp)??parseExpDate(fmtExp(i.expRaw))??parseExpDate(i.expRaw);
-
-  // helper: กลุ่มจาก Sheet หรือคำนวณเอง
-  const getGroup=i=>{
-    const g=(i.group||'').trim();
-    if(g)return g;
-    // fallback คำนวณจาก exp
-    const ed=parseItemExp(i);
-    if(!ed)return 'เขียว';
-    const mo=(ed-now)/(1000*60*60*24*30.4);
-    if(mo<=6)return 'แดง';
-    if(mo<=12)return 'เหลือง';
-    return 'เขียว';
-  };
-
-  // stats — ใช้ข้อมูล group จาก Sheet ถ้ามี
-  const expiring6=items.filter(i=>{
-    const g=getGroup(i);
-    if(g.includes('แดง'))return true;
-    const ed=parseItemExp(i);
-    return ed&&(ed-now)/(1000*60*60*24*30.4)<=6;
-  }).length;
-  document.getElementById('out-total').textContent=items.length||'0';
-  document.getElementById('out-expiring').textContent=expiring6;
-  document.getElementById('out-qty').textContent=items.length?`${items.length} รายการ`:'';
-
-  if(!items.length){
-    const msg='<div class="empty"><div class="empty-icon">📦</div>'+(q?'ไม่พบยาที่ค้นหา':'ยังไม่มีการเบิกยาออกไปยังคลังยานอก')+'</div>';
-    if(listEl)listEl.innerHTML=msg;
-    if(expEl)expEl.innerHTML='<div class="empty"><div class="empty-icon">✓</div>ไม่มียาใกล้หมดอายุ</div>';
-    if(grpEl)grpEl.innerHTML=msg;
-    return;
-  }
-
-  // ─── 1) ยาใกล้หมดอายุ ──────────────────────────────────
-  const expItems=items.filter(i=>{
-    const ed=parseItemExp(i);
-    if(!ed)return false;
-    const mo=(ed-now)/(1000*60*60*24*30.4);
-    return mo<=_outExpRangeMonths;
-  }).sort((a,b)=>{
-    const ea=parseItemExp(a),eb=parseItemExp(b);
-    return (ea||new Date(9999,0))-(eb||new Date(9999,0));
-  });
-  if(expEl){
-    if(!expItems.length){
-      expEl.innerHTML=`<div class="empty" style="padding:10px 0;"><div class="empty-icon" style="font-size:20px;">✓</div>ไม่มียาหมดอายุภายใน ${_outExpRangeMonths} เดือน</div>`;
-    }else{
-      expEl.innerHTML=expItems.map(i=>{
-        const ed=parseItemExp(i);
-        const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):null;
-        const expColor=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=3?'var(--red)':mo<=6?'#E56A00':'var(--amber)';
-        const badge=mo===null?'—':mo<=0?'หมดแล้ว':mo<=1?'< 1 เดือน':`${mo} เดือน`;
-        return `<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);">
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:12px;font-weight:700;color:var(--text1);">${i.name}</div>
-            <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">LOT: ${i.lot}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:11px;font-weight:700;color:${expColor};">EXP ${i.exp}</div>
-            <div style="font-size:10px;color:${expColor};opacity:.8;margin-top:1px;">${badge}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;min-width:48px;">
-            <div style="font-size:18px;font-weight:800;color:var(--amber);font-family:'IBM Plex Mono',monospace;">${Math.round(i.qty)}</div>
-            <div style="font-size:9px;color:var(--text4);">${i.unit}</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
-  }
-
-  // ─── 2) สรุปยาคงคลัง ────────────────────────────────────
-  listEl.innerHTML=items.map((drug,ri)=>{
-    const uid='out_'+ri;
-    const ed=parseItemExp(drug);
-    const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):null;
-    const expColor=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=6?'var(--red)':mo<=12?'var(--amber)':'var(--teal)';
-    const expBg=mo===null?'var(--surface2)':mo<=6?'#FEE2E2':mo<=12?'#FFF3DC':'#ECFDF5';
-    const txnRows=drug.txns.map(t=>`
-      <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border-bottom:1px solid var(--border);font-size:11px;">
-        <div style="font-family:'IBM Plex Mono',monospace;color:var(--text3);min-width:72px;font-size:10px;">${t.date}</div>
-        <div style="font-family:'IBM Plex Mono',monospace;color:var(--blue);flex:1;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.docNum}</div>
-        <div style="font-size:10px;color:var(--text3);min-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.requester}</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--amber);min-width:34px;text-align:right;">${t.qty}</div>
-        <div style="font-size:10px;color:var(--text3);min-width:30px;">${drug.unit}</div>
-      </div>`).join('');
-    return `<div style="border-bottom:2px solid var(--border2);">
-      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:background .12s;"
-        onclick="const d=document.getElementById('${uid}');d.style.display=d.style.display==='none'?'block':'none';"
-        onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;">${drug.name}</div>
-          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">
-            ${drug.code} · LOT: <b style="color:var(--text2);">${drug.lot}</b>
-          </div>
-          <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
-            <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;background:${expBg};color:${expColor};">EXP ${drug.exp}</span>
-            <span style="font-size:9px;color:var(--text4);">${drug.txns.length} รายการ</span>
-          </div>
-        </div>
-        <div style="text-align:center;flex-shrink:0;min-width:52px;">
-          <div style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.4px;">รับเข้าคลัง</div>
-          <div style="font-size:26px;font-weight:800;color:var(--amber);font-family:'IBM Plex Mono',monospace;line-height:1.1;">${Math.round(drug.qty)}</div>
-          <div style="font-size:9px;color:var(--text4);font-weight:600;">${drug.unit}</div>
-        </div>
-        <span style="color:var(--text4);font-size:13px;transform:rotate(90deg);display:inline-block;">›</span>
-      </div>
-      <div id="${uid}" style="display:none;background:var(--surface2);border-top:1px solid var(--border);">
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface);border-bottom:1.5px solid var(--border2);">
-          <div style="font-size:8.5px;font-weight:700;color:var(--text3);text-transform:uppercase;min-width:72px;">วันที่</div>
-          <div style="font-size:8.5px;font-weight:700;color:var(--blue);text-transform:uppercase;flex:1;">เลขที่เอกสาร</div>
-          <div style="font-size:8.5px;font-weight:700;color:var(--text3);text-transform:uppercase;min-width:56px;">ผู้เบิก</div>
-          <div style="font-size:8.5px;font-weight:700;color:var(--amber);text-transform:uppercase;min-width:34px;text-align:right;">จำนวน</div>
-          <div style="font-size:8.5px;font-weight:700;color:var(--text3);text-transform:uppercase;min-width:30px;">หน่วย</div>
-        </div>
-        ${txnRows}
-      </div>
-    </div>`;
-  }).join('');
-
-  // ─── 3) แยกกลุ่มตามวันหมดอายุ ───────────────────────────
-  if(!grpEl)return;
-  const red=[],yellow=[],green=[];
-  items.forEach(i=>{
-    const g=getGroup(i);
-    // รองรับทั้งชื่อไทยเต็ม เช่น "สีแดง","แดง","เขียว","เหลือง" และ "เขียว"
-    if(g.includes('แดง')||g==='red')red.push(i);
-    else if(g.includes('เหลือง')||g==='yellow')yellow.push(i);
-    else green.push(i);
-  });
-  const makeGrp=(list,bg,label)=>{
-    if(!list.length)return '';
-    const sorted=[...list].sort((a,b)=>{const ea=parseItemExp(a),eb=parseItemExp(b);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
-    return `<div style="padding:10px 14px 6px;background:${bg};border-bottom:1px solid var(--border);">
-      <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;">${label} · ${list.length} รายการ</div>
-    </div>
-    ${sorted.map(i=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);">
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:12px;font-weight:700;color:var(--text1);">${i.name}</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">LOT: ${i.lot} · EXP: ${i.exp}</div>
-      </div>
-      <div style="text-align:center;flex-shrink:0;">
-        <div style="font-size:20px;font-weight:800;color:var(--amber);font-family:'IBM Plex Mono',monospace;">${Math.round(i.qty)}</div>
-        <div style="font-size:9px;color:var(--text4);">${i.unit}</div>
-      </div>
-    </div>`).join('')}`;
-  };
-  const grpHtml=makeGrp(red,'rgba(239,68,68,.06)','🔴 ≤ 6 เดือน')
-              +makeGrp(yellow,'rgba(245,158,11,.06)','🟡 6–12 เดือน')
-              +makeGrp(green,'rgba(16,185,129,.04)','🟢 > 12 เดือน');
-  grpEl.innerHTML=grpHtml||'<div class="empty"><div class="empty-icon">📦</div>ไม่มีรายการ</div>';
-}
-
-// ══════════════════════════════════════════════════════════════
 function addHistory(type,msg,detail){
   const time=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
   historyLog.unshift({type,msg,detail,time});
@@ -4097,7 +3198,7 @@ async function deleteRow(mode,idx){
   const payload={name:e.name,lot:e.lot,date:e.date,action:mode==='receive'?'delete_receive':'delete_dispense'};
   showAlert('กำลังลบข้อมูล...','info');
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     rows.splice(idx,1);if(mode==='receive')renderReceiveLog();else renderDispenseLog();
     addHistory('edit',`ลบรายการ: ${e.name}`,`LOT: ${e.lot} | ${fmtDate(e.date)}`);
     showAlert(`ลบ "${e.name}" เรียบร้อย`,'success');
@@ -4221,7 +3322,7 @@ async function sendLineFlexDispense(data){
   if(!enabled||!token||!to)return;
   const payload={action:'send_line',line_token:token,line_to:to,flex:JSON.stringify(buildFlexMessage(data))};
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     addLineLog('ok',data.name,data.qty,data.unit,data.requester,'ส่งถึง Apps Script แล้ว ✓');
     showAlert('📱 ส่งแจ้งเตือน LINE เรียบร้อย ✓','success');
   }catch(e){
@@ -5540,21 +4641,21 @@ function renderSummaryDrugPage(page){
             <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;">${i.name}</div>
             <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">${i.code||'—'} · ${txns.length} รายการ</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
-            <div style="text-align:center;min-width:36px;background:var(--blue-l);border-radius:8px;padding:4px 6px;">
-              <div style="font-size:10px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.3px;">รับ</div>
-              <div style="font-size:17px;font-weight:800;color:var(--blue);font-family:'IBM Plex Mono',monospace;line-height:1.2;">${Math.round(i.recv)}</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+            <div style="text-align:center;min-width:34px;">
+              <div style="font-size:9px;color:var(--blue);font-weight:700;text-transform:uppercase;">รับ</div>
+              <div style="font-size:16px;font-weight:700;color:var(--blue);font-family:'IBM Plex Mono',monospace;">${Math.round(i.recv)}</div>
             </div>
-            <div style="text-align:center;min-width:36px;background:var(--teal-l);border-radius:8px;padding:4px 6px;">
-              <div style="font-size:10px;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.3px;">เบิก</div>
-              <div style="font-size:17px;font-weight:800;color:var(--teal);font-family:'IBM Plex Mono',monospace;line-height:1.2;">${Math.round(i.disp)||0}</div>
+            <div style="text-align:center;min-width:34px;">
+              <div style="font-size:9px;color:var(--amber);font-weight:700;text-transform:uppercase;">เบิก</div>
+              <div style="font-size:16px;font-weight:700;color:var(--amber);font-family:'IBM Plex Mono',monospace;">${Math.round(i.disp)||0}</div>
             </div>
-            <div style="text-align:center;min-width:42px;background:${bal<=0?'var(--red-l)':bal<=3?'var(--amber-l)':'var(--teal-l)'};border-radius:8px;padding:4px 6px;">
-              <div style="font-size:10px;color:${balColor};font-weight:700;text-transform:uppercase;letter-spacing:.3px;">คงเหลือ</div>
-              <div style="font-size:21px;font-weight:800;color:${balColor};font-family:'IBM Plex Mono',monospace;line-height:1.1;">${bal}</div>
-              <div style="font-size:10px;color:${balColor};font-weight:600;opacity:.85;">${i.unit}</div>
+            <div style="text-align:center;min-width:38px;">
+              <div style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">คงเหลือ</div>
+              <div style="font-size:20px;font-weight:800;color:${balColor};font-family:'IBM Plex Mono',monospace;line-height:1;">${bal}</div>
+              <div style="font-size:9px;color:var(--text3);font-weight:600;">${i.unit}</div>
             </div>
-            <span style="color:var(--text3);font-size:14px;transform:rotate(90deg);display:inline-block;">›</span>
+            <span style="color:var(--text4);font-size:13px;transform:rotate(90deg);display:inline-block;">›</span>
           </div>
         </div>
         <!-- Transaction detail -->
@@ -5941,262 +5042,7 @@ function saveInventoryTextFile(){
   showAlert('บันทึกไฟล์ .txt แล้ว ✓','success');
 }
 
-// ══ คลังยานอก — page-extstock ════════════════════════════════
-async function loadExtStock(){
-  const listEl=document.getElementById('extstock-list');
-  const logEl=document.getElementById('extstock-log');
-  if(listEl)listEl.innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลด...</div>';
-
-  // ดึงข้อมูลจากชีต "คลังยานอก" โดยตรง
-  try{
-    const r=await fetch(SCRIPT_URL+'?action=outerstock&t='+Date.now(),{redirect:'follow'});
-    const j=await r.json();
-    if(j.status==='ok') outerStockRows=j.rows||[];
-  }catch(e){
-    if(listEl)listEl.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ กดรีเฟรชอีกครั้ง</div>';
-    return;
-  }
-  renderExtStock();
-}
-
-function renderExtStock(){
-  const listEl=document.getElementById('extstock-list');
-  const logEl=document.getElementById('extstock-log');
-  const cntEl=document.getElementById('ext-log-count');
-  if(!listEl)return;
-
-  // ใช้ข้อมูลจากชีต "คลังยานอก" โดยตรง
-  const allOut=outerStockRows;
-
-  // search filter
-  const q=(document.getElementById('extstock-search')?.value||'').toLowerCase().trim();
-
-  // อัปเดต stats
-  const uniqDrugs=new Set(allOut.map(d=>d.name)).size;
-  const totalDisp=allOut.length;
-  const lastDate=allOut.length?fmtDate(allOut.reduce((a,b)=>{
-    const da=parseExpDate(fmtDate(a.date)?.split('/').reverse().join('-'));
-    const db=parseExpDate(fmtDate(b.date)?.split('/').reverse().join('-'));
-    return(da&&db&&db>da)?b:a;
-  }).date):'—';
-  const elTotal=document.getElementById('ext-total');
-  const elDisp=document.getElementById('ext-disp-count');
-  const elDate=document.getElementById('ext-last-date');
-  if(elTotal)elTotal.textContent=uniqDrugs||'0';
-  if(elDisp)elDisp.textContent=totalDisp||'0';
-  if(elDate)elDate.textContent=lastDate;
-  if(cntEl)cntEl.textContent=allOut.length?`${allOut.length} รายการ`:'';
-
-  if(!allOut.length){
-    listEl.innerHTML='<div class="empty"><div class="empty-icon">📦</div>ยังไม่มีข้อมูลในคลังยานอก<br><span style="font-size:11px;color:var(--text4);">ข้อมูลดึงมาจากชีต "คลังยานอก" ใน Google Sheets</span></div>';
-    if(logEl)logEl.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ</div>';
-    return;
-  }
-
-  // ── สรุปยาคงคลัง (groupby name+lot) ──────────────────────
-  const now=new Date();now.setHours(0,0,0,0);
-  const stockMap={};
-
-  // รับยาเข้าคลังยานอก = ยาที่เบิกออกจาก PCU ไปที่ dest=คลังยานอก
-  allOut.forEach(d=>{
-    const k=d.name+'||'+d.lot;
-    if(!stockMap[k])stockMap[k]={
-      name:d.name,code:d.code||'—',unit:d.unit||'',
-      lot:d.lot||'—',exp:fmtExp(d.exp)||'—',
-      recvQty:0,dispQty:0,lastDate:d.date
-    };
-    stockMap[k].recvQty+=parseFloat(d.qty)||0;
-    // เทียบวันล่าสุด
-    const a=parseExpDate(fmtDate(d.date)?.split('/').reverse().join('-'));
-    const b=parseExpDate(fmtDate(stockMap[k].lastDate)?.split('/').reverse().join('-'));
-    if(a&&(!b||a>b))stockMap[k].lastDate=d.date;
-  });
-
-  let items=Object.values(stockMap);
-  if(q)items=items.filter(i=>i.name.toLowerCase().includes(q)||(i.code||'').toLowerCase().includes(q)||(i.lot||'').toLowerCase().includes(q));
-  items.sort((a,b)=>a.name.localeCompare(b.name,'th'));
-
-  if(!items.length){
-    listEl.innerHTML='<div class="empty"><div class="empty-icon">🔍</div>ไม่พบยาที่ค้นหา</div>';
-    return;
-  }
-
-  listEl.innerHTML=items.map(i=>{
-    const bal=Math.round(i.recvQty-i.dispQty);
-    const ed=parseExpDate(i.exp);
-    const mo=ed?Math.round((ed-now)/(1000*60*60*24*30.4)):null;
-    const expColor=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=6?'var(--red)':mo<=12?'var(--amber)':'var(--teal)';
-    const expBg=mo===null?'var(--surface2)':mo<=6?'#FEE2E2':mo<=12?'#FFF3DC':'#ECFDF5';
-    return `<div style="padding:13px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-      <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#EDE9FE,#F5F3FF);
-                  border:1.5px solid rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">🏠</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.name}</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">${i.code} · LOT: <b style="color:var(--text2);">${i.lot}</b></div>
-        <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;">
-          <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;background:${expBg};color:${expColor};">EXP ${i.exp}</span>
-          <span style="font-size:9px;color:var(--text4);">📅 ${fmtDate(i.lastDate)}</span>
-        </div>
-      </div>
-      <div style="text-align:center;flex-shrink:0;min-width:54px;">
-        <div style="font-size:9px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.4px;">รับเข้าคลัง</div>
-        <div style="font-size:26px;font-weight:800;color:var(--purple);font-family:'IBM Plex Mono',monospace;line-height:1.1;">${Math.round(i.recvQty)}</div>
-        <div style="font-size:9px;color:var(--text4);font-weight:600;">${i.unit}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  // ── Transaction log ───────────────────────────────────────
-  if(!logEl)return;
-  const logRows=[...allOut].sort((a,b)=>{
-    const pa=fmtDate(a.date).split('/'),pb=fmtDate(b.date).split('/');
-    return new Date(pb[2],pb[1]-1,pb[0])-new Date(pa[2],pa[1]-1,pa[0]);
-  });
-  const qf=q;
-  const filtered=qf?logRows.filter(d=>d.name.toLowerCase().includes(qf)||(d.code||'').toLowerCase().includes(qf)):logRows;
-  if(cntEl)cntEl.textContent=`${filtered.length} รายการ`;
-  logEl.innerHTML=filtered.length?filtered.map(d=>`
-    <div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;">
-      <div style="width:32px;height:32px;border-radius:9px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:1px;">📤</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:12px;font-weight:700;color:var(--text1);">${d.name}</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">
-          LOT: ${d.lot||'—'} · EXP: ${fmtExp(d.exp)||'—'}
-          ${d.docNum&&d.docNum!=='—'?`<span style="margin-left:6px;color:var(--blue);">📄 ${d.docNum}</span>`:''}
-        </div>
-        <div style="font-size:10px;color:var(--text4);margin-top:2px;">📅 ${fmtDate(d.date)} · ${d.requester||'—'}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:18px;font-weight:800;color:var(--purple);font-family:'IBM Plex Mono',monospace;">${Math.round(parseFloat(d.qty)||0)}</div>
-        <div style="font-size:9px;color:var(--text4);">${d.unit||''}</div>
-      </div>
-    </div>`).join(''):'<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ</div>';
-}
-// ══ คลังยานอก END ══════════════════════════════════════════
-function switchStockSubtab(tab){
-  const isPcu=tab==='pcu';
-  // toggle views
-  document.getElementById('stock-view-pcu').style.display=isPcu?'':'none';
-  document.getElementById('stock-view-out').style.display=isPcu?'none':'';
-  // toggle buttons
-  const btnPcu=document.getElementById('subtab-pcu');
-  const btnOut=document.getElementById('subtab-out');
-  btnPcu.style.background=isPcu?'var(--blue)':'transparent';
-  btnPcu.style.color=isPcu?'#fff':'var(--text3)';
-  btnPcu.style.boxShadow=isPcu?'0 2px 8px rgba(26,95,212,.3)':'none';
-  btnOut.style.background=isPcu?'transparent':'var(--accent)';
-  btnOut.style.color=isPcu?'var(--text3)':'#fff';
-  btnOut.style.boxShadow=isPcu?'none':'0 2px 8px rgba(249,115,22,.3)';
-  if(!isPcu){
-    if(!outerStockRows.length){
-      const el=document.getElementById('outer-stock-list');
-      if(el)el.innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลด...</div>';
-      fetch(SCRIPT_URL+'?action=outerstock&t='+Date.now(),{redirect:'follow'})
-        .then(r=>r.json()).then(j=>{if(j.status==='ok')outerStockRows=j.rows||[];renderOuterStock();})
-        .catch(()=>renderOuterStock());
-    }else{
-      renderOuterStock();
-    }
-  }
-}
-
-function renderOuterStock(){
-  const el=document.getElementById('outer-stock-list');
-  if(!el)return;
-
-  // ใช้ข้อมูลจากชีต "คลังยานอก" โดยตรง
-  let outerRows=[...outerStockRows];
-
-  // date filter
-  const df=(document.getElementById('out-date-filter')||{}).value||'all';
-  if(df!=='all'){
-    const now=new Date();now.setHours(0,0,0,0);
-    const days={today:0,week:6,month:29}[df]??0;
-    const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-days);
-    outerRows=outerRows.filter(d=>{
-      const p=fmtDate(d.date).split('/');
-      if(p.length!==3)return true;
-      const rd=new Date(p[2],p[1]-1,p[0]);
-      return rd>=cutoff;
-    });
-  }
-
-  // search filter
-  const q=(document.getElementById('outer-search')?.value||'').toLowerCase().trim();
-  if(q)outerRows=outerRows.filter(d=>d.name.toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q));
-
-  if(!outerRows.length){
-    // อัปเดต stats
-    document.getElementById('out-total').textContent='0';
-    document.getElementById('out-qty').textContent='0';
-    el.innerHTML=outerStockRows.length?
-      '<div class="empty"><div class="empty-icon">📦</div>ไม่มีรายการในคลังยานอก'+(q?'<br>ที่ตรงกับคำค้น':'')+'</div>':
-      '<div class="empty"><div class="empty-icon">📦</div>ยังไม่มีข้อมูลคลังยานอก<br><span style="font-size:11px;color:var(--text4);">กดรีเฟรชชีต "คลังยานอก" หรือเปิดแอปใหม่</span></div>';
-    return;
-  }
-
-  // สร้าง stockMap สำหรับคลังยานอก
-  // นับยาที่เบิกออกไปคลังยานอก ต่อ name+lot
-  const nm=new Date();nm.setHours(0,0,0,0);
-  const outMap={};
-  outerRows.forEach(d=>{
-    const k=d.name+'||'+d.lot;
-    if(!outMap[k])outMap[k]={
-      name:d.name,code:d.code,unit:d.unit||'',
-      lot:d.lot,exp:fmtExp(d.exp)||'—',
-      qty:0,dates:[],docNums:[],requester:d.requester||'—'
-    };
-    outMap[k].qty+=parseFloat(d.qty)||0;
-    if(d.date)outMap[k].dates.push(fmtDate(d.date));
-    if(d.docNum&&d.docNum!=='—')outMap[k].docNums.push(d.docNum);
-  });
-
-  const items=Object.values(outMap).sort((a,b)=>a.name.localeCompare(b.name,'th'));
-  const totalQty=items.reduce((s,i)=>s+i.qty,0);
-  document.getElementById('out-total').textContent=items.length;
-  document.getElementById('out-qty').textContent=Math.round(totalQty);
-
-  const now2=new Date();now2.setHours(0,0,0,0);
-  el.innerHTML=items.map(i=>{
-    const ed=parseExpDate(i.exp);
-    const mo=ed?Math.round((ed-now2)/(1000*60*60*24*30.4)):null;
-    const expColor=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=6?'var(--red)':mo<=12?'var(--amber)':'var(--teal)';
-    const expBg=mo===null?'var(--surface2)':mo<=0?'#FEE2E2':mo<=6?'#FEE2E2':mo<=12?'#FFF3DC':'#ECFDF5';
-    const lastDate=i.dates.length?i.dates[i.dates.length-1]:'—';
-    const docStr=i.docNums.length?i.docNums.join(', '):'—';
-    return `<div style="padding:13px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-      <!-- icon -->
-      <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#FFF3DC,#FEF9EC);
-                  border:1.5px solid rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;
-                  font-size:18px;flex-shrink:0;">📦</div>
-      <!-- drug info -->
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.name}</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">
-          ${i.code||'—'} · LOT: <span style="font-weight:600;color:var(--text2);">${i.lot||'—'}</span>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;align-items:center;">
-          <!-- EXP badge -->
-          <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;
-                       background:${expBg};color:${expColor};">
-            EXP ${i.exp}
-          </span>
-          <!-- doc num -->
-          ${docStr!=='—'?`<span style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">📄 ${docStr}</span>`:''}
-          <!-- date -->
-          <span style="font-size:9px;color:var(--text4);">📅 ${lastDate}</span>
-        </div>
-      </div>
-      <!-- qty -->
-      <div style="text-align:center;flex-shrink:0;min-width:52px;">
-        <div style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.4px;">รับเข้าคลัง</div>
-        <div style="font-size:24px;font-weight:800;color:var(--amber);font-family:'IBM Plex Mono',monospace;line-height:1.1;">${Math.round(i.qty)}</div>
-        <div style="font-size:9px;color:var(--text4);font-weight:600;">${i.unit}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-// ══ คลังยานอก END ═════════════════════════════════════════════
+// ══ DATE FILTER FUNCTIONS ════════════════════════════════════
 function applyReceiveDateFilter(){
   const inp=document.getElementById('recv-date-filter');
   _recvDateFilter=inp?inp.value:'';
@@ -6223,113 +5069,6 @@ function clearDispenseDateFilter(){
   if(cnt)cnt.textContent='';
   renderDispenseLog();
 }
-
-// ══ Login screen: clock + live stats ════════════════════════
-(function initLoginScreen(){
-  // ── Analog clock ───────────────────────────────────────────
-  const CIRCUM=2*Math.PI*88; // circumference of arc circle r=88
-  function drawClock(){
-    const now=new Date();
-    const h=now.getHours(),m=now.getMinutes(),s=now.getSeconds(),ms=now.getMilliseconds();
-    // smooth second angle
-    const secAngle=(s+ms/1000)*6;
-    const minAngle=(m+s/60)*6;
-    const hrAngle=((h%12)+m/60)*30;
-    // rotate hands
-    const rotate=(el,deg)=>{
-      const line=document.getElementById(el);
-      if(!line)return;
-      const cx=100,cy=100;
-      const rad=(deg-90)*Math.PI/180;
-      // get original endpoint length from center
-      const lengths={
-        'ls-hour':{x2:100,y2:42,len:58},
-        'ls-min':{x2:100,y2:28,len:72},
-        'ls-sec':{x2:100,y2:24,len:76,'x1':100,'y1':108,tail:8}
-      };
-      const d=lengths[el];
-      if(el==='ls-sec'){
-        line.setAttribute('x1',cx-Math.cos(rad)*d.tail);
-        line.setAttribute('y1',cy-Math.sin(rad)*d.tail);
-        line.setAttribute('x2',cx+Math.cos(rad)*d.len);
-        line.setAttribute('y2',cy+Math.sin(rad)*d.len);
-      }else{
-        line.setAttribute('x2',cx+Math.cos(rad)*d.len);
-        line.setAttribute('y2',cy+Math.sin(rad)*d.len);
-      }
-    };
-    rotate('ls-hour',hrAngle);
-    rotate('ls-min',minAngle);
-    rotate('ls-sec',secAngle);
-    // arc = minutes progress (0-60 → full circle)
-    const arc=document.getElementById('ls-arc');
-    if(arc){
-      const prog=(m+s/60)/60;
-      const dash=prog*CIRCUM;
-      arc.setAttribute('stroke-dasharray',`${dash.toFixed(1)} ${(CIRCUM-dash).toFixed(1)}`);
-    }
-    // tick marks (draw once)
-    const ticks=document.getElementById('ls-ticks');
-    if(ticks&&!ticks.dataset.drawn){
-      ticks.dataset.drawn='1';
-      let t='';
-      for(let i=0;i<12;i++){
-        const a=(i/12)*2*Math.PI-Math.PI/2;
-        const isMaj=i%3===0;
-        const r1=isMaj?76:80,r2=isMaj?88:86;
-        const x1=100+r1*Math.cos(a),y1=100+r1*Math.sin(a);
-        const x2=100+r2*Math.cos(a),y2=100+r2*Math.sin(a);
-        t+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
-          stroke="rgba(255,255,255,${isMaj?.5:.25})" stroke-width="${isMaj?2:1.5}" stroke-linecap="round"/>`;
-      }
-      ticks.innerHTML=t;
-    }
-    // digital time — 24hr
-    const hEl=document.getElementById('ls-dtime-h');
-    const mEl=document.getElementById('ls-dtime-m');
-    const apEl=document.getElementById('ls-dtime-ampm');
-    if(hEl)hEl.textContent=String(h).padStart(2,'0');
-    if(mEl)mEl.textContent=String(m).padStart(2,'0');
-    if(apEl)apEl.style.display='none';
-    // date
-    const days=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
-    const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    const dEl=document.getElementById('ls-date-th');
-    if(dEl)dEl.textContent=`${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()+543}`;
-  }
-  drawClock();
-  setInterval(drawClock,1000);
-
-  const vEl=document.getElementById('app-version');
-  if(vEl){const n=new Date();vEl.textContent='v'+[n.getDate(),n.getMonth()+1,n.getFullYear()].map(x=>String(x).padStart(2,'0')).join('.');}
-
-  // ── Live stats ─────────────────────────────────────────────
-  async function loadLoginStats(){
-    try{
-      const[rr,dr]=await Promise.all([
-        fetch(SCRIPT_URL+'?t='+Date.now(),{redirect:'follow'}).then(r=>r.json()).catch(()=>null),
-        fetch(SCRIPT_URL+'?action=dispense&t='+Date.now(),{redirect:'follow'}).then(r=>r.json()).catch(()=>null)
-      ]);
-      if(rr&&rr.status==='ok'){
-        const names=new Set((rr.rows||[]).map(r=>r.name));
-        const dEl=document.getElementById('ls-stat-drugs');if(dEl)dEl.textContent=names.size;
-        const todayStr=todayTH();
-        const todayCnt=(rr.rows||[]).filter(r=>fmtDate(r.date)===todayStr).length;
-        const rEl=document.getElementById('ls-stat-recv');if(rEl)rEl.textContent=todayCnt;
-        if(dr&&dr.status==='ok'){
-          const sm={};
-          (rr.rows||[]).forEach(r=>{const k=r.name+'|'+r.lot;if(!sm[k])sm[k]={qty:0,exp:r.exp};sm[k].qty+=parseFloat(r.qty)||0;});
-          (dr.rows||[]).forEach(d=>{const k=d.name+'|'+d.lot;if(sm[k])sm[k].qty-=parseFloat(d.qty)||0;});
-          const now2=new Date();now2.setHours(0,0,0,0);
-          const ec=Object.values(sm).filter(s=>{if(s.qty<=0)return false;const ed=parseExpDate(fmtExp(s.exp));return ed&&(ed-now2)/(1000*60*60*24*30.4)<=6;}).length;
-          const eEl=document.getElementById('ls-stat-exp');if(eEl)eEl.textContent=ec;
-        }
-      }
-    }catch(e){}
-  }
-  setTimeout(loadLoginStats,600);
-})();
-// ══ Login screen END ══════════════════════════════════════════
 
 // ══ LOGIN SYSTEM ══════════════════════════════════════════════
 // PIN = ปี พ.ศ. เกิด (4 หลัก) — ตายตัว ไม่เปลี่ยน
@@ -6483,9 +5222,6 @@ function selectUser(userId){
   document.getElementById('step-user').style.display='none';
   document.getElementById('step-pin').style.display='flex';
   document.getElementById('login-err').textContent='';
-  // ซ่อน bubbles และ background overlay ใน PIN step
-  document.querySelectorAll('.ls-bubble').forEach(b=>b.style.display='none');
-  document.getElementById('login-screen').classList.add('pin-mode');
   updatePinDots();
 }
 
@@ -6497,9 +5233,6 @@ function backToUserSelect(){
   document.getElementById('step-user').style.display='block';
   document.getElementById('step-pin').style.display='none';
   document.getElementById('login-err').textContent='';
-  // แสดง bubbles กลับมา
-  document.querySelectorAll('.ls-bubble').forEach(b=>b.style.display='');
-  document.getElementById('login-screen').classList.remove('pin-mode');
   updatePinDots();
 }
 
@@ -6561,7 +5294,6 @@ function doLoginSuccess(user){
   // auto-fill requester in dispense
   autoFillRequester(user.name);
   // load data
-  loadDrugDB();
   loadReceive();
 }
 
@@ -6872,21 +5604,20 @@ function searchDispenseDrug(val){
   });
   // กรองตาม query
   const hits=Object.values(inStock)
-    .filter(i=>i.qty>0&&(i.name.toLowerCase().includes(q)||(i.code||'').toLowerCase().includes(q)))
+    .filter(i=>i.qty>0&&(i.name.toLowerCase().includes(q)||i.code.toLowerCase().includes(q)))
     .slice(0,12);
   // fallback: ถ้าไม่มีในคลัง ให้ค้นจาก drugDB แทน
   const fallback=hits.length===0;
   const show=fallback
-    ? drugDB.filter(d=>d[1].toLowerCase().includes(q)||(d[0]||'').toLowerCase().includes(q)).slice(0,10)
+    ? drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q)).slice(0,10)
         .map(d=>({name:d[1],code:d[0],qty:null,unit:''}))
     : hits;
   if(!show.length){box.style.display='none';return;}
   box.innerHTML=show.map(d=>{
     const qty=d.qty!==null?` <span style="font-size:10px;color:var(--teal);font-weight:700;">(คงเหลือ ${Math.round(d.qty)} ${d.unit})</span>`:'';
-    return `<div class="si" ontouchstart="" onclick='pickDrug("${d.name.replace(/"/g,'\\"')}","${(d.code||'').replace(/"/g,'\\"')}","sbox-d")'><div>${d.name}${qty}</div><div class="si-sub">${d.code||''}</div></div>`;
+    return `<div class="si" ontouchstart="" onclick='pickDrug("${d.name.replace(/"/g,'\\"')}","${d.code.replace(/"/g,'\\"')}","sbox-d")'><div>${d.name}${qty}</div><div class="si-sub">${d.code}</div></div>`;
   }).join('');
-  const dEl=document.getElementById('d-name');
-  if(dEl)_showSbox(box,dEl);else box.style.display='block';
+  box.style.display='block';
 }
 
 // ══ EXPORT INVENTORY TO GOOGLE SHEET ══════════════════════════
@@ -7160,813 +5891,6 @@ document.addEventListener('scroll', function(){
   if(m)m.remove();
 }, {passive:true});
 
-
-// ══ ANALYTICS DASHBOARD JS ══════════════════════════════════
-
-/* ════════════════════════════════════════════
-   STATE
-════════════════════════════════════════════ */
-const S={
-  data:null, dmap:{}, dmeta:{}, allMonths:[], fcs:[],
-  fcSk:'rec',fcAsc:false,
-  drSk:'qty',drAsc:false,
-  urSk:'daily',urAsc:false,
-  selMo:null,
-};
-
-/* ════ CHART REG ════ */
-const CR={};
-const kc=id=>{if(CR[id]){CR[id].destroy();delete CR[id];}};
-const rc=(id,i)=>{CR[id]=i;return i;};
-
-/* ════ COLORS ════ */
-const C={
-  ac:'#3dd6f5',a2:'#7c6aff',a3:'#f97316',
-  gr:'#34d399',rd:'#f87171',yl:'#fbbf24',pk:'#f472b6',
-  pal:['#3dd6f5','#7c6aff','#f97316','#34d399','#fbbf24','#f472b6','#f87171','#22d3ee','#a78bfa','#fb923c','#4ade80','#38bdf8'],
-};
-Chart.defaults.color='#7a9bbd';
-Chart.defaults.borderColor='rgba(61,214,245,.07)';
-Chart.defaults.font.family="'IBM Plex Mono',monospace";
-Chart.defaults.font.size=13;
-
-/* ════ FORMAT ════ */
-const fmt=n=>Number(n).toLocaleString('th-TH');
-const fmtF=n=>Number(n).toLocaleString('th-TH',{minimumFractionDigits:1,maximumFractionDigits:1});
-const fmtC=n=>'฿'+Number(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
-const sd=s=>s?s.substring(5):'';
-
-function toast(msg,dur=2400){
-  const el=document.getElementById('an-toast');
-  el.textContent=msg;el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),dur);
-}
-function setP(cls,txt){
-  const el=document.getElementById('an-pill');
-  el.className=cls;el.textContent=txt;
-}
-
-/* ════ NAV ════ */
-function goAnalyticsPage(id,el){
-  document.querySelectorAll('.an-page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.an-ni').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  (el||document.querySelector(`[data-page="${id}"]`))?.classList.add('active');
-  if(!S.data) return;
-  ({tr:renderTr,dr:renderDr,cl:renderCl,mo:renderMo,fc:renderFc,ur:renderUr})[id]?.();
-}
-
-/* ════ FETCH ════ */
-/* ════ API ════ */
-const AN_AN_API_URL = 'https://script.google.com/macros/s/AKfycbyLns2ayIwPJkSWBdLbDZogcP48hkoeln2ykWBMgTwx8rmWDAHlv_PyKzEgG_BjR5Kf/exec';
-
-async function fetchAnalyticsData(){
-  document.getElementById('an-fetchBtn').disabled=true;
-  setP('loading','● LOADING…');
-  document.getElementById('an-ov-empty').style.display='none';
-  document.getElementById('an-ov-data').style.display='none';
-  try{
-    const base = AN_API_URL + '?';
-    const [r1, r2] = await Promise.all([
-      fetch(base+'_t='+Date.now()),
-      fetch(base+'action=drug_monthly&_t='+(Date.now()+1))
-    ]);
-    const [d, dm] = await Promise.all([r1.json(), r2.json()]);
-
-    if(d.status!=='ok') throw new Error(d.message||'API error (main)');
-
-    S.data = d;
-
-    if(dm.status==='ok' && dm.drugs){
-      S.dmap  = {};
-      S.dmeta = {};
-      Object.entries(dm.drugs).forEach(([name,info])=>{
-        S.dmap[name]  = info.series;
-        S.dmeta[name] = { unit:info.unit, code:info.code };
-      });
-      S.allMonths = dm.months;
-      toast('✓ โหลดครบ: '+fmt(d.summary.total_rows)+' รายการ · '+fmt(dm.drug_count)+' ชนิดยา');
-    } else {
-      buildDmapFallback(d.monthly);
-      S.allMonths = d.monthly.map(m=>m.month).sort();
-      toast('⚠ drug_monthly ไม่พร้อม — ใช้ top_drugs fallback');
-    }
-
-    S.fcs = computeFcs();
-    setP('ok','✓ '+fmt(d.summary.total_rows)+' rows · '+fmt(Object.keys(S.dmap).length)+' drugs');
-    updateBadges();
-    renderOv();
-    const cur=document.querySelector('.ni.active')?.dataset.page;
-    if(cur&&cur!=='ov') goAnalyticsPage(cur);
-  }catch(e){
-    setP('error','✗ ERROR');
-    toast('❌ '+e.message, 5000);
-    document.getElementById('an-ov-empty').style.display='flex';
-    document.getElementById('an-ov-empty').innerHTML=`
-      <div class="empty-ic">⚠️</div>
-      <p style="color:var(--rd)">โหลดข้อมูลไม่ได้</p>
-      <p style="font-size:.75rem;color:var(--tx3)">${e.message}</p>
-      <button class="btn btn-p" style="margin-top:.75rem" onclick="fetchAnalyticsData()">ลองใหม่</button>`;
-  }finally{document.getElementById('an-fetchBtn').disabled=false;}
-}
-
-function updateBadges(){
-  const d=S.data;
-  document.getElementById('nb-dr').textContent=fmt(d.summary.unique_drugs);
-  document.getElementById('nb-cl').textContent=fmt(d.top_clinics.length);
-  document.getElementById('nb-mo').textContent=fmt(d.monthly.length);
-  const h=S.fcs.filter(f=>f.urgency==='high').length;
-  const nb=document.getElementById('nb-fc');
-  nb.textContent=h;nb.className='nbadge'+(h?' hot':'');
-}
-
-/* ════ OV PAGE ════ */
-function kCard(l,v,s,col,fs='1.5rem'){
-  return `<div class="kpi"><div class="kl">${l}</div><div class="kv" style="color:${col};font-size:${fs}">${v}</div><div class="ks">${s}</div></div>`;
-}
-function renderOv(){
-  const d=S.data;const {summary,daily,monthly,top_drugs,top_clinics}=d;
-  document.getElementById('an-ov-empty').style.display='none';
-  document.getElementById('an-ov-data').style.display='block';
-  const avgD=daily.length?Math.round(summary.total_rows/daily.length):0;
-  const avgCP=summary.unique_patients?Math.round(summary.total_cost/summary.unique_patients):0;
-  document.getElementById('ov-kpi').innerHTML=
-    kCard('รายการทั้งหมด',fmt(summary.total_rows),'dispenses','var(--ac)')+
-    kCard('ผู้ป่วยไม่ซ้ำ',fmt(summary.unique_patients),'unique HN','var(--gr)')+
-    kCard('ชนิดยา',fmt(summary.unique_drugs),'รายการ','var(--a2)')+
-    kCard('ปริมาณรวม',fmt(summary.total_qty),'หน่วย','var(--a3)')+
-    kCard('มูลค่ารวม',fmtC(summary.total_cost),'total cost','var(--yl)','1.1rem')+
-    kCard('เฉลี่ย/วัน',fmt(avgD),'รายการ/วัน','var(--pk)')+
-    kCard('ต้นทุน/ราย',fmtC(avgCP),'avg/patient','var(--rd)','1.05rem')+
-    kCard('ช่วงข้อมูล',summary.date_range.from,'→ '+summary.date_range.to,'var(--tx2)','.9rem');
-  // charts
-  kc('dailyTrend');
-  const grad1=document.getElementById('dailyTrend').getContext('2d');
-  rc('dailyTrend',new Chart(grad1,{type:'bar',
-    data:{labels:daily.map(d=>sd(d.date)),datasets:[
-      {label:'รายการ',data:daily.map(d=>d.dispense_count),backgroundColor:'rgba(61,214,245,.18)',borderColor:C.ac,borderWidth:1.2,order:2},
-      {label:'ผู้ป่วย',data:daily.map(d=>d.patient_count),type:'line',borderColor:C.gr,backgroundColor:'rgba(52,211,153,.07)',borderWidth:2,pointRadius:0,fill:true,tension:.4,order:1}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{boxWidth:10,font:{size:13}}}},
-      scales:{x:{ticks:{maxTicksLimit:14,maxRotation:0,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}}},
-      onClick:(_,els)=>{if(!els.length)return;openDrillDay(daily[els[0].index]);}
-    }
-  }));
-
-  kc('topPie');
-  const t8=top_drugs.slice(0,8);
-  rc('topPie',new Chart(document.getElementById('topPie').getContext('2d'),{
-    type:'doughnut',
-    data:{labels:t8.map(d=>d.name.length>15?d.name.substring(0,15)+'…':d.name),
-      datasets:[{data:t8.map(d=>d.qty),backgroundColor:C.pal.slice(0,8).map(c=>c+'aa'),borderColor:C.pal.slice(0,8),borderWidth:1.2,hoverOffset:8}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'57%',
-      plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:12}}}},
-      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(t8[els[0].index]?.name);}
-    }
-  }));
-
-  kc('costLine');
-  const gCost=document.getElementById('costLine').getContext('2d');
-  const cg=gCost.createLinearGradient(0,0,0,180);cg.addColorStop(0,'rgba(124,106,255,.4)');cg.addColorStop(1,'rgba(124,106,255,.02)');
-  rc('costLine',new Chart(gCost,{type:'line',
-    data:{labels:daily.map(d=>sd(d.date)),datasets:[{label:'฿',data:daily.map(d=>d.total_cost),borderColor:C.a2,backgroundColor:cg,borderWidth:1.5,pointRadius:0,fill:true,tension:.4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{maxTicksLimit:8,maxRotation:0,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>'฿'+v.toLocaleString('th-TH'),font:{size:12}}}}
-    }
-  }));
-
-  kc('mBar');
-  rc('mBar',new Chart(document.getElementById('mBar').getContext('2d'),{type:'bar',
-    data:{labels:monthly.map(m=>m.month),datasets:[{label:'รายการ',data:monthly.map(m=>m.dispense_count),
-      backgroundColor:monthly.map((_,i)=>C.pal[i%C.pal.length]+'55'),borderColor:monthly.map((_,i)=>C.pal[i%C.pal.length]),borderWidth:1.2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{maxRotation:45,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}}},
-      onClick:(_,els)=>{if(!els.length)return;goAnalyticsPage('mo');setTimeout(()=>selMo(monthly[els[0].index]?.month),300);}
-    }
-  }));
-
-  kc('clBar');
-  rc('clBar',new Chart(document.getElementById('clBar').getContext('2d'),{type:'bar',
-    data:{labels:top_clinics.map(c=>(c.name||'?').substring(0,16)),datasets:[{label:'รายการ',data:top_clinics.map(c=>c.count),backgroundColor:C.pal.map(c=>c+'55'),borderColor:C.pal,borderWidth:1.2}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
-      scales:{x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},y:{ticks:{font:{size:12}}}},
-      onClick:()=>goAnalyticsPage('cl')
-    }
-  }));
-}
-
-/* ════ TREND PAGE ════ */
-function renderTr(){
-  if(!S.data)return;
-  const {daily,monthly}=S.data;
-  const gran=document.getElementById('tGran').value;
-  const met=document.getElementById('tMet').value;
-  const type=document.getElementById('tType').value;
-  const src=gran==='daily'?daily:monthly;
-  const labels=gran==='daily'?src.map(d=>sd(d.date)):src.map(m=>m.month);
-  const ml={count:'รายการ',patients:'ผู้ป่วย',qty:'ปริมาณ',cost:'มูลค่า (฿)'}[met];
-  const data=src.map(r=>({count:r.dispense_count||0,patients:r.patient_count||0,qty:r.total_qty||0,cost:r.total_cost||0})[met]);
-  document.getElementById('tTitle').textContent=`${ml} · ${gran==='daily'?'รายวัน':'รายเดือน'}`;
-  document.getElementById('tInfo').textContent=`${fmt(src.length)} ${gran==='daily'?'วัน':'เดือน'}`;
-  kc('tMain');
-  const ctx=document.getElementById('tMain').getContext('2d');
-  const g=ctx.createLinearGradient(0,0,0,340);g.addColorStop(0,'rgba(61,214,245,.3)');g.addColorStop(1,'rgba(61,214,245,.02)');
-  rc('tMain',new Chart(ctx,{type:type==='area'?'line':type,
-    data:{labels,datasets:[{label:ml,data,borderColor:C.ac,backgroundColor:type==='area'?g:'rgba(61,214,245,.18)',borderWidth:1.8,pointRadius:0,fill:type==='area',tension:.4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{maxTicksLimit:16,maxRotation:40}},
-        y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>met==='cost'?'฿'+v.toLocaleString('th-TH'):v.toLocaleString('th-TH')}}}
-    }
-  }));
-  // MoM
-  const mVals=monthly.map(m=>({count:m.dispense_count,patients:m.patient_count,qty:m.total_qty||0,cost:m.total_cost||0})[met]);
-  const chg=mVals.map((v,i)=>i===0?0:mVals[i-1]?Math.round((v-mVals[i-1])/mVals[i-1]*1000)/10:0);
-  kc('momC');
-  rc('momC',new Chart(document.getElementById('momC').getContext('2d'),{type:'bar',
-    data:{labels:monthly.map(m=>m.month),datasets:[{label:'MoM%',data:chg,
-      backgroundColor:chg.map(v=>v>=0?'rgba(52,211,153,.35)':'rgba(248,113,113,.35)'),
-      borderColor:chg.map(v=>v>=0?C.gr:C.rd),borderWidth:1.2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{maxRotation:45,font:{size:12}}},y:{grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>v+'%',font:{size:12}}}}
-    }
-  }));
-  // Scatter
-  kc('pvC');
-  rc('pvC',new Chart(document.getElementById('pvC').getContext('2d'),{type:'scatter',
-    data:{datasets:[{label:'เดือน',data:monthly.map(m=>({x:m.patient_count,y:m.total_cost,label:m.month})),
-      backgroundColor:monthly.map((_,i)=>C.pal[i%C.pal.length]+'99'),borderColor:monthly.map((_,i)=>C.pal[i%C.pal.length]),
-      borderWidth:1,pointRadius:6,pointHoverRadius:9}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.label} ผู้ป่วย:${fmt(ctx.raw.x)} ฿${fmt(Math.round(ctx.raw.y))}`}}},
-      scales:{x:{title:{display:true,text:'ผู้ป่วย (ราย)',color:'#5578a0',font:{size:12}},grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},
-        y:{beginAtZero:true,title:{display:true,text:'มูลค่า (฿)',color:'#5578a0',font:{size:12}},grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>'฿'+v.toLocaleString('th-TH'),font:{size:12}}}}
-    }
-  }));
-}
-
-/* ════════════════════════════════════════════════════════
-   DRUG MAP
-   S.dmap  : { name → [{ym, qty}] }  ← จาก drug_monthly API
-   S.dmeta : { name → {unit, code} }
-   S.allMonths : ['2024-01', ...]     ← sorted
-════════════════════════════════════════════════════════ */
-function buildDmapFallback(monthly){
-  /* fallback: สร้างจาก top_drugs ของแต่ละเดือน (ไม่ครบทุกตัว) */
-  S.dmap  = {};
-  S.dmeta = {};
-  const tmp = {};
-  monthly.forEach(m=>(m.top_drugs||[]).forEach(d=>{
-    if(!tmp[d.name]) tmp[d.name]={};
-    tmp[d.name][m.month]=(tmp[d.name][m.month]||0)+d.qty;
-  }));
-  const mons = monthly.map(m=>m.month).sort();
-  Object.keys(tmp).forEach(n=>{
-    S.dmap[n] = mons.map(ym=>({ym, qty: tmp[n][ym]||0}));
-    S.dmeta[n]= {unit:'',code:''};
-  });
-  S.allMonths = mons;
-}
-
-/* ════════════════════════════════════════════════════════
-   FORECAST ENGINE  (แก้ใหม่ทั้งหมด)
-
-   ปัญหาเดิม:
-   1. หาร nM ทั้งหมด → ยาที่ใช้แค่บางเดือนถูกดึงลง
-   2. lrSlope ใช้ 0 รวมทุกเดือน → slope บิดเบือน
-   3. wma3 ดึง 3 ตัวท้ายซึ่งอาจเป็น 0 → forecast ต่ำเกิน
-   4. CV คำนวณเฉพาะเดือนที่มีข้อมูล แต่ไม่ consistent
-
-   แก้:
-   - avgPerActiveMonth  = รวม / จำนวนเดือนที่มีการใช้จริง
-   - lrSlope ใช้เฉพาะ series ที่มีค่า > 0 (active months)
-   - wma ใช้ 3 เดือนล่าสุดที่มีข้อมูล ≥ 1 (ไม่นับ trailing zero)
-   - CV คำนวณจาก active months เท่านั้น
-   - นับ activeMonths / totalMonths สำหรับ availability
-════════════════════════════════════════════════════════ */
-
-/* ── Math helpers ─────────────────────────────────────── */
-function lrSlopeArr(arr){
-  /* Linear regression slope บน array ใดๆ (ใช้ index เป็น x) */
-  const n=arr.length; if(n<2) return 0;
-  const mx=(n-1)/2;
-  const my=arr.reduce((s,v)=>s+v,0)/n;
-  const num=arr.reduce((s,v,i)=>s+(i-mx)*(v-my),0);
-  const den=arr.reduce((s,_,i)=>s+(i-mx)**2,0);
-  return den ? num/den : 0;
-}
-function wmaRecent(series, k=3){
-  /* WMA k จาก active months ล่าสุด (กรอง trailing zero ออก) */
-  const active = [];
-  for(let i=series.length-1; i>=0 && active.length<k; i--){
-    if(series[i].qty > 0) active.unshift(series[i].qty);
-  }
-  if(!active.length) return 0;
-  if(active.length===1) return active[0];
-  if(active.length===2) return (active[1]*2+active[0])/3;
-  return (active[2]*3+active[1]*2+active[0])/6;
-}
-function cvCalcArr(vals){
-  /* Coefficient of Variation จาก array ตัวเลข */
-  if(!vals.length) return 0;
-  const mu=vals.reduce((s,v)=>s+v,0)/vals.length;
-  if(!mu) return 0;
-  const sd=Math.sqrt(vals.reduce((s,v)=>s+(v-mu)**2,0)/vals.length);
-  return sd/mu;
-}
-
-/* ── Main compute ──────────────────────────────────────── */
-function computeFcs(){
-  const mons   = S.allMonths;
-  const totalM = mons.length || 1;
-  const spanD  = totalM * 30.44;
-
-  return Object.entries(S.dmap).map(([name, series])=>{
-
-    /* รวมปริมาณทั้งหมด */
-    const total = series.reduce((s,p)=>s+p.qty, 0);
-    if(!total) return null;
-
-    /* Active months = เดือนที่มีการใช้จริง (qty > 0) */
-    const activeSeries = series.filter(p=>p.qty>0);
-    const activeM = activeSeries.length || 1;
-    const activeQtys = activeSeries.map(p=>p.qty);
-
-    /* อัตราเฉลี่ย — แยก 2 แบบ */
-    const avgPerActiveMonth = total / activeM;          // เฉลี่ยเฉพาะเดือนที่ใช้
-    const avgPerTotalMonth  = total / totalM;           // เฉลี่ยรวมทุกเดือน (สำหรับ forecast)
-
-    const avgPerDay = total / spanD;
-
-    /* Slope — คำนวณบน active series เท่านั้น */
-    const slope = lrSlopeArr(activeQtys);
-
-    /* WMA — 3 เดือนล่าสุดที่มีข้อมูล */
-    const wma = wmaRecent(series, 3);
-
-    /* CV — จาก active months */
-    const cv = cvCalcArr(activeQtys);
-
-    /* Availability = สัดส่วนเดือนที่ใช้ */
-    const availability = activeM / totalM;
-
-    /* Safety buffer: สูงขึ้นถ้า CV สูงหรือ availability ต่ำ */
-    const buf = (cv > 0.4 || availability < 0.5) ? 0.25
-              : cv > 0.25 ? 0.20
-              : 0.10;
-
-    /* Trend direction — slope เทียบ avg ต่อเดือน */
-    const slopePct = avgPerActiveMonth > 0 ? slope / avgPerActiveMonth : 0;
-    const tdir = slopePct >  0.05 ? 'up'
-               : slopePct < -0.05 ? 'down' : 'flat';
-
-    /* Urgency */
-    const urgency = (tdir==='up' && cv>0.25)  ? 'high'
-                  : (tdir==='up' || cv>0.35)  ? 'medium' : 'low';
-
-    /* Unit จาก dmeta */
-    const unit = S.dmeta[name]?.unit || '';
-    const code = S.dmeta[name]?.code || '';
-
-    return {
-      name, unit, code,
-      total,
-      activeM, totalM,
-      availability: Math.round(availability*1000)/10,  // %
-      avgPerActiveMonth: Math.round(avgPerActiveMonth*10)/10,
-      avgPerTotalMonth:  Math.round(avgPerTotalMonth*10)/10,
-      avgPerDay:         Math.round(avgPerDay*100)/100,
-      slope:    Math.round(slope*10)/10,
-      slopePct: Math.round(slopePct*1000)/10,
-      cv:       Math.round(cv*1000)/10,
-      wma, buf, tdir, urgency,
-      qtys: series.map(p=>p.qty),   // for sparkline
-    };
-  }).filter(Boolean);
-}
-
-/* ── Project forward (ใช้ wma + slope ต่อจาก active base) ── */
-function proj(fc, h){
-  let p = 0;
-  for(let i=1; i<=h; i++){
-    /* slope ปรับ wma ทีละเดือน, floor ที่ 0 */
-    p += Math.max(0, fc.wma + fc.slope * i);
-  }
-  /* คูณ buffer + ceiling */
-  return {
-    proj: Math.round(p),
-    rec:  Math.ceil(p * (1 + fc.buf))
-  };
-}
-/* ════ DRUGS PAGE ════ */
-function renderDr(){
-  if(!S.data||!S.fcs.length)return;
-  const q=(document.getElementById('drSearch').value||'').toLowerCase();
-  const sk=S.drSk;
-  const totalQty=S.data.summary.total_qty||1;
-
-  let list=S.fcs.filter(fc=>!q||fc.name.toLowerCase().includes(q));
-  list.sort((a,b)=>{
-    const va=sk==='name'?a.name:sk==='qty'?a.total:sk==='avg'?a.avgPerActiveMonth:a.avgPerDay;
-    const vb=sk==='name'?b.name:sk==='qty'?b.total:sk==='avg'?b.avgPerActiveMonth:b.avgPerDay;
-    return S.drAsc?(sk==='name'?va.localeCompare(vb):va-vb):(sk==='name'?vb.localeCompare(va):vb-va);
-  });
-  document.getElementById('drCount').textContent=`${fmt(list.length)} รายการ`;
-  const mx=list[0]?.total||1;
-  const avCol=v=>v>=80?'var(--gr)':v>=50?'var(--yl)':'var(--rd)';
-  document.getElementById('drTb').innerHTML=list.map((d,i)=>{
-    const pct=Math.round(d.total/mx*100);
-    const sp=Math.round(d.total/totalQty*1000)/10;
-    const rbcls=i===0?'g':i===1?'s':i===2?'b':'';
-    const unitStr=d.unit?`<span style="font-size:.65rem;color:var(--tx3);margin-left:.4rem">${d.unit}</span>`:'';
-    const codeStr=d.code?`<span style="font-size:.6rem;color:var(--tx3);margin-left:.3rem">[${d.code}]</span>`:'';
-    return`<tr onclick="openDrillDrug('${d.name.replace(/'/g,"\\'")}')">
-      <td><span class="rb ${rbcls}">${i+1}</span></td>
-      <td class="tn">${d.name}${unitStr}${codeStr}</td>
-      <td>${fmt(Math.round(d.total))}</td>
-      <td style="color:var(--ac)">${fmtF(d.avgPerActiveMonth)}</td>
-      <td style="color:var(--tx2)">${fmtF(d.avgPerTotalMonth)}</td>
-      <td>${d.avgPerDay}</td>
-      <td><span style="color:${avCol(d.availability)}">${d.availability}%</span><span style="color:var(--tx3);font-size:.68rem"> ${d.activeM}/${d.totalM}mo</span></td>
-      <td><div class="br"><span style="min-width:36px;font-size:.75rem">${sp}%</span><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div></td>
-      <td><canvas id="dsp${i}" width="80" height="24"></canvas></td>
-    </tr>`;
-  }).join('');
-  requestAnimationFrame(()=>list.forEach((d,i)=>{const c=document.getElementById('dsp'+i);if(c)spark(c,d.qtys);}));
-}
-function sDr(k){S.drSk===k?S.drAsc=!S.drAsc:(S.drSk=k,S.drAsc=false);renderDr();}
-
-/* ════ CLINICS PAGE ════ */
-function renderCl(){
-  if(!S.data)return;
-  const cls=S.data.top_clinics;const tot=cls.reduce((a,b)=>a+b.count,0)||1;
-  document.getElementById('clTb').innerHTML=cls.map((c,i)=>{
-    const pct=Math.round(c.count/tot*1000)/10;const rc=i===0?'g':i===1?'s':i===2?'b':'';
-    return`<tr onclick="showCl('${(c.name||'').replace(/'/g,"\\'")}',${c.count},${pct})">
-      <td><span class="rb ${rc}">${i+1}</span></td><td class="tn">${c.name||'(ไม่ระบุ)'}</td>
-      <td>${fmt(c.count)}</td>
-      <td><div class="br"><span style="min-width:34px;font-size:.75rem">${pct}%</span><div class="bt"><div class="bf or" style="width:${Math.round(c.count/cls[0].count*100)}%"></div></div></div></td>
-    </tr>`;
-  }).join('');
-  kc('clPie');
-  rc('clPie',new Chart(document.getElementById('clPie').getContext('2d'),{type:'doughnut',
-    data:{labels:cls.slice(0,10).map(c=>c.name||'?'),
-      datasets:[{data:cls.slice(0,10).map(c=>c.count),backgroundColor:C.pal.slice(0,10).map(c=>c+'aa'),borderColor:C.pal.slice(0,10),borderWidth:1.2,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'54%',
-      plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:12}}}},
-      onClick:(_,els)=>{if(!els.length)return;const cl=cls[els[0].index];if(cl)showCl(cl.name,cl.count,Math.round(cl.count/tot*1000)/10);}
-    }
-  }));
-}
-function showCl(name,count,pct){
-  document.getElementById('clDetail').style.display='block';
-  document.getElementById('clDetailT').textContent='คลินิก: '+name;
-  document.getElementById('clDetailB').innerHTML=`<div class="dkpi">
-    <div class="dk"><div class="dkl">รายการ</div><div class="dkv" style="color:var(--ac)">${fmt(count)}</div></div>
-    <div class="dk"><div class="dkl">สัดส่วน</div><div class="dkv" style="color:var(--yl)">${pct}%</div></div>
-  </div>`;
-  toast(`${name||'?'} — ${fmt(count)} รายการ (${pct}%)`);
-}
-
-/* ════ MONTHLY PAGE ════ */
-function renderMo(){
-  if(!S.data)return;
-  const monthly=S.data.monthly;
-  document.getElementById('moGrid').innerHTML=monthly.map(m=>`
-    <div class="mc ${S.selMo===m.month?'active':''}" onclick="selMo('${m.month}')">
-      <div class="mcy">${m.month}</div><div class="mcn">${fmt(m.dispense_count)}</div>
-      <div class="mcs">${fmt(m.patient_count)} ราย · ฿${fmt(Math.round(m.total_cost))}</div>
-    </div>`).join('');
-  if(S.selMo)selMo(S.selMo);
-}
-function selMo(ym){
-  S.selMo=ym;
-  renderMo();
-  const m=S.data.monthly.find(x=>x.month===ym);if(!m)return;
-  document.getElementById('moDetail').style.display='grid';
-  document.getElementById('moDetailT').textContent=`Top 10 ยา — ${ym}`;
-  const topD=(m.top_drugs||[]).slice(0,10);
-  kc('moBar');
-  rc('moBar',new Chart(document.getElementById('moBar').getContext('2d'),{type:'bar',
-    data:{labels:topD.map(d=>d.name.substring(0,18)),datasets:[{label:'qty',data:topD.map(d=>d.qty),backgroundColor:C.pal.map(c=>c+'66'),borderColor:C.pal,borderWidth:1.2}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
-      scales:{x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},y:{ticks:{font:{size:12}}}},
-      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(topD[els[0].index]?.name);}
-    }
-  }));
-  document.getElementById('moKpi').innerHTML=`
-    <div class="dk"><div class="dkl">รายการ</div><div class="dkv" style="color:var(--ac)">${fmt(m.dispense_count)}</div></div>
-    <div class="dk"><div class="dkl">ผู้ป่วย</div><div class="dkv" style="color:var(--gr)">${fmt(m.patient_count)}</div></div>
-    <div class="dk"><div class="dkl">ปริมาณรวม</div><div class="dkv" style="color:var(--a3)">${fmt(m.total_qty||0)}</div></div>
-    <div class="dk"><div class="dkl">มูลค่า</div><div class="dkv" style="color:var(--yl);font-size:1rem">${fmtC(m.total_cost)}</div></div>`;
-}
-
-
-/* ════ FORECAST PAGE ════ */
-function renderFc(){
-  if(!S.fcs.length)return;
-  const h=parseInt(document.getElementById('fcH').value||'3');
-  const fv=document.getElementById('fcF').value;
-  const q=(document.getElementById('fcSearch').value||'').toLowerCase();
-  const topN=parseInt(document.getElementById('fcN').value||'50');
-  const enr=S.fcs.map(fc=>({...fc,...proj(fc,h)}));
-  let filt=enr;
-  if(fv==='high')filt=enr.filter(d=>d.urgency==='high');
-  else if(fv==='medium')filt=enr.filter(d=>d.urgency==='medium');
-  else if(fv==='low')filt=enr.filter(d=>d.urgency==='low');
-  else if(fv==='up')filt=enr.filter(d=>d.tdir==='up');
-  else if(fv==='down')filt=enr.filter(d=>d.tdir==='down');
-  if(q)filt=filt.filter(d=>d.name.toLowerCase().includes(q));
-  const sk=S.fcSk,sa=S.fcAsc;
-  filt.sort((a,b)=>{
-    const va=sk==='avg'?a.avgPerActiveMonth:sk==='slope'?a.slope:sk==='cv'?a.cv:sk==='proj'?a.proj:sk==='urgency'?['low','medium','high'].indexOf(a.urgency):a.rec;
-    const vb=sk==='avg'?b.avgPerActiveMonth:sk==='slope'?b.slope:sk==='cv'?b.cv:sk==='proj'?b.proj:sk==='urgency'?['low','medium','high'].indexOf(b.urgency):b.rec;
-    return sa?va-vb:vb-va;
-  });
-  const show=filt.slice(0,topN);
-  const tot=enr.length,totR=enr.reduce((s,d)=>s+d.rec,0);
-  const high=enr.filter(d=>d.urgency==='high').length;
-  const med=enr.filter(d=>d.urgency==='medium').length;
-  const low=enr.filter(d=>d.urgency==='low').length;
-  const up=enr.filter(d=>d.tdir==='up').length;
-  const dn=enr.filter(d=>d.tdir==='down').length;
-  const flat=enr.filter(d=>d.tdir==='flat').length;
-  document.getElementById('fcKpi').innerHTML=
-    kCard('ยาทั้งหมด',fmt(tot),'รายการ','var(--ac)')+
-    kCard(`แนะนำเบิก(${h}mo)`,fmt(totR),'หน่วย+buffer','var(--a3)','1.05rem')+
-    kCard('Trend ขึ้น▲',fmt(up),'รายการ','var(--rd)')+
-    kCard('Trend ลง▼',fmt(dn),'รายการ','var(--gr)')+
-    kCard('High 🔴',fmt(high),'Urgent','var(--rd)')+
-    kCard('แสดง',fmt(show.length),'จาก '+fmt(filt.length),'var(--tx2)');
-  // Bar chart — top 20 by rec (ใช้ copy ป้องกัน mutation)
-  const t20=[...enr].sort((a,b)=>b.rec-a.rec).slice(0,20);
-  kc('fcBar');
-  rc('fcBar',new Chart(document.getElementById('fcBar').getContext('2d'),{type:'bar',
-    data:{labels:t20.map(d=>d.name.length>22?d.name.substring(0,22)+'…':d.name),datasets:[
-      {label:'คาดการณ์',data:t20.map(d=>d.proj),backgroundColor:'rgba(61,214,245,.2)',borderColor:C.ac,borderWidth:1.2},
-      {label:'แนะนำเบิก',data:t20.map(d=>d.rec),backgroundColor:'rgba(249,115,22,.2)',borderColor:C.a3,borderWidth:1.2}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
-      interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{boxWidth:10,font:{size:13}}}},
-      scales:{x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>v.toLocaleString('th-TH'),font:{size:12}}},y:{ticks:{font:{size:11}}}},
-      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(t20[els[0].index]?.name);}
-    }
-  }));
-  // Urgency pie
-  kc('fcUrgPie');
-  rc('fcUrgPie',new Chart(document.getElementById('fcUrgPie').getContext('2d'),{type:'doughnut',
-    data:{labels:['🔴 High','🟡 Medium','🟢 Low'],datasets:[{data:[high,med,low],
-      backgroundColor:['rgba(248,113,113,.55)','rgba(251,191,36,.45)','rgba(52,211,153,.4)'],
-      borderColor:[C.rd,C.yl,C.gr],borderWidth:1.2,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'52%',
-      plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:12}}}},
-      onClick:(_,els)=>{if(!els.length)return;document.getElementById('fcF').value=['high','medium','low'][els[0].index];renderFc();}
-    }
-  }));
-  // Trend pie
-  kc('fcTrPie');
-  rc('fcTrPie',new Chart(document.getElementById('fcTrPie').getContext('2d'),{type:'doughnut',
-    data:{labels:['▲ ขึ้น','─ คงที่','▼ ลง'],datasets:[{data:[up,flat,dn],
-      backgroundColor:['rgba(248,113,113,.5)','rgba(74,96,128,.35)','rgba(52,211,153,.45)'],
-      borderColor:[C.rd,'#3d5a7a',C.gr],borderWidth:1.2,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'52%',
-      plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:12}}}},
-      onClick:(_,els)=>{if(!els.length)return;document.getElementById('fcF').value=['up','flat','down'][els[0].index];renderFc();}
-    }
-  }));
-  // Scatter
-  kc('fcScat');
-  const colorOf=u=>u==='high'?C.rd:u==='medium'?C.yl:C.gr;
-  const spts=enr.map(d=>({x:d.slopePct,y:d.cv,label:d.name,urgency:d.urgency}));
-  rc('fcScat',new Chart(document.getElementById('fcScat').getContext('2d'),{type:'scatter',
-    data:{datasets:[{data:spts,backgroundColor:spts.map(p=>colorOf(p.urgency)+'88'),borderColor:spts.map(p=>colorOf(p.urgency)),borderWidth:1,pointRadius:5,pointHoverRadius:8}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.label}  slope:${ctx.raw.x}%  CV:${ctx.raw.y}%`}}},
-      scales:{x:{title:{display:true,text:'Slope %/mo',color:'#5578a0',font:{size:12}},grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>v+'%',font:{size:12}}},
-        y:{beginAtZero:true,title:{display:true,text:'CV%',color:'#5578a0',font:{size:12}},grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>v+'%',font:{size:12}}}},
-      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(spts[els[0].index]?.label);}
-    }
-  }));
-  // Table
-  const sign=v=>v>=0?'+':'';
-  const avCol=v=>v>=80?'var(--gr)':v>=50?'var(--yl)':'var(--rd)';
-  document.getElementById('fcTb').innerHTML=show.map((d,i)=>{
-    const rbcls=i===0?'g':i===1?'s':i===2?'b':'';
-    const tc=d.tdir==='up'?C.rd:d.tdir==='down'?C.gr:'#5578a0';
-    const unitStr=d.unit?`<span style="font-size:.65rem;color:var(--tx3);margin-left:.35rem">${d.unit}</span>`:'';
-    return`<tr onclick="openDrillDrug('${d.name.replace(/'/g,"\\'")}')">
-      <td><span class="rb ${rbcls}">${i+1}</span></td>
-      <td class="tn">${d.name}${unitStr}</td>
-      <td style="color:var(--ac)">${fmtF(d.avgPerActiveMonth)}</td>
-      <td>${d.avgPerDay}</td>
-      <td style="color:${tc}">${sign(d.slope)}${d.slope}</td>
-      <td>${d.cv}%</td>
-      <td><span style="color:${avCol(d.availability)};font-size:.78rem">${d.availability}%</span><span style="color:var(--tx3);font-size:.65rem"> ${d.activeM}/${d.totalM}</span></td>
-      <td><canvas id="fsp${i}" width="80" height="22"></canvas></td>
-      <td style="color:var(--ac)">${fmt(d.proj)}</td>
-      <td style="color:var(--yl);font-weight:600">${fmt(d.rec)}</td>
-      <td style="font-size:.75rem;color:var(--tx3)">+${Math.round(d.buf*100)}%</td>
-      <td><span class="tag ${d.urgency}">${d.urgency==='high'?'🔴สูง':d.urgency==='medium'?'🟡กลาง':'🟢ปกติ'}</span></td>
-    </tr>`;
-  }).join('');
-  requestAnimationFrame(()=>show.forEach((d,i)=>{const c=document.getElementById('fsp'+i);if(c)spark(c,d.qtys);}));
-}
-function sFC(k){S.fcSk===k?S.fcAsc=!S.fcAsc:(S.fcSk=k,S.fcAsc=false);renderFc();}
-
-/* ════ USAGE RATE PAGE ════ */
-function renderUr(){
-  if(!S.fcs.length)return;
-  const q=(document.getElementById('urSearch').value||'').toLowerCase();
-  const sk=S.urSk;
-  let list=[...S.fcs];
-  if(q)list=list.filter(d=>d.name.toLowerCase().includes(q));
-  list.sort((a,b)=>{
-    const va=sk==='daily'?a.avgPerDay:sk==='avg'?a.avgPerActiveMonth:sk==='cv'?a.cv:a.slope;
-    const vb=sk==='daily'?b.avgPerDay:sk==='avg'?b.avgPerActiveMonth:sk==='cv'?b.cv:b.slope;
-    return S.urAsc?va-vb:vb-va;
-  });
-  document.getElementById('urCount').textContent=`${fmt(list.length)} รายการ`;
-  const t20=list.slice(0,20);
-  kc('urBar');
-  rc('urBar',new Chart(document.getElementById('urBar').getContext('2d'),{type:'bar',
-    data:{labels:t20.map(d=>d.name.length>22?d.name.substring(0,22)+'…':d.name),
-      datasets:[{label:'หน่วย/วัน',data:t20.map(d=>d.avgPerDay),backgroundColor:C.pal.map(c=>c+'55'),borderColor:C.pal,borderWidth:1.2}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
-      scales:{x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},y:{ticks:{font:{size:11}}}},
-      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(t20[els[0].index]?.name);}
-    }
-  }));
-  const tslo=[...S.fcs].sort((a,b)=>Math.abs(b.slope)-Math.abs(a.slope)).slice(0,15);
-  kc('urSlope');
-  rc('urSlope',new Chart(document.getElementById('urSlope').getContext('2d'),{type:'bar',
-    data:{labels:tslo.map(d=>d.name.length>22?d.name.substring(0,22)+'…':d.name),
-      datasets:[{label:'slope/mo',data:tslo.map(d=>d.slope),
-        backgroundColor:tslo.map(d=>d.slope>=0?'rgba(248,113,113,.4)':'rgba(52,211,153,.4)'),
-        borderColor:tslo.map(d=>d.slope>=0?C.rd:C.gr),borderWidth:1.2}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
-      scales:{x:{grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},y:{ticks:{font:{size:11}}}},
-      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(tslo[els[0].index]?.name);}
-    }
-  }));
-  const sign=v=>v>=0?'+':'';
-  const tco=d=>d.tdir==='up'?C.rd:d.tdir==='down'?C.gr:'#5578a0';
-  const avCol=v=>v>=80?'var(--gr)':v>=50?'var(--yl)':'var(--rd)';
-  document.getElementById('urTb').innerHTML=list.map((d,i)=>`<tr onclick="openDrillDrug('${d.name.replace(/'/g,"\\'")}')">
-    <td>${i+1}</td>
-    <td class="tn">${d.name}${d.unit?`<span style="font-size:.65rem;color:var(--tx3);margin-left:.35rem">${d.unit}</span>`:''}</td>
-    <td style="color:var(--ac)">${d.avgPerDay}</td>
-    <td>${fmtF(d.avgPerActiveMonth)}</td>
-    <td style="color:var(--tx2)">${fmtF(d.avgPerTotalMonth)}</td>
-    <td style="color:${tco(d)}">${sign(d.slope)}${d.slope}</td>
-    <td>${d.cv}%</td>
-    <td><span style="color:${avCol(d.availability)};font-size:.78rem">${d.availability}%</span><span style="color:var(--tx3);font-size:.65rem"> ${d.activeM}/${d.totalM}mo</span></td>
-    <td><span class="tag ${d.tdir}">${d.tdir==='up'?'▲ขึ้น':d.tdir==='down'?'▼ลง':'─คงที่'}</span></td>
-    <td><canvas id="usp${i}" width="80" height="22"></canvas></td>
-  </tr>`).join('');
-  requestAnimationFrame(()=>list.forEach((d,i)=>{const c=document.getElementById('usp'+i);if(c)spark(c,d.qtys);}));
-}
-function sUR(k){S.urSk===k?S.urAsc=!S.urAsc:(S.urSk=k,S.urAsc=false);renderUr();}
-
-/* ════ DRILL-DOWN ════ */
-function openDrillDrug(name){
-  if(!name||!S.dmap[name])return;
-  const fc  = S.fcs.find(f=>f.name===name);
-  const ser = S.dmap[name];   // [{ym, qty}]
-  document.getElementById('dTitle').textContent=name;
-  document.getElementById('dFcastWrap').style.display='';
-  if(fc){
-    const s=fc.slope>=0?'+':'';
-    const tc=fc.tdir==='up'?C.rd:fc.tdir==='down'?C.gr:'var(--tx3)';
-    const avCol=fc.availability>=80?C.gr:fc.availability>=50?C.yl:C.rd;
-    document.getElementById('dSub').textContent=
-      `avg(active):${fmtF(fc.avgPerActiveMonth)}/mo · avg(all):${fmtF(fc.avgPerTotalMonth)}/mo · ${fc.avgPerDay}/day · slope:${s}${fc.slope}/mo · CV:${fc.cv}%`;
-    const{proj:p,rec:r}=proj(fc,3);
-    document.getElementById('dKpi').innerHTML=`
-      <div class="dk"><div class="dkl">หน่วย / รหัส</div><div class="dkv" style="color:var(--tx2);font-size:.95rem">${fc.unit||'—'} ${fc.code?'['+fc.code+']':''}</div></div>
-      <div class="dk"><div class="dkl">ปริมาณรวม</div><div class="dkv" style="color:var(--ac)">${fmt(fc.total)}</div></div>
-      <div class="dk"><div class="dkl">เฉลี่ย/เดือน(active)</div><div class="dkv" style="color:var(--a2)">${fmtF(fc.avgPerActiveMonth)}</div></div>
-      <div class="dk"><div class="dkl">เฉลี่ย/เดือน(รวม)</div><div class="dkv" style="color:var(--tx2)">${fmtF(fc.avgPerTotalMonth)}</div></div>
-      <div class="dk"><div class="dkl">เฉลี่ย/วัน</div><div class="dkv" style="color:var(--yl)">${fc.avgPerDay}</div></div>
-      <div class="dk"><div class="dkl">Slope/mo</div><div class="dkv" style="color:${tc}">${s}${fc.slope}</div></div>
-      <div class="dk"><div class="dkl">CV%</div><div class="dkv" style="color:var(--a3)">${fc.cv}%</div></div>
-      <div class="dk"><div class="dkl">Availability</div><div class="dkv" style="color:${avCol}">${fc.availability}% <span style="font-size:.8rem;color:var(--tx3)">(${fc.activeM}/${fc.totalM}mo)</span></div></div>
-      <div class="dk"><div class="dkl">Urgency</div><div class="dkv"><span class="tag ${fc.urgency}">${fc.urgency}</span></div></div>
-      <div class="dk"><div class="dkl">คาดการณ์3mo</div><div class="dkv" style="color:var(--ac)">${fmt(p)}</div></div>
-      <div class="dk"><div class="dkl">แนะนำเบิก3mo</div><div class="dkv" style="color:var(--yl)">${fmt(r)}</div></div>`;
-  }
-  /* History chart */
-  kc('dHistC');
-  const labels=ser.map(s=>s.ym);
-  const qtys  =ser.map(s=>s.qty);
-  const g=document.getElementById('dHistC').getContext('2d').createLinearGradient(0,0,0,190);
-  g.addColorStop(0,'rgba(61,214,245,.3)'); g.addColorStop(1,'rgba(61,214,245,.02)');
-  rc('dHistC',new Chart(document.getElementById('dHistC').getContext('2d'),{type:'line',
-    data:{labels,datasets:[{label:'qty',data:qtys,borderColor:C.ac,backgroundColor:g,borderWidth:2,pointRadius:3,fill:true,tension:.35}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{maxRotation:45,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}}}
-    }
-  }));
-  /* Forecast chart */
-  if(fc){
-    kc('dFcastC');
-    const lastYm=labels[labels.length-1]||'2024-01';
-    const futL=[],futP=[],futR=[];
-    let dt=new Date(lastYm+'-01');
-    for(let i=1;i<=6;i++){
-      dt.setMonth(dt.getMonth()+1);
-      futL.push(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0'));
-      const pv=Math.max(0, fc.wma + fc.slope*i);
-      futP.push(Math.round(pv));
-      futR.push(Math.ceil(pv*(1+fc.buf)));
-    }
-    const allL=[...labels.slice(-6),...futL];
-    const histPad=labels.slice(-6).map((_,j)=>qtys[qtys.length-6+j]??null);
-    const pp=[...new Array(6).fill(null),...futP];
-    const rp=[...new Array(6).fill(null),...futR];
-    rc('dFcastC',new Chart(document.getElementById('dFcastC').getContext('2d'),{type:'line',
-      data:{labels:allL,datasets:[
-        {label:'ประวัติ',data:histPad,borderColor:C.ac,backgroundColor:'transparent',borderWidth:1.5,pointRadius:3,tension:.3},
-        {label:'คาดการณ์',data:pp,borderColor:C.a2,backgroundColor:'rgba(124,106,255,.1)',borderWidth:1.5,borderDash:[5,4],pointRadius:3,fill:true,tension:.3},
-        {label:'แนะนำเบิก',data:rp,borderColor:C.yl,backgroundColor:'transparent',borderWidth:1.2,borderDash:[3,3],pointRadius:2,tension:.3}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-        plugins:{legend:{labels:{boxWidth:9,font:{size:12}}}},
-        scales:{x:{ticks:{maxRotation:45,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}}}
-      }
-    }));
-  }
-  document.getElementById('an-dov').classList.add('open');
-}
-
-function openDrillDay(day){
-  document.getElementById('dTitle').textContent='วันที่ '+day.date;
-  document.getElementById('dSub').textContent=`${fmt(day.dispense_count)} รายการ · ${fmt(day.patient_count)} ราย`;
-  document.getElementById('dFcastWrap').style.display='none';
-  const topD=(day.top_drugs||[]).slice(0,8);
-  document.getElementById('dKpi').innerHTML=`
-    <div class="dk"><div class="dkl">รายการ</div><div class="dkv" style="color:var(--ac)">${fmt(day.dispense_count)}</div></div>
-    <div class="dk"><div class="dkl">ผู้ป่วย</div><div class="dkv" style="color:var(--gr)">${fmt(day.patient_count)}</div></div>
-    <div class="dk"><div class="dkl">ปริมาณ</div><div class="dkv" style="color:var(--a3)">${fmt(day.total_qty||0)}</div></div>
-    <div class="dk"><div class="dkl">มูลค่า</div><div class="dkv" style="color:var(--yl);font-size:.85rem">${fmtC(day.total_cost||0)}</div></div>`;
-  kc('dHistC');
-  rc('dHistC',new Chart(document.getElementById('dHistC').getContext('2d'),{type:'bar',
-    data:{labels:topD.map(d=>d.name.substring(0,14)),datasets:[{label:'qty',data:topD.map(d=>d.qty),backgroundColor:C.pal.map(c=>c+'66'),borderColor:C.pal,borderWidth:1}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
-      scales:{x:{beginAtZero:true,ticks:{font:{size:12}}},y:{ticks:{font:{size:11}}}}}
-  }));
-  document.getElementById('an-dov').classList.add('open');
-}
-
-function cDrill(e){
-  if(!e||e.target===document.getElementById('an-dov'))
-    document.getElementById('an-dov').classList.remove('open');
-}
-
-/* ════ SPARKLINE ════ */
-function spark(canvas,data){
-  if(!data?.length)return;
-  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
-  ctx.clearRect(0,0,W,H);
-  const mx=Math.max(...data,1),mn=Math.min(...data),rng=mx-mn||1;
-  const pts=data.map((v,i)=>({x:(i/(data.length-1||1))*(W-4)+2,y:H-3-((v-mn)/rng)*(H-6)}));
-  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(61,214,245,.3)');g.addColorStop(1,'rgba(61,214,245,.02)');
-  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-  ctx.lineTo(pts[pts.length-1].x,H);ctx.lineTo(pts[0].x,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();
-  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-  ctx.strokeStyle='#3dd6f5';ctx.lineWidth=1.2;ctx.stroke();
-}
-
-/* ════ EXPORT ════ */
-function xChart(id){
-  const ch=CR[id];if(!ch){toast('⚠ ยังไม่มีกราฟ');return;}
-  const a=document.createElement('a');a.href=ch.toBase64Image();a.download=id+'.png';a.click();
-  toast('⬇ บันทึก PNG แล้ว');
-}
-function xCSV(){
-  if(!S.fcs.length){toast('⚠ ยังไม่มีข้อมูล');return;}
-  const h=parseInt(document.getElementById('fcH')?.value||'3');
-  const enr=S.fcs.map(fc=>({...fc,...proj(fc,h)}));
-  const rows=[['ชื่อยา','หน่วย','รหัส','รวม','เฉลี่ย/เดือน(active)','เฉลี่ย/เดือน(รวม)','เฉลี่ย/วัน',
-    'Active months','Total months','Availability%','Slope','CV%','Trend','Urgency','คาดการณ์','แนะนำเบิก','Buffer%']];
-  enr.forEach(d=>rows.push([
-    d.name, d.unit||'', d.code||'', d.total,
-    d.avgPerActiveMonth, d.avgPerTotalMonth, d.avgPerDay,
-    d.activeM, d.totalM, d.availability,
-    d.slope, d.cv, d.tdir, d.urgency, d.proj, d.rec, Math.round(d.buf*100)+'%'
-  ]));
-  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='drug_usage_forecast.csv';a.click();
-  toast('⬇ CSV บันทึกแล้ว '+fmt(enr.length)+' รายการ');
-}
-
-/* ════ KEYBOARD ESC ════ */
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('an-dov').classList.remove('open');});
-
-/* ════ AUTO-LOAD ════ */
-fetchAnalyticsData();
-
-// ══ ANALYTICS END ═══════════════════════════════════════════
 </script>
 </body>
 </html>
