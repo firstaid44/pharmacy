@@ -59,11 +59,11 @@ function getReceive_(ss) {
     .filter(function(r) { return r[1]; })  // ต้องมีชื่อยา
     .map(function(r) {
       return {
-        date:   String(r[0] || ''),
+        date:   fmtDateVal_(r[0]),
         name:   String(r[1] || ''),
         code:   String(r[2] || ''),
         lot:    String(r[3] || ''),
-        exp:    String(r[4] || ''),
+        exp:    fmtDateVal_(r[4]),
         qty:    Number(r[5]) || 0,
         unit:   String(r[6] || ''),
         note:   String(r[7] || ''),
@@ -152,11 +152,11 @@ function getDispense_(ss) {
     .filter(function(r) { return r[1]; })
     .map(function(r) {
       return {
-        date:      String(r[0]  || ''),
+        date:      fmtDateVal_(r[0]),
         name:      String(r[1]  || ''),
         code:      String(r[2]  || ''),
         lot:       String(r[3]  || ''),
-        exp:       String(r[4]  || ''),
+        exp:       fmtDateVal_(r[4]),
         qty:       Number(r[5]) || 0,
         unit:      String(r[6]  || ''),
         requester: String(r[7]  || ''),
@@ -248,11 +248,11 @@ function getOuterStock_(ss) {
     .filter(function(r) { return r[1]; })
     .map(function(r) {
       return {
-        date:      String(r[0]  || ''),
+        date:      fmtDateVal_(r[0]),
         name:      String(r[1]  || ''),
         code:      String(r[2]  || ''),
         lot:       String(r[3]  || ''),
-        exp:       String(r[4]  || ''),
+        exp:       fmtDateVal_(r[4]),
         qty:       Number(r[5]) || 0,
         unit:      String(r[6]  || ''),
         requester: String(r[7]  || ''),
@@ -288,6 +288,20 @@ function getMedicineDB_(ss) {
 }
 
 // ══ Helpers ════════════════════════════════════════════════════
+
+// แปลง Date object หรือ string → "dd/MM/yyyy" (ค.ศ.) เสมอ
+function fmtDateVal_(val) {
+  if (!val) return '';
+  if (Object.prototype.toString.call(val) === '[object Date]') {
+    try {
+      return Utilities.formatDate(val, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+    } catch (e) {
+      return '';
+    }
+  }
+  return String(val).trim();
+}
+
 function json_(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
