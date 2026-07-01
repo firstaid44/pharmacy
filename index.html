@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>ระบบบริหารจัดการคลังยา — PCU สะบ้าย้อย</title>
+<title>ระบบบริหารจัดการคลังยา — PCU สะบ้าย้อย Version 2569.07.01.14.00</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -3477,20 +3477,43 @@ function parseExpToInputVal(raw){
   return '';
 }
 
+function _getStockQtyMap(){
+  const m={};
+  (receiveRows||[]).forEach(r=>{m[r.name]=(m[r.name]||0)+(parseFloat(r.qty)||0);});
+  (dispenseRows||[]).forEach(d=>{m[d.name]=(m[d.name]||0)-(parseFloat(d.qty)||0);});
+  return m;
+}
 function searchDrug(val,boxId){
   const box=document.getElementById(boxId);
   if(!val.trim()){box.style.display='none';return;}
   const q=val.toLowerCase();
-  const hits=drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q)).slice(0,10);
-  if(!hits.length){box.style.display='none';return;}
-  box.innerHTML=hits.map(d=>{
+  const stockMap=_getStockQtyMap();
+
+  let hits=drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q));
+
+  // เรียง: ยาที่มีของในคลังก่อน (มากไปน้อย) แล้วตามด้วยยาที่ยังไม่มีในคลัง (เรียงตามตัวอักษร)
+  hits.sort((a,b)=>{
+    const qa=stockMap[a[1]]||0, qb=stockMap[b[1]]||0;
+    const inA=qa>0?1:0, inB=qb>0?1:0;
+    if(inA!==inB) return inB-inA;
+    if(inA===1) return qb-qa;
+    return a[1].localeCompare(b[1],'th');
+  });
+
+  const shown=hits.slice(0,12);
+  if(!shown.length){box.style.display='none';return;}
+  box.innerHTML=shown.map(d=>{
     const type=d[4]||'';
     const unitPack=d[2]||'';
     const unitSub=d[3]||'';
     const unitInfo=[unitPack,unitSub].filter(Boolean).join('/');
     const typeBadge=type==='ยาสมุนไพร'?'<span style="font-size:9px;background:#E9F7EF;color:#1E8A4A;padding:1px 5px;border-radius:4px;font-weight:700;">สมุนไพร</span>':type==='ยาคุมกำเนิด'?'<span style="font-size:9px;background:#F3EEFF;color:#6B3FC4;padding:1px 5px;border-radius:4px;font-weight:700;">คุมกำเนิด</span>':'';
+    const stockQty=Math.round(stockMap[d[1]]||0);
+    const stockBadge=stockQty>0
+      ? `<span style="font-size:9px;background:#E6F7F2;color:#0B9E72;padding:1px 6px;border-radius:4px;font-weight:700;white-space:nowrap;">คงเหลือ ${stockQty}${unitSub?' '+unitSub:''}</span>`
+      : `<span style="font-size:9px;background:#F0F2F5;color:#94A3B8;padding:1px 6px;border-radius:4px;font-weight:700;white-space:nowrap;">ยังไม่มีในคลัง</span>`;
     return `<div class="si" ontouchstart="" onclick='pickDrug("${d[1].replace(/"/g,'\\"')}","${d[0].replace(/"/g,'\\"')}","${boxId}")'>
-      <div style="display:flex;align-items:center;gap:6px;">${d[1]} ${typeBadge}</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${d[1]} ${typeBadge} ${stockBadge}</div>
       <div class="si-sub">${d[0]}${unitInfo?' · '+unitInfo:''}</div>
     </div>`;
   }).join('');
@@ -6594,10 +6617,11 @@ function doLoginSuccess(user){
   // hide conn-chip, show user-chip
   const connChip=document.querySelector('.conn-chip');
   if(connChip)connChip.style.display='none';
-  // auto-fill requester in dispense
+// auto-fill requester in dispense
   autoFillRequester(user.name);
   // load data
   loadReceive();
+  loadDispense();
 }
 
 function autoFillRequester(name){
