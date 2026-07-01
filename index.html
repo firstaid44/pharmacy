@@ -2191,7 +2191,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version Version 2569.07.01.14.00</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version Version 2569.07.01.14.43</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2263,7 +2263,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
         <div class="suggest-wrap">
           <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
             <div class="input-with-scan">
-              <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r')" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+              <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r',this)"autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
               <button class="scan-btn" onclick="openScanner('r-name')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>สแกน</button>
             </div>
           </div>
@@ -7281,8 +7281,8 @@ const AN_AN_API_URL = 'https://script.google.com/macros/s/AKfycbyLns2ayIwPJkSWBd
 async function fetchAnalyticsData(){
   document.getElementById('an-fetchBtn').disabled=true;
   setP('loading','● LOADING…');
-  document.getElementById('an-ov-empty').style.display='none';
-  document.getElementById('an-ov-data').style.display='none';
+document.getElementById('ov-empty').style.display='none';
+  document.getElementById('ov-data').style.display='none';
   try{
     const base = AN_API_URL + '?';
     const [r1, r2] = await Promise.all([
