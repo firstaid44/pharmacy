@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>ระบบบริหารจัดการคลังยา — PCU สะบ้าย้อย Version 13.52 </title>
+<title>ระบบบริหารจัดการคลังยา — PCU สะบ้าย้อย 13.54 </title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -7220,7 +7220,8 @@ function exitQuickScanMode(){
     const r=await fetch(SCRIPT_URL+'?action=medicinedb&t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
     if(j.status==='ok'&&Array.isArray(j.rows)&&j.rows.length){
-      drugDB=j.rows.map(d=>[d.code||'',d.name||'',d.unitPack||'',d.unitSub||'',d.type||'',d.min||1]);
+      // getMedicineDB_(ss) ฝั่ง Apps Script ส่งกลับเป็น array [code,name,unitPack,unitSub,type,min] อยู่แล้ว ใช้ตรงๆได้เลย
+      drugDB=j.rows;
       showAlert(`✓ โหลดฐานข้อมูลยาจาก MedicineDB สำเร็จ (${drugDB.length} รายการ)`,'success');
     }
   }catch(e){
