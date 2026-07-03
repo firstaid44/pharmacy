@@ -2191,7 +2191,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.03.14.25</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.03.15.14.37</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2340,7 +2340,10 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       <div class="card-body">
 <div class="suggest-wrap">
   <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
-    <input class="form-input" id="d-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDispenseDrug(this.value,this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+    <div class="input-with-scan">
+      <input class="form-input" id="d-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDispenseDrug(this.value,this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+      <button class="scan-btn" onclick="openScanner('d-name')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>สแกน</button>
+    </div>
   </div>
   <div class="sbox" id="sbox-d"></div>
 </div>
@@ -4149,7 +4152,7 @@ function applyScanned(val){
   const el=document.getElementById(scanTarget);if(!el)return;
   if(scanTarget==='r-name'||scanTarget==='d-name'){
     el.value=val;const boxId=scanTarget==='r-name'?'sbox-r':'sbox-d';
-    searchDrug(val,boxId);
+    if(scanTarget==='d-name'){searchDispenseDrug(val,el);}else{searchDrug(val,boxId,el);}
     const m=drugDB.find(d=>d[0].toLowerCase()===val.toLowerCase()||d[1].toLowerCase()===val.toLowerCase());
     if(m)pickDrug(m[1],m[0],boxId);else showAlert('ไม่พบยารหัส "'+val+'" ในฐานข้อมูล','warning');
   }else{el.value=val;if(scanTarget==='r-lot')showAlert('LOT: '+val+' กรอกเรียบร้อย','success');}
