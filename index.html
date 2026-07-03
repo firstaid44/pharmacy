@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>ระบบบริหารจัดการคลังยา — PCU สะบ้าย้อย </title>
+<title>ระบบบริหารจัดการคลังยา — PCU สะบ้าย้อย Version 13.52 </title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -2262,10 +2262,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       <div class="card-body">
         <div class="suggest-wrap">
           <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
-            <div class="input-with-scan">
-              <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r',this)"autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
-              <button class="scan-btn" onclick="openScanner('r-name')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>สแกน</button>
-            </div>
+            <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r',this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
           </div>
           <div class="sbox" id="sbox-r"></div>
         </div>
@@ -2343,9 +2340,9 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       <div class="card-body">
 <div class="suggest-wrap">
   <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
-    <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r',this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+    <input class="form-input" id="d-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDispenseDrug(this.value,this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
   </div>
-  <div class="sbox" id="sbox-r"></div>
+  <div class="sbox" id="sbox-d"></div>
 </div>
         <!-- hidden d-code + d-exp for backward compat -->
         <input type="hidden" id="d-code">
@@ -3480,9 +3477,21 @@ function _getStockQtyMap(){
   (dispenseRows||[]).forEach(d=>{m[d.name]=(m[d.name]||0)-(parseFloat(d.qty)||0);});
   return m;
 }
-function searchDrug(val,boxId){
+function _positionSuggestBox(box,inputEl){
+  if(!inputEl)return;
+  const r=inputEl.getBoundingClientRect();
+  box.style.position='fixed';
+  box.style.left=r.left+'px';
+  box.style.top=(r.bottom+4)+'px';
+  box.style.width=r.width+'px';
+  box.style.right='auto';
+  box.style.marginTop='0';
+  box.style.zIndex='9999';
+}
+function searchDrug(val,boxId,inputEl){
   const box=document.getElementById(boxId);
-  if(!val.trim()){box.style.display='none';return;}
+  if(!box)return;
+  if(!val.trim()){box.style.display='none';box.innerHTML='';return;}
   const q=val.toLowerCase();
   const stockMap=_getStockQtyMap();
 
@@ -3498,8 +3507,8 @@ function searchDrug(val,boxId){
   });
 
   const shown=hits.slice(0,12);
-  if(!shown.length){box.style.display='none';return;}
-  box.innerHTML=shown.map(d=>{
+  if(!shown.length){box.style.display='none';box.innerHTML='';return;}
+  box.innerHTML=shown.map((d,i)=>{
     const type=d[4]||'';
     const unitPack=d[2]||'';
     const unitSub=d[3]||'';
@@ -3509,12 +3518,21 @@ function searchDrug(val,boxId){
     const stockBadge=stockQty>0
       ? `<span style="font-size:9px;background:#E6F7F2;color:#0B9E72;padding:1px 6px;border-radius:4px;font-weight:700;white-space:nowrap;">คงเหลือ ${stockQty}${unitSub?' '+unitSub:''}</span>`
       : `<span style="font-size:9px;background:#F0F2F5;color:#94A3B8;padding:1px 6px;border-radius:4px;font-weight:700;white-space:nowrap;">ยังไม่มีในคลัง</span>`;
-    return `<div class="si" ontouchstart="" onclick='pickDrug("${d[1].replace(/"/g,'\\"')}","${d[0].replace(/"/g,'\\"')}","${boxId}")'>
+    return `<div class="si" data-idx="${i}">
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${d[1]} ${typeBadge} ${stockBadge}</div>
       <div class="si-sub">${d[0]}${unitInfo?' · '+unitInfo:''}</div>
     </div>`;
   }).join('');
+  box._searchItems=shown;
+  box.onclick=function(e){
+    const row=e.target.closest('.si');
+    if(!row)return;
+    const idx=parseInt(row.dataset.idx,10);
+    const item=box._searchItems&&box._searchItems[idx];
+    if(item)pickDrug(item[1],item[0],boxId);
+  };
   box.style.display='block';
+  _positionSuggestBox(box,inputEl);
 }
 function pickDrug(name,code,boxId){
   const isD=boxId==='sbox-d',pfx=isD?'d':'r';
@@ -6916,9 +6934,10 @@ function addAllExpiring(){
 }
 
 // ══ DISPENSE SEARCH จากคลัง ═══════════════════════════════════
-function searchDispenseDrug(val){
+function searchDispenseDrug(val,inputEl){
   const box=document.getElementById('sbox-d');
-  if(!val.trim()){box.style.display='none';return;}
+  if(!box)return;
+  if(!val.trim()){box.style.display='none';box.innerHTML='';return;}
   const q=val.toLowerCase();
   // สร้าง map ชื่อยาที่มีในคลัง (qty > 0)
   const inStock={};
@@ -6936,12 +6955,21 @@ function searchDispenseDrug(val){
     ? drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q)).slice(0,10)
         .map(d=>({name:d[1],code:d[0],qty:null,unit:''}))
     : hits;
-  if(!show.length){box.style.display='none';return;}
-  box.innerHTML=show.map(d=>{
+  if(!show.length){box.style.display='none';box.innerHTML='';return;}
+  box.innerHTML=show.map((d,i)=>{
     const qty=d.qty!==null?` <span style="font-size:10px;color:var(--teal);font-weight:700;">(คงเหลือ ${Math.round(d.qty)} ${d.unit})</span>`:'';
-    return `<div class="si" ontouchstart="" onclick='pickDrug("${d.name.replace(/"/g,'\\"')}","${d.code.replace(/"/g,'\\"')}","sbox-d")'><div>${d.name}${qty}</div><div class="si-sub">${d.code}</div></div>`;
+    return `<div class="si" data-idx="${i}"><div>${d.name}${qty}</div><div class="si-sub">${d.code}</div></div>`;
   }).join('');
+  box._searchItems=show;
+  box.onclick=function(e){
+    const row=e.target.closest('.si');
+    if(!row)return;
+    const idx=parseInt(row.dataset.idx,10);
+    const item=box._searchItems&&box._searchItems[idx];
+    if(item)pickDrug(item.name,item.code,'sbox-d');
+  };
   box.style.display='block';
+  _positionSuggestBox(box,inputEl);
 }
 
 // ══ EXPORT INVENTORY TO GOOGLE SHEET ══════════════════════════
@@ -7330,8 +7358,8 @@ document.getElementById('ov-empty').style.display='none';
   }catch(e){
     setP('error','✗ ERROR');
     toast('❌ '+e.message, 5000);
-    document.getElementById('an-ov-empty').style.display='flex';
-    document.getElementById('an-ov-empty').innerHTML=`
+    document.getElementById('ov-empty').style.display='flex';
+    document.getElementById('ov-empty').innerHTML=`
       <div class="empty-ic">⚠️</div>
       <p style="color:var(--rd)">โหลดข้อมูลไม่ได้</p>
       <p style="font-size:.75rem;color:var(--tx3)">${e.message}</p>
@@ -7355,8 +7383,8 @@ function kCard(l,v,s,col,fs='1.5rem'){
 }
 function renderOv(){
   const d=S.data;const {summary,daily,monthly,top_drugs,top_clinics}=d;
-  document.getElementById('an-ov-empty').style.display='none';
-  document.getElementById('an-ov-data').style.display='block';
+  document.getElementById('ov-empty').style.display='none';
+  document.getElementById('ov-data').style.display='block';
   const avgD=daily.length?Math.round(summary.total_rows/daily.length):0;
   const avgCP=summary.unique_patients?Math.round(summary.total_cost/summary.unique_patients):0;
   document.getElementById('ov-kpi').innerHTML=
