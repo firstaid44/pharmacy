@@ -2191,7 +2191,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.03.15.14.37</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.04.21.09</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2262,7 +2262,11 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       <div class="card-body">
         <div class="suggest-wrap">
           <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
-            <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r',this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+            <div class="input-with-scan">
+              <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r',this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+              <button class="scan-btn" id="ai-scan-btn" onclick="document.getElementById('ai-scan-file').click()"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>อ่านฉลาก AI</button>
+              <input type="file" id="ai-scan-file" accept="image/*" capture="environment" style="display:none" onchange="aiScanLabel(this.files[0]);this.value='';"/>
+            </div>
           </div>
           <div class="sbox" id="sbox-r"></div>
         </div>
@@ -7218,6 +7222,135 @@ function exitQuickScanMode(){
   const on=localStorage.getItem('line_enabled')==='true';
   if(t&&id&&on){const b=document.getElementById('line-badge');if(b)b.style.display='block';}
 })();
+// ══ MED LOGGER — อ่านฉลากยาด้วย AI (Gemini ผ่าน Apps Script) ═══
+async function aiScanLabel(file){
+  if(!file)return;
+  const btn=document.getElementById('ai-scan-btn');
+  const oldHtml=btn.innerHTML;
+  btn.disabled=true;btn.innerHTML='⏳ กำลังอ่าน...';
+  showAlert('📷 กำลังอ่านฉลากยาด้วย AI กรุณารอสักครู่...','info');
+  try{
+    // ย่อรูปให้เล็กลง (สูงสุด 1280px, jpeg 80%) เพื่อส่งเร็วและประหยัดโควต้า
+    const base64=await _resizeImageToBase64(file,1280,0.8);
+    const r=await fetch(SCRIPT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'medscan',image:base64,mime:'image/jpeg'}),
+      redirect:'follow'
+    });
+    const j=await r.json();
+    if(j.status!=='ok'||!j.result){
+      showAlert('✗ อ่านฉลากไม่สำเร็จ: '+(j.message||'ไม่ทราบสาเหตุ'),'danger');
+      return;
+    }
+    _applyMedScanResult(j.result);
+  }catch(e){
+    showAlert('✗ เกิดข้อผิดพลาด: '+e.message,'danger');
+  }finally{
+    btn.disabled=false;btn.innerHTML=oldHtml;
+  }
+}
+function _resizeImageToBase64(file,maxDim,quality){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let w=img.width,h=img.height;
+      if(w>maxDim||h>maxDim){
+        const s=maxDim/Math.max(w,h);
+        w=Math.round(w*s);h=Math.round(h*s);
+      }
+      const c=document.createElement('canvas');
+      c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl=c.toDataURL('image/jpeg',quality);
+      resolve(dataUrl.split(',')[1]); // ตัด prefix "data:image/jpeg;base64,"
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('เปิดไฟล์รูปไม่ได้'));};
+    img.src=url;
+  });
+}
+function _normalizeScanDate(s){
+  if(!s)return'';
+  s=String(s).trim();
+  // yyyy-MM-dd อยู่แล้ว
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m){
+    let y=parseInt(m[1],10);
+    if(y>2400)y-=543; // พ.ศ. → ค.ศ.
+    return y+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  }
+  // dd/MM/yyyy
+  m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if(m){
+    let y=parseInt(m[3],10);
+    if(y>2400)y-=543;
+    return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  }
+  // MM/yyyy → วันสุดท้ายของเดือน
+  m=s.match(/^(\d{1,2})[\/.-](\d{4})$/);
+  if(m){
+    let y=parseInt(m[2],10);
+    if(y>2400)y-=543;
+    const lastDay=new Date(y,parseInt(m[1],10),0).getDate();
+    return y+'-'+m[1].padStart(2,'0')+'-'+lastDay;
+  }
+  return'';
+}
+function _applyMedScanResult(res){
+  const readName=(res.name||'').trim();
+  const readLot=(res.lot||'').trim();
+  const readExp=_normalizeScanDate(res.exp||'');
+  const filled=[];
+
+  // 1) จับคู่ชื่อยากับฐานข้อมูล MedicineDB
+  if(readName){
+    const q=readName.toLowerCase();
+    // หา match: ชื่อในฐานข้อมูลมีคำที่อ่านได้ หรือคำที่อ่านได้มีชื่อฐานข้อมูล หรือ barcode ตรงรหัสยา
+    let match=drugDB.find(d=>d[1].toLowerCase()===q)||
+              drugDB.find(d=>d[1].toLowerCase().includes(q)||q.includes(d[1].toLowerCase()))||
+              (res.barcode?drugDB.find(d=>d[0]===String(res.barcode).trim()):null);
+    if(!match){
+      // จับคู่แบบคำต่อคำ: ตัวยาสำคัญ+ความแรง (เช่น "PARACETAMOL 500")
+      const tokens=q.split(/[\s\/()]+/).filter(t=>t.length>=3);
+      let best=null,bestScore=0;
+      drugDB.forEach(d=>{
+        const nm=d[1].toLowerCase();
+        const score=tokens.reduce((s,t)=>s+(nm.includes(t)?1:0),0);
+        if(score>bestScore){bestScore=score;best=d;}
+      });
+      if(bestScore>=2)match=best; // ต้องตรงอย่างน้อย 2 คำ (เช่น ชื่อยา+ความแรง)
+    }
+    if(match){
+      pickDrug(match[1],match[0],'sbox-r');
+      filled.push('ชื่อยา: '+match[1]);
+    }else{
+      // ไม่เจอในฐานข้อมูล → ใส่ชื่อที่อ่านได้ แล้วเปิดผลค้นหาให้เลือกเอง
+      const inp=document.getElementById('r-name');
+      inp.value=readName;
+      searchDrug(readName,'sbox-r',inp);
+      filled.push('ชื่อยา (ไม่พบในฐานข้อมูล กรุณาเลือกจากรายการ): '+readName);
+    }
+  }
+  // 2) LOT
+  if(readLot){
+    document.getElementById('r-lot').value=readLot;
+    filled.push('LOT: '+readLot);
+  }
+  // 3) วันหมดอายุ
+  if(readExp){
+    document.getElementById('r-exp').value=readExp;
+    filled.push('หมดอายุ: '+readExp);
+  }
+
+  if(filled.length){
+    showAlert('✓ AI อ่านฉลากสำเร็จ — '+filled.join(' | ')+' (กรุณาตรวจสอบความถูกต้องก่อนบันทึก)','success');
+  }else{
+    showAlert('⚠ AI อ่านรูปได้แต่ไม่พบข้อมูลบนฉลาก ลองถ่ายใหม่ให้ชัดขึ้น','warning');
+  }
+}
+
   async function loadMedicineDB(){
   try{
     const r=await fetch(SCRIPT_URL+'?action=medicinedb&t='+Date.now(),{redirect:'follow'});
