@@ -481,6 +481,35 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .bc-yellow{background:var(--amber-l);color:var(--amber);border:1px solid rgba(192,112,0,.18);}
 .bc-green{background:var(--green-l);color:var(--green);border:1px solid rgba(30,138,74,.18);}
 
+/* ── STOCK ROW (clean card-list redesign) ── */
+.stk-row{display:flex;align-items:stretch;gap:0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;position:relative;}
+.stk-row:last-child{border-bottom:none;}
+.stk-row:hover{background:var(--surface2);}
+.stk-row:active{background:var(--border);}
+.stk-strip{width:5px;flex-shrink:0;border-radius:0;}
+.stk-strip.red{background:var(--red);}
+.stk-strip.yellow{background:var(--amber);}
+.stk-strip.green{background:var(--teal);}
+.stk-strip.gray{background:var(--border2);}
+.stk-body{flex:1;min-width:0;padding:12px 6px 12px 12px;}
+.stk-name{font-size:14px;font-weight:700;color:var(--text1);line-height:1.3;}
+.stk-meta{font-size:11px;color:var(--text3);margin-top:3px;font-family:'IBM Plex Mono',monospace;letter-spacing:.1px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;}
+.stk-dot{display:inline-flex;align-items:center;gap:3px;font-weight:700;}
+.stk-dot.red{color:var(--red);}
+.stk-dot.yellow{color:var(--amber);}
+.stk-dot.green{color:var(--teal);}
+.stk-right{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding:12px 12px 12px 6px;flex-shrink:0;min-width:62px;}
+.stk-qty{font-size:21px;font-weight:800;font-family:'IBM Plex Mono',monospace;letter-spacing:-.5px;line-height:1;}
+.stk-qty.red{color:var(--red);}.stk-qty.yellow{color:var(--amber);}.stk-qty.green{color:var(--teal);}
+.stk-unit{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:3px;}
+
+/* ── Collapsible section ── */
+.collapse-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;cursor:pointer;user-select:none;background:var(--surface);border-radius:var(--r-xl);border:1px solid var(--border);transition:background .12s;}
+.collapse-hd:active{background:var(--surface2);}
+.collapse-hd .ttl{font-size:14px;font-weight:800;color:var(--text1);display:flex;align-items:center;gap:8px;}
+.collapse-hd .chev{font-size:13px;color:var(--text3);transition:transform .2s;}
+.collapse-hd.open .chev{transform:rotate(180deg);}
+
 /* ── LOT CARD PICKER ── */
 .lot-picker{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
 .lot-card{
@@ -2198,7 +2227,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.06.09.10</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.06.09.32</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2501,8 +2530,11 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       </div>
     </div>
     <div class="card" id="stock-summary-card"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
-    <div class="section-hd" style="margin-top:4px;"><span class="section-title">แยกกลุ่มตามวันหมดอายุ</span></div>
-    <div class="card" id="stock-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
+    <div class="collapse-hd" id="grp-collapse-hd" onclick="toggleCollapse('grp-collapse-hd','stock-list')" style="margin-top:4px;">
+      <span class="ttl">📅 แยกกลุ่มตามวันหมดอายุ</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="card" id="stock-list" style="display:none;margin-top:8px;"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
 
     <!-- ยาหมดคลัง -->
     <div class="section-hd" style="margin-top:4px;">
@@ -2561,10 +2593,11 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       </div>
 
       <!-- แยกกลุ่มตามวันหมดอายุ -->
-      <div class="section-hd" style="margin-top:4px;">
-        <span class="section-title">แยกกลุ่มตามวันหมดอายุ</span>
+      <div class="collapse-hd" id="out-grp-collapse-hd" onclick="toggleCollapse('out-grp-collapse-hd','out-group-list')" style="margin-top:4px;">
+        <span class="ttl">📅 แยกกลุ่มตามวันหมดอายุ</span>
+        <span class="chev">▼</span>
       </div>
-      <div class="card" id="out-group-list">
+      <div class="card" id="out-group-list" style="display:none;margin-top:8px;">
         <div class="loading"><div class="spin"></div>กำลังโหลด...</div>
       </div>
     </div><!-- end stock-view-out -->
@@ -3091,13 +3124,15 @@ function renderOutOfStock(){
     const unit=d.unitSub||d.unitPack||'';
     const typeBadge=d.type==='ยาสมุนไพร'?'<span style="font-size:9px;background:var(--green-l);color:var(--green);padding:1px 6px;border-radius:5px;font-weight:700;margin-left:5px;">สมุนไพร</span>'
       :d.type==='ยาคุมกำเนิด'?'<span style="font-size:9px;background:var(--purple-l);color:var(--purple);padding:1px 6px;border-radius:5px;font-weight:700;margin-left:5px;">คุมกำเนิด</span>':'';
-    return `<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);">
-      <div style="width:34px;height:34px;border-radius:10px;background:var(--red-l);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📭</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:12.5px;font-weight:700;color:var(--text1);line-height:1.3;">${d.name}${typeBadge}</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">${d.code}${unit?' · หน่วย: '+unit:''}</div>
+    return `<div class="stk-row">
+      <div class="stk-strip gray"></div>
+      <div class="stk-body">
+        <div class="stk-name">${d.name}${typeBadge}</div>
+        <div class="stk-meta"><span>${d.code}</span>${unit?'<span>หน่วย: '+unit+'</span>':''}</div>
       </div>
-      <span style="background:var(--red-l);color:var(--red);font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;white-space:nowrap;flex-shrink:0;">หมดคลัง</span>
+      <div class="stk-right">
+        <span style="background:var(--red-l);color:var(--red);font-size:10px;font-weight:800;padding:4px 10px;border-radius:12px;white-space:nowrap;">หมดคลัง</span>
+      </div>
     </div>`;
   }).join('');
 }
@@ -3162,7 +3197,6 @@ function renderSummaryTable(items){
   const total=filtered.length,totalPages=Math.max(1,Math.ceil(total/PER));
   if(summaryPage>totalPages)summaryPage=1;
   const pageRows=filtered.slice((summaryPage-1)*PER,summaryPage*PER);
-  const thC=col=>summarySort===col?(summarySortDir==='asc'?' sort-asc':' sort-desc'):'';
 
   // ── Active chip style helper ──────────────────────────────
   const chipStyle=(key,activeBg,activeBorder,activeColor)=>{
@@ -3186,34 +3220,33 @@ function renderSummaryTable(items){
         ${(window._sumFilterSearch||'')?`<button onclick="window._sumFilterSearch='';summaryPage=1;renderSummaryTable(_allStockItems)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;line-height:1;padding:0;">✕</button>`:''}
       </div>
     </div>
-    <!-- Table (original style) -->
-    <table class="sum-table"><thead><tr>
-      <th class="${thC('name')}"  onclick="setSummarySort('name')">ชื่อยา</th>
-      <th class="${thC('group')}" onclick="setSummarySort('group')">กลุ่ม</th>
-      <th class="${thC('qty')}"   onclick="setSummarySort('qty')" style="text-align:right;">คงเหลือ</th>
-    </tr></thead>
-    <tbody>${pageRows.map(i=>{
-      const isR=i._grp==='red',isY=i._grp==='yellow';
-      const rc=isR?'exp-warn':isY?'exp-caution':'';
-      const qc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
-      const chip=isR
-        ?'<span class="badge-chip bc-red">🔴 &lt;6เดือน</span>'
-        :isY
-        ?'<span class="badge-chip bc-yellow">🟡 6-12เดือน</span>'
-        :'<span class="badge-chip bc-green">🟢 &gt;12เดือน</span>';
+    <!-- Stock list (clean card rows) -->
+    <div>${pageRows.map(i=>{
+      const g=i._grp;
+      const grpLabel=g==='red'?'🔴 <6เดือน':g==='yellow'?'🟡 6-12เดือน':'🟢 >12เดือน';
       const sn=i.name.replace(/'/g,"\\'");
-      return `<tr class="${rc}" onclick="showDrugDetail('${sn}')">
-        <td>
-          <div class="sum-name">${i.name}</div>
-          <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">EXP: ${fmtExp(i.exp)}</div>
-        </td>
-        <td>${chip}</td>
-        <td>
-          <div class="sum-qty" style="color:${qc};">${Math.round(i.qty)}</div>
-          <div class="sum-unit">${i.unit}</div>
-        </td>
-      </tr>`;
-    }).join('')}</tbody></table>
+      return `<div class="stk-row" onclick="showDrugDetail('${sn}')">
+        <div class="stk-strip ${g}"></div>
+        <div class="stk-body">
+          <div class="stk-name">${i.name}</div>
+          <div class="stk-meta">
+            <span class="stk-dot ${g}">${grpLabel}</span>
+            <span>EXP ${fmtExp(i.exp)}</span>
+          </div>
+        </div>
+        <div class="stk-right">
+          <div class="stk-qty ${g}">${Math.round(i.qty)}</div>
+          <div class="stk-unit">${i.unit||''}</div>
+        </div>
+      </div>`;
+    }).join('')}</div>
+    <!-- Sort bar -->
+    <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);">
+      <span style="font-weight:700;">เรียง:</span>
+      <button onclick="setSummarySort('qty')" style="padding:3px 9px;border-radius:12px;border:1px solid var(--border2);background:${summarySort==='qty'?'var(--blue-l)':'var(--surface2)'};color:${summarySort==='qty'?'var(--blue)':'var(--text2)'};font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">คงเหลือ${summarySort==='qty'?(summarySortDir==='asc'?' ↑':' ↓'):''}</button>
+      <button onclick="setSummarySort('name')" style="padding:3px 9px;border-radius:12px;border:1px solid var(--border2);background:${summarySort==='name'?'var(--blue-l)':'var(--surface2)'};color:${summarySort==='name'?'var(--blue)':'var(--text2)'};font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">ชื่อยา${summarySort==='name'?(summarySortDir==='asc'?' ↑':' ↓'):''}</button>
+      <button onclick="setSummarySort('exp')" style="padding:3px 9px;border-radius:12px;border:1px solid var(--border2);background:${summarySort==='exp'?'var(--blue-l)':'var(--surface2)'};color:${summarySort==='exp'?'var(--blue)':'var(--text2)'};font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">วันหมดอายุ${summarySort==='exp'?(summarySortDir==='asc'?' ↑':' ↓'):''}</button>
+    </div>
     <!-- Pagination -->
     <div class="pagination">
       <button class="pg-btn" onclick="goSummaryPage(${summaryPage-1})" ${summaryPage<=1?'disabled':''}>‹</button>
@@ -3222,6 +3255,13 @@ function renderSummaryTable(items){
     </div>`;
 }
 function setSummarySort(col){if(summarySort===col){summarySortDir=summarySortDir==='asc'?'desc':'asc';}else{summarySort=col;summarySortDir=col==='qty'?'asc':'asc';}summaryPage=1;renderSummaryTable(_allStockItems);}
+function toggleCollapse(hdId,bodyId){
+  const hd=document.getElementById(hdId),body=document.getElementById(bodyId);
+  if(!hd||!body)return;
+  const willOpen=body.style.display==='none';
+  body.style.display=willOpen?'block':'none';
+  hd.classList.toggle('open',willOpen);
+}
 function goSummaryPage(p){summaryPage=p;renderSummaryTable(_allStockItems);}
 function setSumFilter(grp){window._sumFilterGrp=grp;summaryPage=1;renderSummaryTable(_allStockItems);}
 function toggleNCDFilter(){window._sumFilterNCD=!window._sumFilterNCD;summaryPage=1;renderSummaryTable(_allStockItems);}
@@ -6273,38 +6313,28 @@ function renderOuterStock(){
   el.innerHTML=items.map(i=>{
     const ed=parseExpDate(i.exp);
     const mo=ed?Math.round((ed-now2)/(1000*60*60*24*30.4)):null;
-    const expColor=mo===null?'var(--text3)':mo<=0?'#B91C1C':mo<=6?'var(--red)':mo<=12?'var(--amber)':'var(--teal)';
-    const expBg=mo===null?'var(--surface2)':mo<=0?'#FEE2E2':mo<=6?'#FEE2E2':mo<=12?'#FFF3DC':'#ECFDF5';
+    const grp=mo===null?'gray':mo<=6?'red':mo<=12?'yellow':'green';
+    const grpLabel=mo===null?'—':mo<=0?'⚠️ หมดอายุแล้ว':mo<=6?'🔴 <6เดือน':mo<=12?'🟡 6-12เดือน':'🟢 >12เดือน';
     const lastDate=i.dates.length?i.dates[i.dates.length-1]:'—';
-    const docStr=i.docNums.length?i.docNums.join(', '):'—';
-    return `<div style="padding:13px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-      <!-- icon -->
-      <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#FFF3DC,#FEF9EC);
-                  border:1.5px solid rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;
-                  font-size:18px;flex-shrink:0;">📦</div>
-      <!-- drug info -->
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.name}</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">
-          ${i.code||'—'} · LOT: <span style="font-weight:600;color:var(--text2);">${i.lot||'—'}</span>
+    const docStr=i.docNums.length?i.docNums.join(', '):'';
+    return `<div class="stk-row">
+      <div class="stk-strip ${grp}"></div>
+      <div class="stk-body">
+        <div class="stk-name">${i.name}</div>
+        <div class="stk-meta">
+          <span class="stk-dot ${grp}">${grpLabel}</span>
+          <span>EXP ${i.exp}</span>
+          <span>LOT ${i.lot||'—'}</span>
         </div>
-        <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;align-items:center;">
-          <!-- EXP badge -->
-          <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;
-                       background:${expBg};color:${expColor};">
-            EXP ${i.exp}
-          </span>
-          <!-- doc num -->
-          ${docStr!=='—'?`<span style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">📄 ${docStr}</span>`:''}
-          <!-- date -->
-          <span style="font-size:9px;color:var(--text4);">📅 ${lastDate}</span>
+        <div class="stk-meta" style="margin-top:2px;">
+          <span>${i.code||'—'}</span>
+          ${docStr?'<span>📄 '+docStr+'</span>':''}
+          <span>📅 ${lastDate}</span>
         </div>
       </div>
-      <!-- qty -->
-      <div style="text-align:center;flex-shrink:0;min-width:52px;">
-        <div style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.4px;">รับเข้าคลัง</div>
-        <div style="font-size:24px;font-weight:800;color:var(--amber);font-family:'IBM Plex Mono',monospace;line-height:1.1;">${Math.round(i.qty)}</div>
-        <div style="font-size:9px;color:var(--text4);font-weight:600;">${i.unit}</div>
+      <div class="stk-right">
+        <div class="stk-qty yellow">${Math.round(i.qty)}</div>
+        <div class="stk-unit">${i.unit||''}</div>
       </div>
     </div>`;
   }).join('');
