@@ -557,32 +557,47 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 }
 .cart-fab:active{transform:scale(.95);}
 .cart-fab.hidden{transform:translateY(100px);opacity:0;pointer-events:none;}
-/* ── STOCK SPEED-DIAL FAB (ซ้ายล่าง เฉพาะแท็บคลังยา) ── */
-#stk-fab-wrap{position:fixed;bottom:calc(88px + env(safe-area-inset-bottom));left:16px;z-index:300;display:none;}
-.stk-fab-main{
-  width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
+/* ── STOCK COLLAPSIBLE SIDEBAR (ซ้าย เฉพาะแท็บคลังยา) ── */
+#stk-side-wrap{display:none;}
+#stk-side-wrap.on{display:block;}
+.stk-side-handle{
+  position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:290;
+  width:26px;height:76px;border:none;border-radius:0 14px 14px 0;cursor:pointer;
   background:linear-gradient(135deg,#1E8A5E,#1C6B45);color:#fff;
-  font-size:22px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 20px rgba(28,107,69,.45);font-family:inherit;
-  transition:transform .2s cubic-bezier(.34,1.2,.64,1);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  box-shadow:2px 0 12px rgba(28,107,69,.35);font-family:inherit;
+  transition:opacity .2s;
 }
-.stk-fab-main:active{transform:scale(.92);}
-#stk-fab-wrap.open .stk-fab-main{transform:rotate(45deg);}
-.stk-fab-menu{
-  position:absolute;bottom:60px;left:0;display:flex;flex-direction:column;gap:7px;
-  opacity:0;pointer-events:none;transform:translateY(8px);transition:all .18s ease;
+.stk-side-handle:active{opacity:.85;}
+#stk-side-wrap.open .stk-side-handle{opacity:0;pointer-events:none;}
+.stk-side-overlay{
+  position:fixed;inset:0;background:rgba(15,25,35,.4);z-index:340;
+  opacity:0;pointer-events:none;transition:opacity .2s;
 }
-#stk-fab-wrap.open .stk-fab-menu{opacity:1;pointer-events:auto;transform:none;}
-.stk-fab-item{
-  display:flex;align-items:center;gap:9px;padding:9px 14px 9px 10px;
-  background:var(--surface);border:1px solid var(--border2);border-radius:26px;
-  font-size:12.5px;font-weight:700;color:var(--text1);cursor:pointer;
-  box-shadow:0 3px 14px rgba(15,30,25,.18);font-family:inherit;white-space:nowrap;
-  transition:transform .12s;
+#stk-side-wrap.open .stk-side-overlay{opacity:1;pointer-events:auto;}
+.stk-side-panel{
+  position:fixed;left:0;top:0;bottom:0;width:224px;z-index:350;
+  background:var(--surface);box-shadow:4px 0 24px rgba(15,30,25,.25);
+  transform:translateX(-105%);transition:transform .22s cubic-bezier(.32,.9,.45,1);
+  display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);
 }
-.stk-fab-item:active{transform:scale(.96);}
-.stk-fab-item .ic{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
-.stk-fab-divider{height:1px;background:var(--border2);margin:2px 8px;opacity:.7;}
+#stk-side-wrap.open .stk-side-panel{transform:none;}
+.stk-side-hd{
+  padding:16px 16px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.stk-side-hd .t{font-size:15px;font-weight:800;color:var(--text1);display:flex;align-items:center;gap:7px;}
+.stk-side-close{border:none;background:var(--surface2);color:var(--text2);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;justify-content:center;}
+.stk-side-sec{font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase;letter-spacing:.6px;padding:12px 16px 4px;}
+.stk-side-item{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:11px 16px;border:none;background:none;cursor:pointer;
+  font-size:13px;font-weight:700;color:var(--text1);font-family:inherit;
+  transition:background .12s;
+}
+.stk-side-item:active{background:var(--surface2);}
+.stk-side-item .ic{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
 .cart-badge{
   background:#EF4444;color:#fff;border-radius:10px;
   font-size:10px;font-weight:800;padding:1px 6px;min-width:18px;text-align:center;
@@ -2026,19 +2041,26 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
   <span class="cart-badge" id="cart-fab-badge">0</span>
 </button>
 
-<!-- ══ STOCK SPEED-DIAL FAB (เฉพาะแท็บคลังยา) ══ -->
-<div id="stk-fab-wrap">
-  <div class="stk-fab-menu">
-    <button class="stk-fab-item" onclick="stkFabGo('stk-sec-stats')"><span class="ic" style="background:var(--blue-l);">📊</span>สถิติภาพรวม</button>
-    <button class="stk-fab-item" onclick="stkFabGo('stk-sec-exp')"><span class="ic" style="background:var(--red-l);">⏰</span>ยาใกล้หมดอายุ</button>
-    <button class="stk-fab-item" onclick="stkFabGo('stk-sec-sum')"><span class="ic" style="background:var(--teal-l);">📦</span>สรุปยาคงคลัง</button>
-    <button class="stk-fab-item" onclick="stkFabGo('stk-sec-out')"><span class="ic" style="background:var(--surface2);">📭</span>ยาหมดคลัง</button>
-    <div class="stk-fab-divider"></div>
-    <button class="stk-fab-item" onclick="closeStkFab();openStockRequisition()"><span class="ic" style="background:var(--blue-l);">📋</span>ใบเบิกยา</button>
-    <button class="stk-fab-item" onclick="closeStkFab();openExportMenu()"><span class="ic" style="background:var(--teal-l);">📤</span>ส่งออกรายการ</button>
-    <button class="stk-fab-item" onclick="closeStkFab();loadStock();showAlert('↻ กำลังรีเฟรชข้อมูลคลังยา...','info')"><span class="ic" style="background:var(--amber-l);">↻</span>รีเฟรชข้อมูล</button>
-  </div>
-  <button class="stk-fab-main" onclick="toggleStkFab()" aria-label="เมนูคลังยา">☰</button>
+<!-- ══ STOCK COLLAPSIBLE SIDEBAR (เฉพาะแท็บคลังยา) ══ -->
+<div id="stk-side-wrap">
+  <button class="stk-side-handle" onclick="openStkSide()" aria-label="เปิดเมนูคลังยา">»</button>
+  <div class="stk-side-overlay" onclick="closeStkSide()"></div>
+  <nav class="stk-side-panel">
+    <div class="stk-side-hd">
+      <span class="t">🏥 เมนูคลังยา</span>
+      <button class="stk-side-close" onclick="closeStkSide()" aria-label="ปิด">✕</button>
+    </div>
+    <div class="stk-side-sec">ไปยังส่วน</div>
+    <button class="stk-side-item" onclick="stkFabGo('stk-sec-stats')"><span class="ic" style="background:var(--blue-l);">📊</span>สถิติภาพรวม</button>
+    <button class="stk-side-item" onclick="stkFabGo('stk-sec-dash')"><span class="ic" style="background:var(--purple-l,#F3EEFF);">📈</span>Dashboard หมดอายุ</button>
+    <button class="stk-side-item" onclick="stkFabGo('stk-sec-exp')"><span class="ic" style="background:var(--red-l);">⏰</span>ยาใกล้หมดอายุ</button>
+    <button class="stk-side-item" onclick="stkFabGo('stk-sec-sum')"><span class="ic" style="background:var(--teal-l);">📦</span>สรุปยาคงคลัง</button>
+    <button class="stk-side-item" onclick="stkFabGo('stk-sec-out')"><span class="ic" style="background:var(--surface2);">📭</span>ยาหมดคลัง</button>
+    <div class="stk-side-sec">การทำงาน</div>
+    <button class="stk-side-item" onclick="closeStkSide();openStockRequisition()"><span class="ic" style="background:var(--blue-l);">📋</span>ใบเบิกยา</button>
+    <button class="stk-side-item" onclick="closeStkSide();openExportMenu()"><span class="ic" style="background:var(--teal-l);">📤</span>ส่งออกรายการ</button>
+    <button class="stk-side-item" onclick="closeStkSide();loadStock();showAlert('↻ กำลังรีเฟรชข้อมูลคลังยา...','info')"><span class="ic" style="background:var(--amber-l);">↻</span>รีเฟรชข้อมูล</button>
+  </nav>
 </div>
 
 <!-- ══ CART PREVIEW MODAL ══ -->
@@ -2268,7 +2290,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.06.10.21</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.06.15.35</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2540,6 +2562,13 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       <div class="stat-card c-red" onclick="showExpiringDetail()" style="cursor:pointer;" title="คลิกเพื่อดูรายละเอียด"><div class="stat-label">ใกล้หมดอายุ <span style='font-size:9px;'>⤵</span></div><div class="stat-value sv-red" id="st-expiring">—</div><div style="font-size:9px;color:var(--red);opacity:.7;margin-top:4px;">กดดูรายละเอียด</div></div>
       <div class="stat-card c-red"><div class="stat-label">ยาหมดคลัง</div><div class="stat-value sv-red" id="st-outstock">—</div><div style="font-size:9px;color:var(--red);opacity:.7;margin-top:4px;">จากฐานข้อมูล</div></div>
     </div>
+    <div class="card" id="stk-sec-dash" style="padding:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span class="section-title">📈 Dashboard ยาหมดอายุ 6 เดือนข้างหน้า</span>
+      </div>
+      <div id="exp-dashboard"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
+    </div>
+
     <div class="card" id="stk-sec-exp" style="padding:1rem;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <span class="section-title">ยาใกล้หมดอายุ</span>
@@ -3015,9 +3044,9 @@ function switchTab(tab,el){
   if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();setTimeout(_setDispenseDocNum,300);}
   if(tab==='stock'){loadStock();switchStockSubtab('pcu');}
   if(tab==='extstock')loadExtStock();
-  // แสดง speed-dial FAB เฉพาะแท็บคลังยา
-  const fabWrap=document.getElementById('stk-fab-wrap');
-  if(fabWrap){fabWrap.style.display=tab==='stock'?'block':'none';fabWrap.classList.remove('open');}
+  // แสดง sidebar เฉพาะแท็บคลังยา
+  const sideWrap=document.getElementById('stk-side-wrap');
+  if(sideWrap){sideWrap.classList.toggle('on',tab==='stock');sideWrap.classList.remove('open');}
   if(tab==='analytics'){
     // โหลดข้อมูลครั้งแรกถ้ายังไม่มี
     if(!window._anLoaded){window._anLoaded=true;setTimeout(fetchAnalyticsData,200);}
@@ -3105,7 +3134,7 @@ async function loadStock(){
     });
     document.getElementById('st-total').textContent=_allStockItems.length;
     document.getElementById('st-expiring').textContent=red.length;
-    renderSummaryTable(_allStockItems);renderExpiringList();
+    renderSummaryTable(_allStockItems);renderExpiringList();renderExpiryDashboard();
 
     // ── ยาหมดคลัง: เทียบฐานข้อมูล drugDB กับยาที่มีคงเหลือ > 0 ──
     const inStockNames=new Set(_allStockItems.map(i=>i.name));
@@ -3306,27 +3335,116 @@ function toggleCollapse(hdId,bodyId){
   body.style.display=willOpen?'block':'none';
   hd.classList.toggle('open',willOpen);
 }
-// ── STOCK SPEED-DIAL FAB ──────────────────────────────────────
-function toggleStkFab(){document.getElementById('stk-fab-wrap').classList.toggle('open');}
-function closeStkFab(){document.getElementById('stk-fab-wrap').classList.remove('open');}
+// ── STOCK COLLAPSIBLE SIDEBAR ─────────────────────────────────
+function openStkSide(){document.getElementById('stk-side-wrap').classList.add('open');}
+function closeStkSide(){document.getElementById('stk-side-wrap').classList.remove('open');}
 function stkFabGo(secId){
-  closeStkFab();
+  closeStkSide();
   // ถ้าอยู่ในหน้าคลังยานอก สลับกลับมา PCU ก่อน (ทุก section อยู่ใน view PCU)
   const pcuView=document.getElementById('stock-view-pcu');
   if(pcuView&&pcuView.style.display==='none')switchStockSubtab('pcu');
   const el=document.getElementById(secId);
-  if(el)setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),80);
+  if(el)setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),260);
 }
-// ปิด FAB เมื่อแตะที่อื่น
-document.addEventListener('click',e=>{
-  const w=document.getElementById('stk-fab-wrap');
-  if(w&&w.classList.contains('open')&&!e.target.closest('#stk-fab-wrap'))w.classList.remove('open');
-});
 function goSummaryPage(p){summaryPage=p;renderSummaryTable(_allStockItems);}
 function setSumFilter(grp){window._sumFilterGrp=grp;summaryPage=1;renderSummaryTable(_allStockItems);}
 function toggleNCDFilter(){window._sumFilterNCD=!window._sumFilterNCD;summaryPage=1;renderSummaryTable(_allStockItems);}
 
 function setExpRange(btn,months){_expRangeMonths=months;document.querySelectorAll('.exp-range-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderExpiringList();}
+
+// ══ EXPIRY DASHBOARD — กราฟยาหมดอายุ 6 เดือนข้างหน้า ═══════════
+let _expDashSelMonth=null; // index เดือนที่เลือก (0-5), null = แสดงทุกเดือน
+const _thMonthsAbbr=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function renderExpiryDashboard(){
+  const el=document.getElementById('exp-dashboard');if(!el)return;
+  const now=new Date();now.setHours(0,0,0,0);
+  // สร้างช่อง 6 เดือน: [ {y,m,label,items:[]} ]
+  const buckets=[];
+  for(let k=0;k<6;k++){
+    const d=new Date(now.getFullYear(),now.getMonth()+k,1);
+    buckets.push({y:d.getFullYear(),m:d.getMonth(),label:_thMonthsAbbr[d.getMonth()],yr:(d.getFullYear()+543)%100,items:[]});
+  }
+  const endDate=new Date(now.getFullYear(),now.getMonth()+6,1); // ต้นเดือนที่ 7
+  let expiredCount=0;
+  _allStockItems.forEach(i=>{
+    const ed=parseExpDate(i.exp);
+    if(!ed)return;
+    if(ed<now){expiredCount++;return;} // หมดอายุไปแล้ว ไม่อยู่ในกราฟ
+    if(ed>=endDate)return; // เกิน 6 เดือน
+    const b=buckets.find(b=>b.y===ed.getFullYear()&&b.m===ed.getMonth());
+    if(b)b.items.push({...i,_ed:ed});
+  });
+  buckets.forEach(b=>b.items.sort((a,x)=>a._ed-x._ed));
+  const total=buckets.reduce((s,b)=>s+b.items.length,0);
+  const maxCnt=Math.max(1,...buckets.map(b=>b.items.length));
+
+  // สีตามความใกล้: เดือน 0-1 แดง, 2-3 ส้ม, 4-5 เขียว
+  const barColor=k=>k<=1?'var(--red)':k<=3?'var(--amber)':'var(--teal)';
+  const barBg=k=>k<=1?'var(--red-l)':k<=3?'var(--amber-l)':'var(--green-l)';
+
+  // ── กราฟแท่ง ──
+  const CHART_H=110;
+  const chart=`<div style="display:flex;align-items:flex-end;gap:6px;height:${CHART_H+38}px;padding:6px 2px 0;">
+    ${buckets.map((b,k)=>{
+      const h=b.items.length?Math.max(14,Math.round(b.items.length/maxCnt*CHART_H)):4;
+      const sel=_expDashSelMonth===k;
+      return `<div onclick="expDashSelect(${k})" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        <div style="font-size:12px;font-weight:800;color:${b.items.length?barColor(k):'var(--text4)'};font-family:'IBM Plex Mono',monospace;">${b.items.length||''}</div>
+        <div style="width:100%;max-width:38px;height:${h}px;border-radius:7px 7px 3px 3px;
+          background:${b.items.length?barColor(k):'var(--border)'};
+          ${sel?'outline:2.5px solid var(--blue);outline-offset:2px;':''}
+          opacity:${_expDashSelMonth===null||sel?1:.35};transition:opacity .15s;"></div>
+        <div style="font-size:10px;font-weight:${sel?'800':'600'};color:${sel?'var(--blue)':'var(--text3)'};line-height:1.15;text-align:center;">${b.label}<br><span style="font-size:8.5px;color:var(--text4);">${b.yr}</span></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // ── รายชื่อยา (ตามเดือนที่เลือก หรือทุกเดือน) ──
+  const showBuckets=_expDashSelMonth===null?buckets:[buckets[_expDashSelMonth]];
+  const dayDiff=ed=>Math.ceil((ed-now)/(1000*60*60*24));
+  const list=showBuckets.filter(b=>b.items.length).map((b,bi)=>{
+    const k=buckets.indexOf(b);
+    return `<div style="margin-top:10px;">
+      <div style="font-size:11px;font-weight:800;color:${barColor(k)};padding:4px 2px;display:flex;align-items:center;gap:6px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${barColor(k)};display:inline-block;"></span>
+        ${b.label} ${b.y+543} · ${b.items.length} รายการ
+      </div>
+      ${b.items.map(i=>{
+        const dd=dayDiff(i._ed);
+        const sn=i.name.replace(/'/g,"\\'");
+        return `<div class="stk-row" onclick="showDrugDetail('${sn}')" style="background:${barBg(k)}22;">
+          <div class="stk-strip" style="background:${barColor(k)};"></div>
+          <div class="stk-body" style="padding:9px 6px 9px 10px;">
+            <div class="stk-name" style="font-size:13px;">${i.name}</div>
+            <div class="stk-meta"><span>EXP ${fmtExp(i.exp)}</span><span style="color:${barColor(k)};font-weight:800;">เหลือ ${dd} วัน</span></div>
+          </div>
+          <div class="stk-right" style="padding:9px 10px 9px 4px;min-width:52px;">
+            <div class="stk-qty" style="font-size:17px;color:${barColor(k)};">${Math.round(i.qty)}</div>
+            <div class="stk-unit">${i.unit||''}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  const emptyMsg=_expDashSelMonth!==null&&!buckets[_expDashSelMonth].items.length
+    ?`<div style="text-align:center;padding:18px 10px;color:var(--text3);font-size:12px;">✓ ไม่มียาหมดอายุในเดือน ${buckets[_expDashSelMonth].label} ${buckets[_expDashSelMonth].y+543}</div>`:'';
+
+  el.innerHTML=`
+    ${total===0
+      ?`<div style="text-align:center;padding:20px 10px;color:var(--text3);font-size:12.5px;">🎉 ไม่มียาที่จะหมดอายุใน 6 เดือนข้างหน้า</div>`
+      :chart+
+       `<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:8px;margin-top:2px;">
+          <span style="font-size:11px;color:var(--text3);">${_expDashSelMonth===null?'รวม '+total+' รายการ · แตะแท่งเพื่อดูรายเดือน':'เดือน '+buckets[_expDashSelMonth].label+' '+(buckets[_expDashSelMonth].y+543)}</span>
+          ${_expDashSelMonth!==null?`<button onclick="expDashSelect(null)" style="border:none;background:var(--surface2);color:var(--text2);font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:12px;cursor:pointer;font-family:inherit;">แสดงทั้งหมด ✕</button>`:''}
+        </div>`+list+emptyMsg}
+    ${expiredCount>0?`<div style="margin-top:10px;padding:8px 12px;background:var(--red-l);border-radius:10px;font-size:11px;color:var(--red);font-weight:700;">⚠️ มียาหมดอายุไปแล้ว ${expiredCount} รายการ — ดูในส่วน "ยาใกล้หมดอายุ" ด้านล่าง</div>`:''}
+  `;
+}
+function expDashSelect(k){
+  _expDashSelMonth=(_expDashSelMonth===k)?null:k;
+  renderExpiryDashboard();
+}
 function renderExpiringList(){
   const el=document.getElementById('stock-expiring-list');if(!el)return;
   if(!_allStockItems.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีข้อมูลคลัง กดรีเฟรช</div>';return;}
