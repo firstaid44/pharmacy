@@ -2191,7 +2191,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.05.08.29</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.06.07.03</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2860,6 +2860,17 @@ let _dispDateFilter='';   // กรองวันที่เบิก
 let scanTarget='',scanStream=null,scanCanvas=null,scanCtx=null,scanLoop=null,lastScan='';
 let summaryPage=1,summarySort='qty',summarySortDir='asc';
 let _expRangeMonths=1,_allStockItems=[];
+// ══ ตู้ยา NCD — รายการรหัสยาในกลุ่ม (เพิ่ม/ลบได้ที่นี่) ═══════════
+const _ncdRaw=[
+  '1000016','1000122','1000184','1019001','1419041','1440105','1460151',
+  '1500016','1530008','1GABA','1LST2','1OME','5COL','5HCT','5PNL',
+  'ATO','CAP RED','CAR','Carve','HY251','ISO','MNDP','PIO1','SIM3'
+];
+const _ncdNorm=s=>String(s||'').replace(/\s+/g,'').toLowerCase(); // ตัดช่องว่าง+ไม่สนตัวพิมพ์
+const NCD_CABINET_CODES=new Set(_ncdRaw.map(_ncdNorm));
+function _isNCDDrug(item){
+  return NCD_CABINET_CODES.has(_ncdNorm(item.code));
+}
 
 (()=>{const n=new Date();document.getElementById('s-date').textContent=String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();})();
 function todayTH(){const n=new Date();return String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();}
@@ -3112,7 +3123,9 @@ function renderSummaryTable(items){
   // ── Filter ────────────────────────────────────────────────
   const fGrp=window._sumFilterGrp||'all';
   const fSearch=(window._sumFilterSearch||'').toLowerCase().trim();
+  const fNCD=window._sumFilterNCD||false;
   let filtered=rows;
+  if(fNCD) filtered=filtered.filter(r=>_isNCDDrug(r));
   if(fGrp!=='all') filtered=filtered.filter(r=>r._grp===fGrp);
   if(fSearch) filtered=filtered.filter(r=>r.name.toLowerCase().includes(fSearch)||(r.code||'').toLowerCase().includes(fSearch));
 
@@ -3134,6 +3147,7 @@ function renderSummaryTable(items){
   const cntR=rows.filter(r=>r._grp==='red').length;
   const cntY=rows.filter(r=>r._grp==='yellow').length;
   const cntG=rows.filter(r=>r._grp==='green').length;
+  const cntNCD=rows.filter(r=>_isNCDDrug(r)).length;
 
   // ── Pagination ────────────────────────────────────────────
   const total=filtered.length,totalPages=Math.max(1,Math.ceil(total/PER));
@@ -3150,6 +3164,7 @@ function renderSummaryTable(items){
   document.getElementById('stock-summary-card').innerHTML=`
     <!-- Filter bar -->
     <div style="padding:10px 10px 8px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+      <button onclick="toggleNCDFilter()" style="padding:5px 11px;border-radius:20px;border:1.5px solid ${fNCD?'rgba(107,63,196,.5)':'var(--border2)'};background:${fNCD?'#F3EEFF':'var(--surface2)'};color:${fNCD?'#6B3FC4':'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;">💊 ตู้ยา NCD (${cntNCD})</button>
       <button onclick="setSumFilter('all')"    style="${chipStyle('all',   'var(--blue-l)',  'rgba(26,95,212,.4)',  'var(--blue)'  )}">ทั้งหมด (${cntAll})</button>
       <button onclick="setSumFilter('red')"    style="${chipStyle('red',   'var(--red-l)',   'rgba(217,48,37,.4)', 'var(--red)'   )}">🔴 &lt;6 เดือน (${cntR})</button>
       <button onclick="setSumFilter('yellow')" style="${chipStyle('yellow','var(--amber-l)', 'rgba(192,112,0,.4)', 'var(--amber)' )}">🟡 6–12 เดือน (${cntY})</button>
@@ -3200,6 +3215,7 @@ function renderSummaryTable(items){
 function setSummarySort(col){if(summarySort===col){summarySortDir=summarySortDir==='asc'?'desc':'asc';}else{summarySort=col;summarySortDir=col==='qty'?'asc':'asc';}summaryPage=1;renderSummaryTable(_allStockItems);}
 function goSummaryPage(p){summaryPage=p;renderSummaryTable(_allStockItems);}
 function setSumFilter(grp){window._sumFilterGrp=grp;summaryPage=1;renderSummaryTable(_allStockItems);}
+function toggleNCDFilter(){window._sumFilterNCD=!window._sumFilterNCD;summaryPage=1;renderSummaryTable(_allStockItems);}
 
 function setExpRange(btn,months){_expRangeMonths=months;document.querySelectorAll('.exp-range-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderExpiringList();}
 function renderExpiringList(){
