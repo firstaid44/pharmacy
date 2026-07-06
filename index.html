@@ -250,10 +250,17 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   box-shadow:var(--sh-lg);animation:dropIn .15s ease;
 }
 @keyframes dropIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.si{padding:12px 14px;font-size:14px;cursor:pointer;color:var(--text1);border-bottom:1px solid var(--border);}
-.si:last-child{border-bottom:none;}
-.si:active{background:var(--surface2);}
-.si-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.sug-item{padding:12px 14px;font-size:14px;cursor:pointer;color:var(--text1);border-bottom:1px solid var(--border);}
+.sug-item:last-child{border-bottom:none;}
+.sug-item:hover{background:var(--surface2);}
+.sug-item:active{background:var(--surface2);}
+.sug-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.combo-arrow{
+  flex-shrink:0;width:40px;border:1px solid var(--border2);border-radius:var(--r-lg);
+  background:var(--surface2);color:var(--text2);cursor:pointer;font-size:12px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.combo-arrow:active{transform:scale(.95);background:var(--border);}
 
 /* ── BUTTONS ── */
 .btn-row{display:flex;gap:10px;margin-top:1rem;}
@@ -2191,7 +2198,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.06.07.03</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.06.09.10</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2263,7 +2270,8 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
         <div class="suggest-wrap">
           <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
             <div class="input-with-scan">
-              <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r',this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+              <input class="form-input" id="r-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDrug(this.value,'sbox-r',this)" onfocus="if(this.value.trim())searchDrug(this.value,'sbox-r',this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+              <button type="button" class="combo-arrow" id="r-name-arrow" onclick="toggleDrugDropdown('sbox-r','r-name',this)" aria-label="แสดงรายการยาทั้งหมด">▼</button>
               <button class="scan-btn" id="ai-scan-btn" onclick="document.getElementById('ai-scan-file').click()"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>อ่านฉลาก AI</button>
               <input type="file" id="ai-scan-file" accept="image/*" capture="environment" style="display:none" onchange="aiScanLabel(this.files[0]);this.value='';"/>
             </div>
@@ -2345,7 +2353,8 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
 <div class="suggest-wrap">
   <div class="form-group"><label class="form-label">ชื่อยา <span class="req">*</span></label>
     <div class="input-with-scan">
-      <input class="form-input" id="d-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDispenseDrug(this.value,this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+      <input class="form-input" id="d-name" placeholder="พิมพ์ชื่อหรือรหัสยา..." oninput="searchDispenseDrug(this.value,this)" onfocus="if(this.value.trim())searchDispenseDrug(this.value,this)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+      <button type="button" class="combo-arrow" id="d-name-arrow" onclick="toggleDrugDropdown('sbox-d','d-name',this)" aria-label="แสดงรายการยาทั้งหมด">▼</button>
       <button class="scan-btn" onclick="openScanner('d-name')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>สแกน</button>
     </div>
   </div>
@@ -3511,14 +3520,16 @@ function _positionSuggestBox(box,inputEl){
   box.style.marginTop='0';
   box.style.zIndex='9999';
 }
-function searchDrug(val,boxId,inputEl){
+function searchDrug(val,boxId,inputEl,showAll){
   const box=document.getElementById(boxId);
   if(!box)return;
-  if(!val.trim()){box.style.display='none';box.innerHTML='';return;}
-  const q=val.toLowerCase();
+  const q=(val||'').toLowerCase().trim();
+  if(!q&&!showAll){box.style.display='none';box.innerHTML='';return;}
   const stockMap=_getStockQtyMap();
 
-  let hits=drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q));
+  let hits=showAll&&!q
+    ? drugDB.slice()
+    : drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q));
 
   // เรียง: ยาที่มีของในคลังก่อน (มากไปน้อย) แล้วตามด้วยยาที่ยังไม่มีในคลัง (เรียงตามตัวอักษร)
   hits.sort((a,b)=>{
@@ -3529,8 +3540,13 @@ function searchDrug(val,boxId,inputEl){
     return a[1].localeCompare(b[1],'th');
   });
 
-  const shown=hits.slice(0,12);
-  if(!shown.length){box.style.display='none';box.innerHTML='';return;}
+  // แสดงทั้งหมดได้สูงสุด 50 (กันยาว), ค้นหาปกติ 15
+  const limit=showAll&&!q?50:15;
+  const shown=hits.slice(0,limit);
+  if(!shown.length){
+    box.innerHTML=`<div class="sug-item" style="cursor:default;color:var(--text3);text-align:center;">ไม่พบยา "${val}"</div>`;
+    box.style.display='block';_positionSuggestBox(box,inputEl);return;
+  }
   box.innerHTML=shown.map((d,i)=>{
     const type=d[4]||'';
     const unitPack=d[2]||'';
@@ -3541,15 +3557,15 @@ function searchDrug(val,boxId,inputEl){
     const stockBadge=stockQty>0
       ? `<span style="font-size:9px;background:#E6F7F2;color:#0B9E72;padding:1px 6px;border-radius:4px;font-weight:700;white-space:nowrap;">คงเหลือ ${stockQty}${unitSub?' '+unitSub:''}</span>`
       : `<span style="font-size:9px;background:#F0F2F5;color:#94A3B8;padding:1px 6px;border-radius:4px;font-weight:700;white-space:nowrap;">ยังไม่มีในคลัง</span>`;
-    return `<div class="si" data-idx="${i}">
+    return `<div class="sug-item" data-idx="${i}">
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${d[1]} ${typeBadge} ${stockBadge}</div>
-      <div class="si-sub">${d[0]}${unitInfo?' · '+unitInfo:''}</div>
+      <div class="sug-sub">${d[0]}${unitInfo?' · '+unitInfo:''}</div>
     </div>`;
   }).join('');
   box._searchItems=shown;
   box.onclick=function(e){
-    const row=e.target.closest('.si');
-    if(!row)return;
+    const row=e.target.closest('.sug-item');
+    if(!row||row.dataset.idx===undefined)return;
     const idx=parseInt(row.dataset.idx,10);
     const item=box._searchItems&&box._searchItems[idx];
     if(item)pickDrug(item[1],item[0],boxId);
@@ -6957,42 +6973,61 @@ function addAllExpiring(){
 }
 
 // ══ DISPENSE SEARCH จากคลัง ═══════════════════════════════════
-function searchDispenseDrug(val,inputEl){
+function searchDispenseDrug(val,inputEl,showAll){
   const box=document.getElementById('sbox-d');
   if(!box)return;
-  if(!val.trim()){box.style.display='none';box.innerHTML='';return;}
-  const q=val.toLowerCase();
+  const q=(val||'').toLowerCase().trim();
+  if(!q&&!showAll){box.style.display='none';box.innerHTML='';return;}
   // สร้าง map ชื่อยาที่มีในคลัง (qty > 0)
   const inStock={};
   _allStockItems.forEach(i=>{
     if(!inStock[i.name])inStock[i.name]={name:i.name,code:i.code,qty:0,unit:i.unit};
     inStock[i.name].qty+=i.qty;
   });
-  // กรองตาม query
-  const hits=Object.values(inStock)
-    .filter(i=>i.qty>0&&(i.name.toLowerCase().includes(q)||i.code.toLowerCase().includes(q)))
-    .slice(0,12);
-  // fallback: ถ้าไม่มีในคลัง ให้ค้นจาก drugDB แทน
-  const fallback=hits.length===0;
+  const stockList=Object.values(inStock).filter(i=>i.qty>0);
+  // กรองตาม query (ถ้า showAll และไม่มี q → เอาทั้งหมดที่มีในคลัง)
+  let hits=(showAll&&!q)
+    ? stockList
+    : stockList.filter(i=>i.name.toLowerCase().includes(q)||i.code.toLowerCase().includes(q));
+  // เรียงคงเหลือมากไปน้อย
+  hits.sort((a,b)=>b.qty-a.qty);
+  // fallback: ถ้าค้นแล้วไม่เจอในคลัง ให้ค้นจาก drugDB แทน
+  const fallback=hits.length===0&&q;
   const show=fallback
-    ? drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q)).slice(0,10)
+    ? drugDB.filter(d=>d[1].toLowerCase().includes(q)||d[0].toLowerCase().includes(q)).slice(0,15)
         .map(d=>({name:d[1],code:d[0],qty:null,unit:''}))
-    : hits;
-  if(!show.length){box.style.display='none';box.innerHTML='';return;}
+    : hits.slice(0,showAll&&!q?50:15);
+  if(!show.length){
+    box.innerHTML=`<div class="sug-item" style="cursor:default;color:var(--text3);text-align:center;">${q?'ไม่พบยา "'+val+'"':'ยังไม่มียาในคลัง'}</div>`;
+    box.style.display='block';_positionSuggestBox(box,inputEl);return;
+  }
   box.innerHTML=show.map((d,i)=>{
-    const qty=d.qty!==null?` <span style="font-size:10px;color:var(--teal);font-weight:700;">(คงเหลือ ${Math.round(d.qty)} ${d.unit})</span>`:'';
-    return `<div class="si" data-idx="${i}"><div>${d.name}${qty}</div><div class="si-sub">${d.code}</div></div>`;
+    const qty=d.qty!==null?` <span style="font-size:10px;color:var(--teal);font-weight:700;">(คงเหลือ ${Math.round(d.qty)} ${d.unit})</span>`:' <span style="font-size:9px;background:#F0F2F5;color:#94A3B8;padding:1px 6px;border-radius:4px;font-weight:700;">ไม่มีในคลัง</span>';
+    return `<div class="sug-item" data-idx="${i}"><div>${d.name}${qty}</div><div class="sug-sub">${d.code}</div></div>`;
   }).join('');
   box._searchItems=show;
   box.onclick=function(e){
-    const row=e.target.closest('.si');
-    if(!row)return;
+    const row=e.target.closest('.sug-item');
+    if(!row||row.dataset.idx===undefined)return;
     const idx=parseInt(row.dataset.idx,10);
     const item=box._searchItems&&box._searchItems[idx];
     if(item)pickDrug(item.name,item.code,'sbox-d');
   };
   box.style.display='block';
   _positionSuggestBox(box,inputEl);
+}
+// ══ ปุ่ม ▼ combobox — กดแล้วเปิด/ปิดรายการยาทั้งหมด ═══════════
+function toggleDrugDropdown(boxId,inputId,btn){
+  const box=document.getElementById(boxId);
+  const inp=document.getElementById(inputId);
+  if(!box||!inp)return;
+  if(box.style.display==='block'){
+    box.style.display='none';box.innerHTML='';
+    return;
+  }
+  if(boxId==='sbox-d')searchDispenseDrug(inp.value,inp,true);
+  else searchDrug(inp.value,boxId,inp,true);
+  inp.focus();
 }
 
 // ══ EXPORT INVENTORY TO GOOGLE SHEET ══════════════════════════
