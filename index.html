@@ -557,6 +557,32 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 }
 .cart-fab:active{transform:scale(.95);}
 .cart-fab.hidden{transform:translateY(100px);opacity:0;pointer-events:none;}
+/* ── STOCK SPEED-DIAL FAB (ซ้ายล่าง เฉพาะแท็บคลังยา) ── */
+#stk-fab-wrap{position:fixed;bottom:calc(88px + env(safe-area-inset-bottom));left:16px;z-index:300;display:none;}
+.stk-fab-main{
+  width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#1E8A5E,#1C6B45);color:#fff;
+  font-size:22px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(28,107,69,.45);font-family:inherit;
+  transition:transform .2s cubic-bezier(.34,1.2,.64,1);
+}
+.stk-fab-main:active{transform:scale(.92);}
+#stk-fab-wrap.open .stk-fab-main{transform:rotate(45deg);}
+.stk-fab-menu{
+  position:absolute;bottom:60px;left:0;display:flex;flex-direction:column;gap:7px;
+  opacity:0;pointer-events:none;transform:translateY(8px);transition:all .18s ease;
+}
+#stk-fab-wrap.open .stk-fab-menu{opacity:1;pointer-events:auto;transform:none;}
+.stk-fab-item{
+  display:flex;align-items:center;gap:9px;padding:9px 14px 9px 10px;
+  background:var(--surface);border:1px solid var(--border2);border-radius:26px;
+  font-size:12.5px;font-weight:700;color:var(--text1);cursor:pointer;
+  box-shadow:0 3px 14px rgba(15,30,25,.18);font-family:inherit;white-space:nowrap;
+  transition:transform .12s;
+}
+.stk-fab-item:active{transform:scale(.96);}
+.stk-fab-item .ic{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.stk-fab-divider{height:1px;background:var(--border2);margin:2px 8px;opacity:.7;}
 .cart-badge{
   background:#EF4444;color:#fff;border-radius:10px;
   font-size:10px;font-weight:800;padding:1px 6px;min-width:18px;text-align:center;
@@ -2000,6 +2026,21 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
   <span class="cart-badge" id="cart-fab-badge">0</span>
 </button>
 
+<!-- ══ STOCK SPEED-DIAL FAB (เฉพาะแท็บคลังยา) ══ -->
+<div id="stk-fab-wrap">
+  <div class="stk-fab-menu">
+    <button class="stk-fab-item" onclick="stkFabGo('stk-sec-stats')"><span class="ic" style="background:var(--blue-l);">📊</span>สถิติภาพรวม</button>
+    <button class="stk-fab-item" onclick="stkFabGo('stk-sec-exp')"><span class="ic" style="background:var(--red-l);">⏰</span>ยาใกล้หมดอายุ</button>
+    <button class="stk-fab-item" onclick="stkFabGo('stk-sec-sum')"><span class="ic" style="background:var(--teal-l);">📦</span>สรุปยาคงคลัง</button>
+    <button class="stk-fab-item" onclick="stkFabGo('stk-sec-out')"><span class="ic" style="background:var(--surface2);">📭</span>ยาหมดคลัง</button>
+    <div class="stk-fab-divider"></div>
+    <button class="stk-fab-item" onclick="closeStkFab();openStockRequisition()"><span class="ic" style="background:var(--blue-l);">📋</span>ใบเบิกยา</button>
+    <button class="stk-fab-item" onclick="closeStkFab();openExportMenu()"><span class="ic" style="background:var(--teal-l);">📤</span>ส่งออกรายการ</button>
+    <button class="stk-fab-item" onclick="closeStkFab();loadStock();showAlert('↻ กำลังรีเฟรชข้อมูลคลังยา...','info')"><span class="ic" style="background:var(--amber-l);">↻</span>รีเฟรชข้อมูล</button>
+  </div>
+  <button class="stk-fab-main" onclick="toggleStkFab()" aria-label="เมนูคลังยา">☰</button>
+</div>
+
 <!-- ══ CART PREVIEW MODAL ══ -->
 <div class="cart-modal-bg" id="cart-modal" onclick="if(event.target===this)closeCartModal()">
   <div class="cart-modal">
@@ -2227,7 +2268,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.06.09.32</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.06.09.57</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2494,12 +2535,12 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       <input class="form-input" id="stock-search" placeholder="🔍  ค้นหาชื่อยาหรือรหัสยา..." oninput="searchStock(this.value)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
       <div id="stock-sbox"></div>
     </div>
-    <div class="stats-grid" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="stats-grid" id="stk-sec-stats" style="grid-template-columns:1fr 1fr 1fr;">
       <div class="stat-card c-blue"><div class="stat-label">รายการยาทั้งหมด</div><div class="stat-value sv-blue" id="st-total">—</div></div>
       <div class="stat-card c-red" onclick="showExpiringDetail()" style="cursor:pointer;" title="คลิกเพื่อดูรายละเอียด"><div class="stat-label">ใกล้หมดอายุ <span style='font-size:9px;'>⤵</span></div><div class="stat-value sv-red" id="st-expiring">—</div><div style="font-size:9px;color:var(--red);opacity:.7;margin-top:4px;">กดดูรายละเอียด</div></div>
       <div class="stat-card c-red"><div class="stat-label">ยาหมดคลัง</div><div class="stat-value sv-red" id="st-outstock">—</div><div style="font-size:9px;color:var(--red);opacity:.7;margin-top:4px;">จากฐานข้อมูล</div></div>
     </div>
-    <div class="card" style="padding:1rem;">
+    <div class="card" id="stk-sec-exp" style="padding:1rem;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <span class="section-title">ยาใกล้หมดอายุ</span>
         <button class="section-action" onclick="loadStock()">↻ รีเฟรช</button>
@@ -2512,7 +2553,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
       </div>
       <div id="stock-expiring-list"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
     </div>
-    <div class="section-hd">
+    <div class="section-hd" id="stk-sec-sum">
       <span class="section-title">สรุปยาคงคลัง</span>
       <div style="display:flex;gap:8px;">
         <button onclick="openStockRequisition()"
@@ -2537,7 +2578,7 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
     <div class="card" id="stock-list" style="display:none;margin-top:8px;"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
 
     <!-- ยาหมดคลัง -->
-    <div class="section-hd" style="margin-top:4px;">
+    <div class="section-hd" id="stk-sec-out" style="margin-top:4px;">
       <span class="section-title">📭 ยาหมดคลัง (จากฐานข้อมูลยา)</span>
     </div>
     <div style="position:relative;margin-bottom:10px;">
@@ -2974,6 +3015,9 @@ function switchTab(tab,el){
   if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();setTimeout(_setDispenseDocNum,300);}
   if(tab==='stock'){loadStock();switchStockSubtab('pcu');}
   if(tab==='extstock')loadExtStock();
+  // แสดง speed-dial FAB เฉพาะแท็บคลังยา
+  const fabWrap=document.getElementById('stk-fab-wrap');
+  if(fabWrap){fabWrap.style.display=tab==='stock'?'block':'none';fabWrap.classList.remove('open');}
   if(tab==='analytics'){
     // โหลดข้อมูลครั้งแรกถ้ายังไม่มี
     if(!window._anLoaded){window._anLoaded=true;setTimeout(fetchAnalyticsData,200);}
@@ -3262,6 +3306,22 @@ function toggleCollapse(hdId,bodyId){
   body.style.display=willOpen?'block':'none';
   hd.classList.toggle('open',willOpen);
 }
+// ── STOCK SPEED-DIAL FAB ──────────────────────────────────────
+function toggleStkFab(){document.getElementById('stk-fab-wrap').classList.toggle('open');}
+function closeStkFab(){document.getElementById('stk-fab-wrap').classList.remove('open');}
+function stkFabGo(secId){
+  closeStkFab();
+  // ถ้าอยู่ในหน้าคลังยานอก สลับกลับมา PCU ก่อน (ทุก section อยู่ใน view PCU)
+  const pcuView=document.getElementById('stock-view-pcu');
+  if(pcuView&&pcuView.style.display==='none')switchStockSubtab('pcu');
+  const el=document.getElementById(secId);
+  if(el)setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+// ปิด FAB เมื่อแตะที่อื่น
+document.addEventListener('click',e=>{
+  const w=document.getElementById('stk-fab-wrap');
+  if(w&&w.classList.contains('open')&&!e.target.closest('#stk-fab-wrap'))w.classList.remove('open');
+});
 function goSummaryPage(p){summaryPage=p;renderSummaryTable(_allStockItems);}
 function setSumFilter(grp){window._sumFilterGrp=grp;summaryPage=1;renderSummaryTable(_allStockItems);}
 function toggleNCDFilter(){window._sumFilterNCD=!window._sumFilterNCD;summaryPage=1;renderSummaryTable(_allStockItems);}
