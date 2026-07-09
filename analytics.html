@@ -242,13 +242,176 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
 /* date input theming */
 input[type="date"].fi{color-scheme:dark}
 
-/* RESPONSIVE */
-@media(max-width:900px){
-  .shell{grid-template-columns:1fr}
-  .sidebar{display:none}
+/* ══════════════════════════════════════════════
+   RESPONSIVE — Mobile first
+══════════════════════════════════════════════ */
+
+/* ── Bottom nav bar (mobile only) ── */
+.bottomnav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:rgba(7,16,31,.97);backdrop-filter:blur(16px);
+  border-top:1px solid var(--bdr2);
+  padding:.4rem .2rem calc(.4rem + env(safe-area-inset-bottom));
+  overflow-x:auto;
+}
+.bottomnav::-webkit-scrollbar{display:none}
+.bnav-inner{display:flex;gap:.15rem;min-width:max-content;padding:0 .3rem}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:.18rem;
+  padding:.4rem .65rem;border-radius:8px;cursor:pointer;
+  transition:all .18s;color:var(--tx3);min-width:52px;border:none;background:none}
+.bnav-item:hover,.bnav-item.active{color:var(--ac);background:rgba(61,214,245,.08)}
+.bnav-item.active{color:var(--ac)}
+.bnav-ic{font-size:1.2rem;line-height:1}
+.bnav-lb{font-size:.58rem;font-family:var(--fn);letter-spacing:.01em;white-space:nowrap}
+
+/* ── Pack Calculator Panel ── */
+.pack-panel{
+  position:fixed;bottom:0;left:0;right:0;z-index:400;
+  background:var(--bg2);border-top:2px solid var(--bdr2);
+  padding:1rem 1.1rem calc(1rem + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  max-height:85vh;overflow-y:auto;
+}
+.pack-panel.open{transform:translateY(0)}
+.pack-panel-handle{
+  width:36px;height:4px;border-radius:2px;background:var(--bdr2);
+  margin:0 auto .85rem;
+}
+.pack-panel h3{font-size:1rem;font-weight:700;margin-bottom:.85rem;
+  display:flex;align-items:center;gap:.5rem}
+.pack-panel h3 span{font-size:.72rem;color:var(--tx3);font-weight:400;font-family:var(--mo)}
+.pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.85rem}
+.pack-field{display:flex;flex-direction:column;gap:.28rem}
+.pack-field label{font-size:.7rem;color:var(--tx3);font-family:var(--mo);text-transform:uppercase;letter-spacing:.08em}
+.pack-in{background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--r);
+  padding:.42rem .7rem;color:var(--tx);font-family:var(--mo);font-size:.88rem;
+  outline:none;width:100%;transition:border-color .18s}
+.pack-in:focus{border-color:var(--ac)}
+.pack-in::placeholder{color:var(--tx3)}
+.pack-result{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:.85rem 1rem;margin-bottom:.75rem}
+.pack-result-row{display:flex;justify-content:space-between;align-items:center;
+  padding:.28rem 0;border-bottom:1px solid var(--bdr)}
+.pack-result-row:last-child{border:none;padding-top:.5rem;margin-top:.2rem}
+.pr-label{font-size:.78rem;color:var(--tx2)}
+.pr-val{font-size:1rem;font-weight:700;font-family:var(--mo);color:var(--ac)}
+.pr-val.big{font-size:1.3rem;color:var(--yl)}
+.pack-drug-name{font-size:.82rem;color:var(--tx3);margin-bottom:.7rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mo)}
+.pack-close-btn{width:100%;padding:.6rem;border-radius:var(--r);border:1px solid var(--bdr2);
+  background:transparent;color:var(--tx2);font-family:var(--fn);font-size:.85rem;
+  cursor:pointer;transition:all .18s;margin-top:.5rem}
+.pack-close-btn:hover{border-color:var(--ac);color:var(--ac)}
+.pack-fab{
+  position:fixed;right:1.1rem;bottom:5rem;z-index:350;
+  width:50px;height:50px;border-radius:50%;
+  background:var(--a2);border:none;cursor:pointer;
+  font-size:1.3rem;box-shadow:0 4px 20px rgba(124,106,255,.5);
+  transition:all .2s;display:none;align-items:center;justify-content:center;
+}
+.pack-fab:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(124,106,255,.7)}
+
+/* ── Drug page inline pack badge ── */
+.pack-badge{
+  display:inline-flex;align-items:center;gap:.3rem;
+  font-size:.65rem;font-family:var(--mo);padding:.1rem .38rem;
+  border-radius:3px;background:rgba(124,106,255,.12);
+  border:1px solid rgba(124,106,255,.25);color:var(--a2);
+  margin-left:.4rem;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.pack-badge:hover{background:rgba(124,106,255,.25);border-color:var(--a2)}
+
+/* ── DESKTOP (≥900px): sidebar visible, hide mobile nav ── */
+@media(min-width:900px){
+  .bottomnav{display:none!important}
+  .pack-fab{display:none!important}
+  /* pack panel docked to right sidebar on desktop */
+  .pack-panel{
+    position:fixed;right:0;left:auto;bottom:0;top:58px;
+    width:340px;border-top:none;border-left:2px solid var(--bdr2);
+    transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    max-height:100vh;
+  }
+  .pack-panel.open{transform:translateX(0)}
+  .pack-panel-handle{display:none}
+  /* pack open button on desktop — in topbar */
+  .pack-topbar-btn{display:flex!important}
+}
+
+@media(max-width:899px){
+  /* shell becomes single column, no sidebar */
+  .shell{grid-template-columns:1fr;grid-template-rows:52px 1fr}
+  .sidebar{display:none!important}
+  .content{height:calc(100vh - 52px - 56px);padding:1rem .75rem;padding-bottom:calc(1rem + 56px + env(safe-area-inset-bottom))}
+
+  /* topbar compact */
+  .topbar{height:52px;padding:0 .85rem;gap:.6rem}
+  .logo h1{font-size:.82rem}
+  .logo p{display:none}
+  .topbar-info{display:none}
+  .api-badge,.api-url-text{display:none}
+  .topbar-btns{gap:.3rem}
+  .btn{padding:.32rem .65rem;font-size:.78rem}
+  #pill{font-size:.62rem;padding:.15rem .4rem}
+
+  /* bottom nav visible */
+  .bottomnav{display:block}
+
+  /* pack fab visible */
+  .pack-fab{display:flex}
+
+  /* cards and grids stack */
   .g2,.g3,.g21,.g12{grid-template-columns:1fr}
   .s2,.s3{grid-column:span 1}
+
+  /* KPI grid — 2 cols on mobile */
+  .kpig{grid-template-columns:repeat(2,1fr)}
+  .kv{font-size:1.25rem}
+
+  /* tables scroll */
+  .tw{-webkit-overflow-scrolling:touch}
+  td,th{padding:.38rem .55rem;font-size:.75rem}
+  td.tn{font-size:.8rem;max-width:140px}
+
+  /* filter bar wrap tighter */
+  .fb{padding:.5rem .65rem;gap:.4rem}
+  .fb label{font-size:.65rem}
+  .fi{font-size:.75rem;padding:.28rem .5rem}
+
+  /* chart heights reduced */
+  .h360 canvas{max-height:260px}
+  .h340 canvas{max-height:240px}
+  .h300 canvas{max-height:220px}
+  .h240 canvas{max-height:200px}
+  .h180 canvas{max-height:160px}
+
+  /* drill panel full screen */
+  .dp{width:100%;max-height:92vh;border-radius:12px 12px 0 0}
+  .dov{padding:.5rem 0 0}
+  .g2.drill-grid{grid-template-columns:1fr}
+
+  /* month chips — 2 col */
+  .mg{grid-template-columns:repeat(2,1fr)}
+
+  /* quick btns scroll */
+  .dv-quick{flex-wrap:nowrap;overflow-x:auto;padding-bottom:.3rem}
+  .dv-quick::-webkit-scrollbar{display:none}
+
+  /* pack panel full bottom sheet */
+  .pack-panel{border-radius:16px 16px 0 0}
+
+  /* toast bottom */
+  .toast{bottom:calc(72px + env(safe-area-inset-bottom));right:.75rem;left:.75rem;max-width:none;text-align:center}
 }
+
+/* pack desktop toggle btn (hidden on mobile) */
+.pack-topbar-btn{display:none;align-items:center;gap:.4rem;
+  padding:.35rem .8rem;border-radius:var(--r);border:1px solid rgba(124,106,255,.35);
+  background:rgba(124,106,255,.1);color:var(--a2);font-size:.8rem;
+  cursor:pointer;transition:all .18s;white-space:nowrap}
+.pack-topbar-btn:hover{background:rgba(124,106,255,.2);border-color:var(--a2)}
+.pack-topbar-btn.active{background:rgba(124,106,255,.25);border-color:var(--a2);color:#c4b5fd}
 </style>
 </head>
 <body>
@@ -265,10 +428,116 @@ input[type="date"].fi{color-scheme:dark}
     <span class="api-url-text">drug_opd · Google Sheets</span>
   </div>
   <div class="topbar-btns">
+    <button class="pack-topbar-btn" id="packTopBtn" onclick="togglePack()" title="คำนวณหน่วยบรรจุ">📦 Pack Calc</button>
     <button class="btn btn-p" id="fetchBtn" onclick="fetchData()">↺ รีโหลด</button>
     <span id="pill">กำลังโหลด…</span>
   </div>
 </header>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottomnav">
+  <div class="bnav-inner">
+    <button class="bnav-item active" data-page="ov" onclick="goPage('ov',this)">
+      <span class="bnav-ic">📊</span><span class="bnav-lb">ภาพรวม</span>
+    </button>
+    <button class="bnav-item" data-page="dv" onclick="goPage('dv',this)">
+      <span class="bnav-ic">📋</span><span class="bnav-lb">รายวัน</span>
+    </button>
+    <button class="bnav-item" data-page="tr" onclick="goPage('tr',this)">
+      <span class="bnav-ic">📈</span><span class="bnav-lb">Trend</span>
+    </button>
+    <button class="bnav-item" data-page="dr" onclick="goPage('dr',this)">
+      <span class="bnav-ic">💊</span><span class="bnav-lb">ยา</span>
+    </button>
+    <button class="bnav-item" data-page="mo" onclick="goPage('mo',this)">
+      <span class="bnav-ic">📅</span><span class="bnav-lb">เดือน</span>
+    </button>
+    <button class="bnav-item" data-page="fc" onclick="goPage('fc',this)">
+      <span class="bnav-ic">🔮</span><span class="bnav-lb">Forecast</span>
+    </button>
+    <button class="bnav-item" data-page="ur" onclick="goPage('ur',this)">
+      <span class="bnav-ic">⚡</span><span class="bnav-lb">Rate</span>
+    </button>
+    <button class="bnav-item" data-page="cl" onclick="goPage('cl',this)">
+      <span class="bnav-ic">🏥</span><span class="bnav-lb">คลินิก</span>
+    </button>
+  </div>
+</nav>
+
+<!-- PACK CALCULATOR PANEL -->
+<div class="pack-panel" id="packPanel">
+  <div class="pack-panel-handle"></div>
+  <h3>📦 คำนวณหน่วยบรรจุ <span>กรอกจำนวนต่อหน่วยด้านล่าง</span></h3>
+  <div class="pack-drug-name" id="packDrugName">— เลือกยาจากตาราง หรือกรอกด้วยตนเอง —</div>
+
+  <!-- Drug picker -->
+  <div style="margin-bottom:.75rem">
+    <div class="sw" style="margin-bottom:0">
+      <span class="si">🔍</span>
+      <input class="sn" id="packDrugSearch" placeholder="ค้นหายาเพื่อดึงค่า…" oninput="packDrugFilter()" autocomplete="off">
+    </div>
+    <div id="packDrugDropdown" style="display:none;position:relative;z-index:10;
+      background:var(--bg3);border:1px solid var(--bdr2);border-top:none;
+      border-radius:0 0 var(--r) var(--r);max-height:180px;overflow-y:auto"></div>
+  </div>
+
+  <!-- Manual qty override -->
+  <div class="pack-field" style="margin-bottom:.75rem">
+    <label>ปริมาณ (หน่วยเล็ก) — ป้อนเองหรือดึงจากยา</label>
+    <input type="number" class="pack-in" id="packQty" placeholder="เช่น 5000" min="0" oninput="calcPack()">
+  </div>
+
+  <div style="margin-bottom:.45rem;font-size:.68rem;color:var(--tx3);font-family:var(--mo);text-transform:uppercase;letter-spacing:.08em">กำหนดหน่วยบรรจุ</div>
+  <div class="pack-grid">
+    <div class="pack-field">
+      <label id="packL1">หน่วยที่ 1 (ชื่อ)</label>
+      <input type="text" class="pack-in" id="packN1" placeholder="เช่น แผง" value="แผง" oninput="calcPack()">
+    </div>
+    <div class="pack-field">
+      <label>จำนวน/หน่วย</label>
+      <input type="number" class="pack-in" id="packV1" placeholder="เช่น 10" min="1" value="10" oninput="calcPack()">
+    </div>
+    <div class="pack-field">
+      <label id="packL2">หน่วยที่ 2 (ชื่อ)</label>
+      <input type="text" class="pack-in" id="packN2" placeholder="เช่น กล่อง" value="กล่อง" oninput="calcPack()">
+    </div>
+    <div class="pack-field">
+      <label>จำนวน/หน่วย</label>
+      <input type="number" class="pack-in" id="packV2" placeholder="เช่น 10" min="1" value="10" oninput="calcPack()">
+    </div>
+    <div class="pack-field">
+      <label id="packL3">หน่วยที่ 3 (ชื่อ)</label>
+      <input type="text" class="pack-in" id="packN3" placeholder="เช่น ลัง" value="ลัง" oninput="calcPack()">
+    </div>
+    <div class="pack-field">
+      <label>จำนวน/หน่วย</label>
+      <input type="number" class="pack-in" id="packV3" placeholder="เช่น 10" min="1" value="10" oninput="calcPack()">
+    </div>
+  </div>
+
+  <!-- Horizon -->
+  <div class="pack-field" style="margin-bottom:.8rem">
+    <label>ขอบฟ้าประมาณการ</label>
+    <select class="fi" id="packHorizon" style="width:100%" onchange="calcPack()">
+      <option value="1">1 เดือน</option>
+      <option value="3" selected>3 เดือน</option>
+      <option value="6">6 เดือน</option>
+    </select>
+  </div>
+
+  <!-- Results -->
+  <div class="pack-result" id="packResult">
+    <div style="text-align:center;color:var(--tx3);font-size:.8rem;padding:.5rem">
+      กรอกข้อมูลด้านบนเพื่อคำนวณ
+    </div>
+  </div>
+
+  <button class="pack-close-btn" onclick="togglePack()">✕ ปิด</button>
+</div>
+
+<!-- PACK FAB (mobile) -->
+<button class="pack-fab" onclick="togglePack()" title="คำนวณหน่วยบรรจุ">📦</button>
+
 
 <!-- SIDEBAR -->
 <nav class="sidebar">
@@ -587,6 +856,7 @@ input[type="date"].fi{color-scheme:dark}
   <div class="dp">
     <div class="dh">
       <div><h2 id="dTitle">—</h2><div class="ds" id="dSub"></div></div>
+      <button class="btn" style="font-size:.78rem;padding:.28rem .65rem" id="drillPackBtn" onclick="drillOpenPack()" title="คำนวณหน่วยบรรจุ">📦 Pack Calc</button>
       <button class="dc" onclick="cDrill()">✕ ปิด</button>
     </div>
     <div class="db">
@@ -652,9 +922,8 @@ function setP(cls,txt){
 /* ════ NAV ════ */
 function goPage(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  (el||document.querySelector(`[data-page="${id}"]`))?.classList.add('active');
+  syncNav(id);
   if(!S.data) return;
   ({tr:renderTr,dv:renderDvPage,dr:renderDr,cl:renderCl,mo:renderMo,fc:renderFc,ur:renderUr})[id]?.();
 }
@@ -1275,6 +1544,7 @@ function sUR(k){S.urSk===k?S.urAsc=!S.urAsc:(S.urSk=k,S.urAsc=false);renderUr();
 /* ════ DRILL-DOWN ════ */
 function openDrillDrug(name){
   if(!name||!S.dmap[name])return;
+  PC.drugName = name;   // ← track for pack calc
   const fc  = S.fcs.find(f=>f.name===name);
   const ser = S.dmap[name];   // [{ym, qty}]
   document.getElementById('dTitle').textContent=name;
@@ -1362,9 +1632,16 @@ function openDrillDay(day){
   document.getElementById('dov').classList.add('open');
 }
 
+function drillOpenPack(){
+  /* เปิด pack panel สำหรับยาที่กำลัง drill-down อยู่ */
+  if(PC.drugName) openPackForDrug(PC.drugName);
+  else toast('⚠ เลือกยาก่อน');
+}
+
 function cDrill(e){
   if(!e||e.target===document.getElementById('dov'))
     document.getElementById('dov').classList.remove('open');
+  document.getElementById('dFcastWrap').style.display='';
 }
 
 /* ════════════════════════════════════════════════════════
@@ -1772,8 +2049,167 @@ function xCSV(){
   toast('⬇ CSV บันทึกแล้ว '+fmt(enr.length)+' รายการ');
 }
 
+/* ════════════════════════════════════════════════════════
+   PACK CALCULATOR
+════════════════════════════════════════════════════════ */
+const PC = {
+  drugName: '',
+  qty: 0,          // หน่วยเล็กสุด (จากยาที่เลือก หรือกรอกเอง)
+  horizon: 3,
+};
+
+function togglePack(){
+  const panel = document.getElementById('packPanel');
+  const btn   = document.getElementById('packTopBtn');
+  const isOpen = panel.classList.toggle('open');
+  btn?.classList.toggle('active', isOpen);
+  if(isOpen) calcPack();
+}
+
+/* ── Drug search dropdown inside pack panel ── */
+function packDrugFilter(){
+  const q = (document.getElementById('packDrugSearch').value||'').toLowerCase().trim();
+  const dd = document.getElementById('packDrugDropdown');
+  if(!q || !S.fcs.length){ dd.style.display='none'; return; }
+
+  const matches = S.fcs.filter(f=>f.name.toLowerCase().includes(q)).slice(0,12);
+  if(!matches.length){ dd.style.display='none'; return; }
+
+  dd.style.display='block';
+  dd.innerHTML = matches.map(f=>{
+    const {proj, rec} = proj_fn(f, PC.horizon);
+    return `<div onclick="packSelectDrug('${f.name.replace(/'/g,"\\'")}',${f.avgPerActiveMonth},${f.avgPerDay},${proj},${rec})"
+      style="padding:.5rem .75rem;cursor:pointer;border-bottom:1px solid var(--bdr);
+        font-size:.8rem;transition:background .12s"
+      onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''">
+      <div style="color:var(--tx)">${f.name}</div>
+      <div style="font-size:.68rem;color:var(--tx3);font-family:var(--mo)">
+        avg: ${fmtF(f.avgPerActiveMonth)}/mo · ${f.avgPerDay}/day
+        ${f.unit?'· '+f.unit:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* เรียก proj แบบ alias เพราะชื่อซ้ำกับ variable */
+function proj_fn(fc, h){ return proj(fc, h); }
+
+function packSelectDrug(name, avgMo, avgDay, projQty, recQty){
+  PC.drugName = name;
+  document.getElementById('packDrugName').textContent = name;
+  document.getElementById('packDrugSearch').value = '';
+  document.getElementById('packDrugDropdown').style.display='none';
+
+  /* เติมค่า qty จาก forecast (แนะนำเบิก horizon เดือน) */
+  document.getElementById('packQty').value = recQty;
+  PC.qty = recQty;
+  calcPack();
+  toast(`📦 เลือก: ${name}`);
+}
+
+/* เปิด pack panel จาก drill-down หรือตาราง */
+function openPackForDrug(name){
+  const fc = S.fcs.find(f=>f.name===name);
+  if(!fc){ toast('⚠ ไม่พบข้อมูลยา'); return; }
+  const h = parseInt(document.getElementById('packHorizon')?.value||'3');
+  const {rec} = proj_fn(fc, h);
+  packSelectDrug(name, fc.avgPerActiveMonth, fc.avgPerDay, 0, rec);
+  document.getElementById('packPanel').classList.add('open');
+  document.getElementById('packTopBtn')?.classList.add('active');
+}
+
+function calcPack(){
+  PC.horizon = parseInt(document.getElementById('packHorizon')?.value||'3');
+  const qtyInput = parseFloat(document.getElementById('packQty').value) || 0;
+  if(qtyInput) PC.qty = qtyInput;
+
+  const n1 = document.getElementById('packN1').value || 'หน่วย 1';
+  const v1 = parseFloat(document.getElementById('packV1').value) || 0;
+  const n2 = document.getElementById('packN2').value || 'หน่วย 2';
+  const v2 = parseFloat(document.getElementById('packV2').value) || 0;
+  const n3 = document.getElementById('packN3').value || 'หน่วย 3';
+  const v3 = parseFloat(document.getElementById('packV3').value) || 0;
+
+  const qty = PC.qty;
+  if(!qty){ renderPackResult(null); return; }
+
+  /* คำนวณ: qty = หน่วยเล็กสุด
+     tier1 = qty / v1
+     tier2 = qty / (v1 * v2)
+     tier3 = qty / (v1 * v2 * v3)
+  */
+  const perT1 = v1 > 0 ? qty / v1 : null;
+  const perT2 = (v1 > 0 && v2 > 0) ? qty / (v1 * v2) : null;
+  const perT3 = (v1 > 0 && v2 > 0 && v3 > 0) ? qty / (v1 * v2 * v3) : null;
+
+  /* ceil + remainder */
+  const calcTier = (total, perUnit) => {
+    if(!perUnit || perUnit <= 0) return null;
+    const exact   = total / perUnit;
+    const ceiling = Math.ceil(exact);
+    const remainder = Math.round((ceiling * perUnit - total) * 100) / 100;
+    return { exact: Math.round(exact*100)/100, ceiling, remainder, perUnit };
+  };
+
+  renderPackResult({
+    qty, horizon: PC.horizon, name: PC.drugName,
+    t1: { name: n1, perUnit: v1, calc: calcTier(qty, v1) },
+    t2: { name: n2, perUnit: v1*v2, calc: calcTier(qty, v1*v2) },
+    t3: { name: n3, perUnit: v1*v2*v3, calc: calcTier(qty, v1*v2*v3) },
+  });
+}
+
+function renderPackResult(r){
+  const el = document.getElementById('packResult');
+  if(!r){ el.innerHTML='<div style="text-align:center;color:var(--tx3);font-size:.8rem;padding:.5rem">กรอกข้อมูลด้านบนเพื่อคำนวณ</div>'; return; }
+
+  const tierRow = (t) => {
+    if(!t.calc || !t.perUnit) return '';
+    const excess = t.calc.remainder > 0
+      ? `<span style="font-size:.7rem;color:var(--tx3)"> (เกิน ${fmtF(t.calc.remainder)} หน่วย)</span>`
+      : `<span style="font-size:.7rem;color:var(--gr)"> ✓ พอดี</span>`;
+    return `<div class="pack-result-row">
+      <span class="pr-label">${t.name} <span style="font-size:.7rem;color:var(--tx3)">(${fmt(t.perUnit)} หน่วย/${t.name})</span></span>
+      <span class="pr-val">${fmt(t.calc.ceiling)} ${t.name}${excess}</span>
+    </div>`;
+  };
+
+  el.innerHTML = `
+    <div style="font-size:.7rem;color:var(--tx3);font-family:var(--mo);margin-bottom:.5rem">
+      ${r.name?`ยา: ${r.name} · `:''}ขอบฟ้า: ${r.horizon} เดือน
+    </div>
+    <div class="pack-result-row">
+      <span class="pr-label">ปริมาณทั้งหมด (หน่วยเล็ก)</span>
+      <span class="pr-val big">${fmt(r.qty)} หน่วย</span>
+    </div>
+    ${tierRow(r.t1)}
+    ${tierRow(r.t2)}
+    ${tierRow(r.t3)}
+    <div style="font-size:.68rem;color:var(--tx3);margin-top:.6rem;font-family:var(--mo)">
+      * ปัดขึ้น (ceiling) เพื่อให้ยาครบ — ส่วนที่เกินแสดงในวงเล็บ
+    </div>`;
+}
+
+/* ── Sync active state ทั้ง sidebar + bottomnav ── */
+function syncNav(id){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.toggle('active', n.dataset.page===id));
+  document.querySelectorAll('.bnav-item').forEach(n=>n.classList.toggle('active', n.dataset.page===id));
+}
+
 /* ════ KEYBOARD ESC ════ */
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('dov').classList.remove('open');});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.getElementById('dov').classList.remove('open');
+    document.getElementById('packPanel').classList.remove('open');
+    document.getElementById('packTopBtn')?.classList.remove('active');
+    document.getElementById('packDrugDropdown').style.display='none';
+  }
+});
+/* click outside pack dropdown */
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#packDrugSearch') && !e.target.closest('#packDrugDropdown'))
+    document.getElementById('packDrugDropdown').style.display='none';
+});
 
 /* ════ AUTO-LOAD ════ */
 fetchData();
