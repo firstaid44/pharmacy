@@ -635,8 +635,8 @@ input[type="date"].fi{color-scheme:dark}
     <label>แสดง</label>
     <select class="fi" id="dvTopN" onchange="renderDv()">
       <option value="20">Top 20</option>
-      <option value="50" selected>Top 50</option>
-      <option value="999">ทั้งหมด</option>
+      <option value="50">Top 50</option>
+      <option value="9999" selected>ทั้งหมด</option>
     </select>
 
     <div class="sw inline" style="max-width:200px">
@@ -1617,7 +1617,8 @@ function openDrillDay(day){
   document.getElementById('dTitle').textContent='วันที่ '+day.date;
   document.getElementById('dSub').textContent=`${fmt(day.dispense_count)} รายการ · ${fmt(day.patient_count)} ราย`;
   document.getElementById('dFcastWrap').style.display='none';
-  const topD=(day.top_drugs||[]).slice(0,8);
+  const dayList=(day.drugs&&day.drugs.length)?day.drugs:(day.top_drugs||[]);
+  const topD=dayList.slice(0,8);
   document.getElementById('dKpi').innerHTML=`
     <div class="dk"><div class="dkl">รายการ</div><div class="dkv" style="color:var(--ac)">${fmt(day.dispense_count)}</div></div>
     <div class="dk"><div class="dkl">ผู้ป่วย</div><div class="dkv" style="color:var(--gr)">${fmt(day.patient_count)}</div></div>
@@ -1661,12 +1662,13 @@ const DV = {
 
 /* ── สร้าง index วันที่ → { drug → qty, dispenses } จาก daily ── */
 function buildDayDrugIndex(){
-  /* เนื่องจาก API daily ให้แค่ top_drugs 5 ตัว/วัน
-     เราสร้าง index จากนั้น เพื่อให้ lookup เร็ว O(1) */
+  /* สร้าง index จากยาครบทุกตัวของแต่ละวัน (day.drugs)
+     ถ้า API เป็นเวอร์ชันเก่าที่ส่งแค่ top_drugs ก็ fallback ได้ */
   S.dayDrugIdx = {};  // date → { drugName: {qty, disp} }
   (S.data.daily||[]).forEach(d=>{
     const map={};
-    (d.top_drugs||[]).forEach(dr=>{ map[dr.name]={qty:dr.qty, disp:1}; });
+    const list=(d.drugs&&d.drugs.length)?d.drugs:(d.top_drugs||[]);
+    list.forEach(dr=>{ map[dr.name]={qty:dr.qty, disp:1}; });
     S.dayDrugIdx[d.date]=map;
   });
 }
@@ -1678,7 +1680,9 @@ function aggregateDrugsForDates(dateArr){
   dateArr.forEach(date=>{
     const day=daily.find(d=>d.date===date);
     if(!day) return;
-    (day.top_drugs||[]).forEach(dr=>{
+    // ใช้ day.drugs (ยาครบทุกตัว) ถ้ามี ไม่งั้น fallback เป็น top_drugs (API เวอร์ชันเก่า)
+    const list=(day.drugs&&day.drugs.length)?day.drugs:(day.top_drugs||[]);
+    list.forEach(dr=>{
       if(!agg[dr.name]) agg[dr.name]={qty:0,disp:0,days:0};
       agg[dr.name].qty  += dr.qty;
       agg[dr.name].disp += 1;
@@ -1920,7 +1924,8 @@ function renderDv(){
           label:name.length>18?name.substring(0,18)+'…':name,
           data:dateArr.map(date=>{
             const day=daily.find(x=>x.date===date);
-            const dr=(day?.top_drugs||[]).find(x=>x.name===name);
+            const dlist=(day?.drugs&&day.drugs.length)?day.drugs:(day?.top_drugs||[]);
+            const dr=dlist.find(x=>x.name===name);
             return dr?.qty||0;
           }),
           borderColor:C.pal[i],backgroundColor:'transparent',
