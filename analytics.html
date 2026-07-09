@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drug OPD Analytics — PCU สะบ้าย้อย</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#07101f;--bg2:#0c1628;--bg3:#111e38;--bg4:#162240;
+  --bdr:rgba(61,214,245,.1);--bdr2:rgba(61,214,245,.2);--bdr3:rgba(61,214,245,.35);
+  --ac:#3dd6f5;--a2:#7c6aff;--a3:#f97316;
+  --gr:#34d399;--rd:#f87171;--yl:#fbbf24;--pk:#f472b6;
+  --tx:#ddeeff;--tx2:#9dbbd8;--tx3:#5578a0;
+  --fn:'IBM Plex Sans Thai',sans-serif;--mo:'IBM Plex Mono',monospace;
+  --r:5px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(61,214,245,.07),transparent),
+             radial-gradient(ellipse 50% 40% at 100% 80%,rgba(124,106,255,.05),transparent)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+
+/* LAYOUT */
+.shell{display:grid;grid-template-columns:230px 1fr;grid-template-rows:58px 1fr;min-height:100vh;position:relative;z-index:1}
+
+/* TOPBAR */
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:.9rem;padding:0 1.4rem;
+  background:rgba(7,16,31,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);
+  position:sticky;top:0;z-index:200;height:58px}
+.logo{display:flex;align-items:center;gap:.6rem;flex-shrink:0}
+.logo-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--ac);
+  display:flex;align-items:center;justify-content:center}
+.logo-dot::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--ac);
+  box-shadow:0 0 10px var(--ac);animation:glow 2s infinite alternate}
+@keyframes glow{from{opacity:.5;box-shadow:0 0 6px var(--ac)}to{box-shadow:0 0 16px var(--ac)}}
+.logo h1{font-size:.95rem;font-weight:700;letter-spacing:.03em}
+.logo p{font-size:.72rem;color:var(--tx3);font-family:var(--mo)}
+.topbar-info{flex:1;display:flex;align-items:center;gap:.75rem;min-width:0}
+.api-badge{font-size:.72rem;font-family:var(--mo);padding:.2rem .55rem;border-radius:3px;
+  background:rgba(61,214,245,.1);border:1px solid rgba(61,214,245,.25);color:var(--ac);
+  white-space:nowrap;flex-shrink:0}
+.api-url-text{font-size:.72rem;font-family:var(--mo);color:var(--tx3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-btns{display:flex;gap:.45rem}
+.btn{padding:.4rem .95rem;border-radius:var(--r);border:1px solid var(--bdr2);background:transparent;
+  color:var(--tx2);font-family:var(--fn);font-size:.85rem;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn:hover{border-color:var(--ac);color:var(--ac)}
+.btn-p{background:var(--ac);border-color:var(--ac);color:#000;font-weight:700}
+.btn-p:hover{background:#6ee7fa}
+.btn:disabled{opacity:.3;pointer-events:none}
+#pill{font-size:.75rem;font-family:var(--mo);padding:.22rem .6rem;border-radius:20px;
+  border:1px solid var(--bdr2);color:var(--tx3)}
+#pill.loading{color:var(--yl);border-color:rgba(251,191,36,.3);animation:blink .8s infinite}
+#pill.ok{color:var(--gr);border-color:rgba(52,211,153,.3)}
+#pill.error{color:var(--rd);border-color:rgba(248,113,113,.3)}
+@keyframes blink{50%{opacity:.35}}
+
+/* SIDEBAR */
+.sidebar{background:var(--bg2);border-right:1px solid var(--bdr);padding:.85rem .7rem;
+  display:flex;flex-direction:column;gap:.25rem;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto}
+.nl{font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.13em;
+  padding:.55rem .65rem .25rem;margin-top:.5rem}
+.ni{display:flex;align-items:center;gap:.55rem;padding:.58rem .72rem;border-radius:var(--r);
+  cursor:pointer;transition:all .15s;color:var(--tx2);font-size:.9rem;border:1px solid transparent;user-select:none}
+.ni:hover{background:var(--bg3);color:var(--tx)}
+.ni.active{background:rgba(61,214,245,.1);border-color:var(--bdr2);color:var(--ac);font-weight:600}
+.ni-ic{font-size:1rem;width:18px;text-align:center;flex-shrink:0}
+.nbadge{margin-left:auto;font-size:.68rem;background:var(--bg4);border:1px solid var(--bdr);
+  color:var(--tx3);padding:.1rem .38rem;border-radius:20px;font-family:var(--mo)}
+.nbadge.hot{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.3);color:var(--rd)}
+
+/* CONTENT */
+.content{padding:1.4rem;overflow-y:auto;height:calc(100vh - 58px)}
+.page{display:none}.page.active{display:block;animation:fU .3s ease}
+@keyframes fU{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* EMPTY / LOADER */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:58vh;color:var(--tx3);gap:.9rem;text-align:center}
+.empty-ic{font-size:3.5rem;opacity:.25}
+.empty p{font-size:.95rem}
+.spin-wrap{display:flex;flex-direction:column;align-items:center;gap:.9rem;padding:5rem}
+.spin{width:32px;height:32px;border:2px solid var(--bdr2);border-top-color:var(--ac);
+  border-radius:50%;animation:sp .65s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* KPI GRID */
+.kpig{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));
+  gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:var(--r);
+  overflow:hidden;margin-bottom:1.35rem}
+.kpi{background:var(--bg2);padding:1rem 1.1rem;cursor:pointer;transition:background .15s;
+  position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:transparent;transition:background .25s}
+.kpi:hover::after,.kpi.hl::after{background:var(--ac)}
+.kpi:hover{background:var(--bg3)}
+.kl{font-size:.72rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem}
+.kv{font-size:1.6rem;font-weight:700;font-family:var(--mo);line-height:1;color:var(--ac)}
+.ks{font-size:.7rem;color:var(--tx3);margin-top:.25rem;font-family:var(--mo)}
+
+/* SECTION */
+.sec{display:flex;align-items:center;gap:.55rem;margin:1.3rem 0 .8rem}
+.sec-ln{flex:1;height:1px;background:var(--bdr)}
+.sec-t{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);white-space:nowrap}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:1.1rem}
+.ct{font-size:.78rem;font-weight:700;color:var(--tx2);text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:.85rem;display:flex;align-items:center;gap:.4rem}
+.ct .ca{color:var(--ac)}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.9rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem;margin-bottom:.9rem}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:.9rem;margin-bottom:.9rem}
+.g12{display:grid;grid-template-columns:1fr 2fr;gap:.9rem;margin-bottom:.9rem}
+.s2{grid-column:span 2}.s3{grid-column:span 3}
+
+/* CHART HEIGHTS */
+.h180 canvas{max-height:180px}
+.h240 canvas{max-height:240px}
+.h300 canvas{max-height:300px}
+.h340 canvas{max-height:340px}
+.h360 canvas{max-height:360px}
+
+/* TABLE */
+.tw{overflow:auto}
+.tw.mh400{max-height:400px}
+.tw.mh480{max-height:480px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg3);color:var(--tx2);padding:.52rem .8rem;text-align:left;
+  border-bottom:1px solid var(--bdr2);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
+  position:sticky;top:0;z-index:2;white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
+thead th:hover{color:var(--ac)}
+tbody tr{border-bottom:1px solid var(--bdr);transition:background .12s;cursor:pointer}
+tbody tr:hover{background:var(--bg3)}
+td{padding:.5rem .8rem;color:var(--tx2);font-family:var(--mo);font-size:.82rem;white-space:nowrap}
+td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;max-width:220px}
+
+/* BADGES & TAGS */
+.rb{display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:3px;background:var(--bg3);
+  border:1px solid var(--bdr2);font-size:.72rem;color:var(--tx3)}
+.rb.g{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.35);color:var(--yl)}
+.rb.s{background:rgba(148,163,184,.1);border-color:rgba(148,163,184,.25);color:#94a3b8}
+.rb.b{background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.3);color:var(--a3)}
+.tag{display:inline-block;padding:.15rem .5rem;border-radius:3px;font-size:.72rem;font-weight:600}
+.tag.high{background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:var(--rd)}
+.tag.medium{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:var(--yl)}
+.tag.low{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--gr)}
+.tag.up{background:rgba(248,113,113,.12);color:var(--rd)}
+.tag.down{background:rgba(52,211,153,.1);color:var(--gr)}
+.tag.flat{background:rgba(74,96,128,.15);color:var(--tx3)}
+
+/* BAR ROW */
+.br{display:flex;align-items:center;gap:.45rem}
+.bt{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;min-width:44px}
+.bf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--a2),var(--ac));transition:width .5s}
+.bf.or{background:linear-gradient(90deg,var(--a3),var(--yl))}
+
+/* FILTER BAR */
+.fb{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:.65rem 1rem;margin-bottom:.9rem}
+.fb label{font-size:.72rem;color:var(--tx2);font-family:var(--mo);text-transform:uppercase;letter-spacing:.07em;flex-shrink:0}
+.fi{background:var(--bg2);border:1px solid var(--bdr2);border-radius:3px;
+  padding:.38rem .65rem;color:var(--tx);font-family:var(--mo);font-size:.82rem;outline:none;transition:border-color .18s}
+.fi:focus{border-color:var(--ac)}
+.fi-s{width:76px}.fi-m{width:145px}
+.fi-lg{flex:1;min-width:160px}
+.fi-tag{font-size:.72rem;font-family:var(--mo);padding:.2rem .5rem;border-radius:3px;
+  background:rgba(61,214,245,.08);border:1px solid rgba(61,214,245,.2);color:var(--ac);margin-left:auto}
+
+/* SEARCH */
+.sw{position:relative;margin-bottom:.7rem}
+.sw.inline{margin-bottom:0;flex:1;min-width:160px}
+.si{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:.82rem;pointer-events:none}
+.sn{width:100%;background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--r);
+  padding:.4rem .75rem .4rem 2rem;color:var(--tx);font-family:var(--mo);font-size:.82rem;outline:none;transition:border-color .18s}
+.sn:focus{border-color:var(--ac)}
+
+/* DRILL OVERLAY */
+.dov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;
+  display:none;align-items:center;justify-content:center;padding:1.5rem}
+.dov.open{display:flex}
+.dp{background:var(--bg2);border:1px solid var(--bdr2);border-radius:8px;
+  width:min(940px,100%);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 12px 80px rgba(0,0,0,.7),0 0 0 1px rgba(61,214,245,.08)}
+.dh{display:flex;align-items:center;gap:.8rem;padding:1rem 1.25rem;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.dh h2{font-size:1.05rem;font-weight:700;flex:1}
+.dh .ds{font-size:.76rem;color:var(--tx3);font-family:var(--mo)}
+.dc{background:none;border:1px solid var(--bdr2);border-radius:3px;
+  color:var(--tx2);cursor:pointer;font-size:.9rem;padding:.22rem .55rem;transition:all .15s}
+.dc:hover{border-color:var(--rd);color:var(--rd)}
+.db{padding:1.2rem;overflow-y:auto;flex:1}
+.dkpi{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:1rem}
+.dk{background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:.7rem .9rem;flex:1;min-width:110px}
+.dkl{font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.09em}
+.dkv{font-size:1.2rem;font-weight:700;font-family:var(--mo);margin-top:.2rem}
+
+/* MONTH CHIPS */
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:.5rem}
+.mc{background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;
+  padding:.58rem .75rem;cursor:pointer;transition:all .18s}
+.mc:hover,.mc.active{border-color:var(--ac);background:rgba(61,214,245,.06)}
+.mcy{font-size:.72rem;color:var(--tx3);font-family:var(--mo)}
+.mcn{font-size:1.2rem;font-weight:700;font-family:var(--mo);color:var(--ac)}
+.mcs{font-size:.7rem;color:var(--tx3);margin-top:.12rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.3rem;right:1.3rem;z-index:999;
+  background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--r);
+  padding:.6rem 1rem;font-size:.82rem;color:var(--tx2);font-family:var(--mo);
+  transform:translateY(50px);opacity:0;transition:all .28s;pointer-events:none;max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* SCATTER LEGEND */
+.sl{display:flex;gap:.9rem;margin-top:.55rem;font-size:.72rem;color:var(--tx3);font-family:var(--mo);flex-wrap:wrap}
+.sl-d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:.28rem;vertical-align:middle}
+
+/* EXPORT BTN */
+.xbtn{font-size:.72rem;font-family:var(--mo);padding:.2rem .55rem;border-radius:3px;
+  border:1px solid var(--bdr);background:transparent;color:var(--tx3);cursor:pointer;transition:all .15s;margin-left:auto}
+.xbtn:hover{border-color:var(--gr);color:var(--gr)}
+
+/* DAILY VIEW */
+.dv-nav-btn{background:var(--bg3);border:1px solid var(--bdr2);border-radius:3px;
+  color:var(--tx2);font-size:1.1rem;padding:.15rem .55rem;cursor:pointer;
+  transition:all .15s;line-height:1}
+.dv-nav-btn:hover{border-color:var(--ac);color:var(--ac)}
+.dv-quick{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem}
+.dv-qbtn{font-size:.72rem;font-family:var(--mo);padding:.25rem .65rem;border-radius:20px;
+  border:1px solid var(--bdr2);background:var(--bg3);color:var(--tx2);
+  cursor:pointer;transition:all .15s;white-space:nowrap}
+.dv-qbtn:hover{border-color:var(--ac);color:var(--ac)}
+.dv-qbtn.active{background:rgba(61,214,245,.12);border-color:var(--ac);color:var(--ac);font-weight:600}
+/* date input theming */
+input[type="date"].fi{color-scheme:dark}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .g2,.g3,.g21,.g12{grid-template-columns:1fr}
+  .s2,.s3{grid-column:span 1}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <div><h1>Drug OPD Analytics</h1><p>PCU สะบ้าย้อย · Songkhla</p></div>
+  </div>
+  <div class="topbar-info">
+    <span class="api-badge">🔗 Apps Script API</span>
+    <span class="api-url-text">drug_opd · Google Sheets</span>
+  </div>
+  <div class="topbar-btns">
+    <button class="btn btn-p" id="fetchBtn" onclick="fetchData()">↺ รีโหลด</button>
+    <span id="pill">กำลังโหลด…</span>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="nl">Overview</div>
+  <div class="ni active" data-page="ov" onclick="goPage('ov',this)"><span class="ni-ic">📊</span>ภาพรวม</div>
+  <div class="ni" data-page="tr" onclick="goPage('tr',this)"><span class="ni-ic">📈</span>Trend</div>
+  <div class="nl">ข้อมูล</div>
+  <div class="ni" data-page="dv" onclick="goPage('dv',this)"><span class="ni-ic">📋</span>รายวัน<span class="nbadge" id="nb-dv">—</span></div>
+  <div class="ni" data-page="dr" onclick="goPage('dr',this)"><span class="ni-ic">💊</span>ยาทั้งหมด<span class="nbadge" id="nb-dr">—</span></div>
+  <div class="ni" data-page="cl" onclick="goPage('cl',this)"><span class="ni-ic">🏥</span>คลินิก<span class="nbadge" id="nb-cl">—</span></div>
+  <div class="ni" data-page="mo" onclick="goPage('mo',this)"><span class="ni-ic">📅</span>รายเดือน<span class="nbadge" id="nb-mo">—</span></div>
+  <div class="nl">วิเคราะห์</div>
+  <div class="ni" data-page="fc" onclick="goPage('fc',this)"><span class="ni-ic">🔮</span>Forecast<span class="nbadge hot" id="nb-fc">—</span></div>
+  <div class="ni" data-page="ur" onclick="goPage('ur',this)"><span class="ni-ic">⚡</span>Usage Rate</div>
+</nav>
+
+<!-- CONTENT -->
+<main class="content">
+
+<!-- OV -->
+<div class="page active" id="page-ov">
+  <div class="empty" id="ov-empty">
+    <div class="spin" style="width:40px;height:40px;border-width:3px"></div>
+    <p style="font-size:.85rem;color:var(--tx3)">กำลังโหลดข้อมูลจาก Google Sheets…</p>
+  </div>
+  <div id="ov-data" style="display:none">
+    <div class="kpig" id="ov-kpi"></div>
+    <div class="g21">
+      <div class="card"><div class="ct">รายการจ่ายยา + ผู้ป่วย <span class="ca">(รายวัน · คลิกแถบ)</span>
+        <button class="xbtn" onclick="xChart('dailyTrend')">⬇PNG</button></div>
+        <div class="h300"><canvas id="dailyTrend"></canvas></div></div>
+      <div class="card"><div class="ct">Top 8 ยา <span class="ca">(คลิกชิ้น)</span></div>
+        <div class="h300"><canvas id="topPie"></canvas></div></div>
+    </div>
+    <div class="g3">
+      <div class="card"><div class="ct">มูลค่า/วัน</div><div class="h180"><canvas id="costLine"></canvas></div></div>
+      <div class="card"><div class="ct">รายเดือน <span class="ca">(คลิก)</span></div><div class="h180"><canvas id="mBar"></canvas></div></div>
+      <div class="card"><div class="ct">คลินิก</div><div class="h180"><canvas id="clBar"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TREND -->
+<div class="page" id="page-tr">
+  <div class="fb">
+    <label>แกรนูล</label>
+    <select class="fi" id="tGran" onchange="renderTr()"><option value="daily">รายวัน</option><option value="monthly" selected>รายเดือน</option></select>
+    <label>Metric</label>
+    <select class="fi" id="tMet" onchange="renderTr()">
+      <option value="count">รายการ</option><option value="patients">ผู้ป่วย</option>
+      <option value="qty">ปริมาณ</option><option value="cost">มูลค่า</option>
+    </select>
+    <label>Type</label>
+    <select class="fi" id="tType" onchange="renderTr()">
+      <option value="bar">Bar</option><option value="line">Line</option><option value="area">Area</option>
+    </select>
+    <span class="fi-tag" id="tInfo">—</span>
+  </div>
+  <div class="card" style="margin-bottom:.9rem">
+    <div class="ct" id="tTitle">Trend</div><div class="h340"><canvas id="tMain"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">MoM % เปลี่ยนแปลง</div><div class="h240"><canvas id="momC"></canvas></div></div>
+    <div class="card"><div class="ct">ผู้ป่วย vs มูลค่า <span class="ca">(Scatter)</span></div><div class="h240"><canvas id="pvC"></canvas></div></div>
+  </div>
+</div>
+
+<!-- DAILY VIEW -->
+<div class="page" id="page-dv">
+
+  <!-- Controls -->
+  <div class="fb" id="dv-fb">
+    <label>โหมด</label>
+    <select class="fi" id="dvMode" onchange="onDvModeChange()">
+      <option value="single">เลือกวันเดียว</option>
+      <option value="range">ช่วงเวลา</option>
+    </select>
+
+    <!-- Single date -->
+    <div id="dv-single-wrap" style="display:flex;align-items:center;gap:.5rem">
+      <label>วันที่</label>
+      <input type="date" class="fi" id="dvDate" onchange="renderDv()">
+      <button class="dv-nav-btn" onclick="dvStep(-1)" title="วันก่อนหน้า">‹</button>
+      <button class="dv-nav-btn" onclick="dvStep(1)"  title="วันถัดไป">›</button>
+    </div>
+
+    <!-- Range -->
+    <div id="dv-range-wrap" style="display:none;align-items:center;gap:.5rem">
+      <label>จาก</label>
+      <input type="date" class="fi" id="dvFrom" onchange="renderDv()">
+      <label>ถึง</label>
+      <input type="date" class="fi" id="dvTo"   onchange="renderDv()">
+    </div>
+
+    <label>แสดง</label>
+    <select class="fi" id="dvTopN" onchange="renderDv()">
+      <option value="20">Top 20</option>
+      <option value="50" selected>Top 50</option>
+      <option value="999">ทั้งหมด</option>
+    </select>
+
+    <div class="sw inline" style="max-width:200px">
+      <span class="si">🔍</span>
+      <input class="sn" id="dvSearch" placeholder="ค้นหายา…" oninput="renderDv()">
+    </div>
+
+    <span class="fi-tag" id="dv-info">เลือกวันที่</span>
+  </div>
+
+  <!-- Quick date buttons -->
+  <div class="dv-quick" id="dv-quick"></div>
+
+  <!-- KPI strip -->
+  <div class="kpig" id="dv-kpi" style="margin-bottom:.9rem;display:none"></div>
+
+  <!-- Charts row -->
+  <div class="g21" id="dv-charts" style="display:none;margin-bottom:.9rem">
+    <div class="card">
+      <div class="ct" id="dv-bar-title">ปริมาณยา <span class="ca">(คลิกแถบ = Drill-down)</span>
+        <button class="xbtn" onclick="xChart('dvBar')">⬇PNG</button>
+      </div>
+      <div class="h360"><canvas id="dvBar"></canvas></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.9rem">
+      <div class="card">
+        <div class="ct">สัดส่วนยา Top 8</div>
+        <div class="h240"><canvas id="dvPie"></canvas></div>
+      </div>
+      <div class="card" id="dv-range-trend-card" style="display:none">
+        <div class="ct">Trend ยา Top 5 <span class="ca">(ช่วงเวลา)</span></div>
+        <div class="h180"><canvas id="dvTrend"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card" id="dv-table-card" style="display:none">
+    <div class="ct" id="dv-table-title">ตารางยา
+      <button class="xbtn" onclick="xDvCSV()">⬇CSV</button>
+    </div>
+    <div class="tw mh480">
+      <table>
+        <thead><tr>
+          <th>#</th>
+          <th onclick="sortDv('name')">ชื่อยา</th>
+          <th onclick="sortDv('qty')">ปริมาณ (หน่วย)</th>
+          <th onclick="sortDv('disp')">รายการ</th>
+          <th>สัดส่วน</th>
+          <th>Bar</th>
+        </tr></thead>
+        <tbody id="dv-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty" id="dv-empty" style="display:none">
+    <div class="empty-ic">📋</div>
+    <p>ไม่มีข้อมูลในช่วงที่เลือก</p>
+  </div>
+
+</div>
+
+<!-- DRUGS -->
+<div class="page" id="page-dr">
+  <div class="fb">
+    <div class="sw inline"><span class="si">🔍</span><input class="sn" id="drSearch" placeholder="ค้นหายา…" oninput="renderDr()"></div>
+    <label>เรียงตาม</label>
+    <select class="fi fi-m" id="drSort" onchange="renderDr()">
+      <option value="qty">ปริมาณรวม</option><option value="avg">เฉลี่ย/เดือน</option><option value="name">ชื่อ A-Z</option>
+    </select>
+    <span class="fi-tag" id="drCount">—</span>
+  </div>
+  <div class="card">
+    <div class="ct">รายการยาทั้งหมด <span class="ca">(คลิกแถวเพื่อ Drill-down)</span></div>
+    <div class="tw mh480">
+      <table><thead><tr>
+        <th>#</th><th onclick="sDr('name')">ชื่อยา / หน่วย</th>
+        <th onclick="sDr('qty')">รวม(หน่วย)</th>
+        <th onclick="sDr('avg')">เฉลี่ย/เดือน<br><span style="font-weight:400;font-size:.62rem">(active)</span></th>
+        <th>เฉลี่ย/เดือน<br><span style="font-weight:400;font-size:.62rem">(รวมทุก mo)</span></th>
+        <th>เฉลี่ย/วัน</th>
+        <th>Availability</th>
+        <th>สัดส่วน</th><th>Trend</th>
+      </tr></thead><tbody id="drTb"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- CLINICS -->
+<div class="page" id="page-cl">
+  <div class="g21">
+    <div class="card">
+      <div class="ct">คลินิก / แผนก <span class="ca">(คลิกแถว)</span></div>
+      <div class="tw mh480"><table><thead><tr><th>#</th><th>คลินิก</th><th>รายการ</th><th>สัดส่วน</th></tr></thead>
+        <tbody id="clTb"></tbody></table></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.9rem">
+      <div class="card"><div class="ct">สัดส่วนคลินิก</div><div class="h240"><canvas id="clPie"></canvas></div></div>
+      <div class="card" id="clDetail" style="display:none">
+        <div class="ct" id="clDetailT">รายละเอียด</div>
+        <div id="clDetailB"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY -->
+<div class="page" id="page-mo">
+  <div class="mg" id="moGrid" style="margin-bottom:.9rem"></div>
+  <div class="g2" id="moDetail" style="display:none">
+    <div class="card"><div class="ct" id="moDetailT">Top 10 ยา</div><div class="h300"><canvas id="moBar"></canvas></div></div>
+    <div class="card"><div class="ct">KPI เดือนนี้</div><div class="dkpi" id="moKpi" style="flex-direction:column;gap:.45rem"></div></div>
+  </div>
+</div>
+
+<!-- FORECAST -->
+<div class="page" id="page-fc">
+  <div class="fb">
+    <label>ขอบฟ้า</label>
+    <select class="fi" id="fcH" onchange="renderFc()"><option value="1">1 mo</option><option value="3" selected>3 mo</option><option value="6">6 mo</option></select>
+    <label>กรอง</label>
+    <select class="fi" id="fcF" onchange="renderFc()">
+      <option value="all">ทั้งหมด</option><option value="high">🔴 High</option>
+      <option value="medium">🟡 Medium</option><option value="low">🟢 Low</option>
+      <option value="up">▲ Trend ขึ้น</option><option value="down">▼ Trend ลง</option>
+    </select>
+    <div class="sw inline"><span class="si">🔍</span><input class="sn" id="fcSearch" placeholder="ค้นหา…" oninput="renderFc()"></div>
+    <label>แสดง</label>
+    <input type="number" class="fi fi-s" id="fcN" value="50" min="5" max="500" onchange="renderFc()">
+    <span class="fi-tag">WMA-3 + LR</span>
+  </div>
+  <div class="kpig" id="fcKpi" style="margin-bottom:.9rem"></div>
+  <div class="g21" style="margin-bottom:.9rem">
+    <div class="card">
+      <div class="ct">แนะนำเบิก Top 20 <span class="ca">(คลิกแถบ)</span>
+        <button class="xbtn" onclick="xChart('fcBar')">⬇PNG</button></div>
+      <div class="h360"><canvas id="fcBar"></canvas></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.9rem">
+      <div class="card"><div class="ct">Urgency <span class="ca">(คลิกกรอง)</span></div><div class="h180"><canvas id="fcUrgPie"></canvas></div></div>
+      <div class="card"><div class="ct">Trend <span class="ca">(คลิกกรอง)</span></div><div class="h180"><canvas id="fcTrPie"></canvas></div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:.9rem">
+    <div class="ct">Slope vs Variability <span class="ca">(คลิกจุด = Drill-down)</span></div>
+    <div class="h300"><canvas id="fcScat"></canvas></div>
+    <div class="sl">
+      <span><span class="sl-d" style="background:var(--rd)"></span>High</span>
+      <span><span class="sl-d" style="background:var(--yl)"></span>Medium</span>
+      <span><span class="sl-d" style="background:var(--gr)"></span>Low</span>
+      <span style="margin-left:auto">X = slope %/mo · Y = CV%</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">ตารางประมาณการ <span class="ca">(คลิกแถว)</span>
+      <button class="xbtn" onclick="xCSV()">⬇CSV</button></div>
+    <div class="tw mh480">
+      <table><thead><tr>
+        <th>#</th><th>ชื่อยา</th>
+        <th onclick="sFC('avg')">เฉลี่ย/mo<br><span style="font-weight:400;font-size:.62rem">(active)</span></th>
+        <th>เฉลี่ย/วัน</th>
+        <th onclick="sFC('slope')">Slope</th>
+        <th onclick="sFC('cv')">CV%</th>
+        <th>Availability</th>
+        <th>Trend</th>
+        <th onclick="sFC('proj')">คาดการณ์</th>
+        <th onclick="sFC('rec')">แนะนำเบิก</th>
+        <th>Buffer</th>
+        <th onclick="sFC('urgency')">Urgency</th>
+      </tr></thead><tbody id="fcTb"></tbody></table>
+    </div>
+    <p style="font-size:.72rem;color:var(--tx3);font-family:var(--mo);margin-top:.55rem;line-height:1.6">
+      WMA-3 (น้ำหนัก 3:2:1) + Linear Regression Slope · Buffer +20% เมื่อ CV>30%, +10% ทั่วไป · High = slope↑ &amp; CV>25%
+    </p>
+  </div>
+</div>
+
+<!-- USAGE RATE -->
+<div class="page" id="page-ur">
+  <div class="fb">
+    <div class="sw inline"><span class="si">🔍</span><input class="sn" id="urSearch" placeholder="ค้นหา…" oninput="renderUr()"></div>
+    <label>เรียงตาม</label>
+    <select class="fi fi-m" id="urSort" onchange="renderUr()">
+      <option value="daily">เฉลี่ย/วัน</option><option value="avg">เฉลี่ย/เดือน</option>
+      <option value="cv">CV%</option><option value="slope">Slope</option>
+    </select>
+    <span class="fi-tag" id="urCount">—</span>
+  </div>
+  <div class="g21" style="margin-bottom:.9rem">
+    <div class="card"><div class="ct">Usage Rate Top 20 <span class="ca">(หน่วย/วัน · คลิก)</span></div><div class="h360"><canvas id="urBar"></canvas></div></div>
+    <div class="card"><div class="ct">Slope Top 15 <span class="ca">(abs · คลิก)</span></div><div class="h360"><canvas id="urSlope"></canvas></div></div>
+  </div>
+  <div class="card">
+    <div class="ct">Usage Rate ทุกตัว <span class="ca">(คลิกแถว)</span></div>
+    <div class="tw mh480">
+      <table><thead><tr>
+        <th>#</th><th>ชื่อยา / หน่วย</th>
+        <th onclick="sUR('daily')">เฉลี่ย/วัน</th>
+        <th onclick="sUR('avg')">เฉลี่ย/เดือน<br><span style="font-weight:400;font-size:.62rem">(active)</span></th>
+        <th>เฉลี่ย/เดือน<br><span style="font-weight:400;font-size:.62rem">(รวม)</span></th>
+        <th onclick="sUR('slope')">Slope/mo</th>
+        <th onclick="sUR('cv')">CV%</th>
+        <th>Availability</th>
+        <th>Trend</th><th>Sparkline</th>
+      </tr></thead><tbody id="urTb"></tbody></table>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- DRILL OVERLAY -->
+<div class="dov" id="dov" onclick="cDrill(event)">
+  <div class="dp">
+    <div class="dh">
+      <div><h2 id="dTitle">—</h2><div class="ds" id="dSub"></div></div>
+      <button class="dc" onclick="cDrill()">✕ ปิด</button>
+    </div>
+    <div class="db">
+      <div class="dkpi" id="dKpi"></div>
+      <div class="g2">
+        <div><div style="font-size:.72rem;color:var(--tx3);margin-bottom:.45rem;font-family:var(--mo);text-transform:uppercase;letter-spacing:.08em">ประวัติรายเดือน</div>
+          <div style="height:190px"><canvas id="dHistC"></canvas></div></div>
+        <div id="dFcastWrap"><div style="font-size:.72rem;color:var(--tx3);margin-bottom:.45rem;font-family:var(--mo);text-transform:uppercase;letter-spacing:.08em">คาดการณ์ 6 เดือน</div>
+          <div style="height:190px"><canvas id="dFcastC"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+const S={
+  data:null, dmap:{}, dmeta:{}, allMonths:[], fcs:[],
+  dayDrugIdx:{},
+  fcSk:'rec',fcAsc:false,
+  drSk:'qty',drAsc:false,
+  urSk:'daily',urAsc:false,
+  selMo:null,
+};
+
+/* ════ CHART REG ════ */
+const CR={};
+const kc=id=>{if(CR[id]){CR[id].destroy();delete CR[id];}};
+const rc=(id,i)=>{CR[id]=i;return i;};
+
+/* ════ COLORS ════ */
+const C={
+  ac:'#3dd6f5',a2:'#7c6aff',a3:'#f97316',
+  gr:'#34d399',rd:'#f87171',yl:'#fbbf24',pk:'#f472b6',
+  pal:['#3dd6f5','#7c6aff','#f97316','#34d399','#fbbf24','#f472b6','#f87171','#22d3ee','#a78bfa','#fb923c','#4ade80','#38bdf8'],
+};
+Chart.defaults.color='#7a9bbd';
+Chart.defaults.borderColor='rgba(61,214,245,.07)';
+Chart.defaults.font.family="'IBM Plex Mono',monospace";
+Chart.defaults.font.size=13;
+
+/* ════ FORMAT ════ */
+const fmt=n=>Number(n).toLocaleString('th-TH');
+const fmtF=n=>Number(n).toLocaleString('th-TH',{minimumFractionDigits:1,maximumFractionDigits:1});
+const fmtC=n=>'฿'+Number(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const sd=s=>s?s.substring(5):'';
+
+function toast(msg,dur=2400){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),dur);
+}
+function setP(cls,txt){
+  const el=document.getElementById('pill');
+  el.className=cls;el.textContent=txt;
+}
+
+/* ════ NAV ════ */
+function goPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  (el||document.querySelector(`[data-page="${id}"]`))?.classList.add('active');
+  if(!S.data) return;
+  ({tr:renderTr,dv:renderDvPage,dr:renderDr,cl:renderCl,mo:renderMo,fc:renderFc,ur:renderUr})[id]?.();
+}
+
+/* ════ FETCH ════ */
+/* ════ API ════ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbyLns2ayIwPJkSWBdLbDZogcP48hkoeln2ykWBMgTwx8rmWDAHlv_PyKzEgG_BjR5Kf/exec';
+
+async function fetchData(){
+  document.getElementById('fetchBtn').disabled=true;
+  setP('loading','● LOADING…');
+  document.getElementById('ov-empty').style.display='none';
+  document.getElementById('ov-data').style.display='none';
+  try{
+    const base = API_URL + '?';
+    const [r1, r2] = await Promise.all([
+      fetch(base+'_t='+Date.now()),
+      fetch(base+'action=drug_monthly&_t='+(Date.now()+1))
+    ]);
+    const [d, dm] = await Promise.all([r1.json(), r2.json()]);
+
+    if(d.status!=='ok') throw new Error(d.message||'API error (main)');
+
+    S.data = d;
+
+    if(dm.status==='ok' && dm.drugs){
+      S.dmap  = {};
+      S.dmeta = {};
+      Object.entries(dm.drugs).forEach(([name,info])=>{
+        S.dmap[name]  = info.series;
+        S.dmeta[name] = { unit:info.unit, code:info.code };
+      });
+      S.allMonths = dm.months;
+      toast('✓ โหลดครบ: '+fmt(d.summary.total_rows)+' รายการ · '+fmt(dm.drug_count)+' ชนิดยา');
+    } else {
+      buildDmapFallback(d.monthly);
+      S.allMonths = d.monthly.map(m=>m.month).sort();
+      toast('⚠ drug_monthly ไม่พร้อม — ใช้ top_drugs fallback');
+    }
+
+    S.fcs = computeFcs();
+    buildDayDrugIndex();
+    setP('ok','✓ '+fmt(d.summary.total_rows)+' rows · '+fmt(Object.keys(S.dmap).length)+' drugs');
+    updateBadges();
+    renderOv();
+    const cur=document.querySelector('.ni.active')?.dataset.page;
+    if(cur&&cur!=='ov') goPage(cur);
+  }catch(e){
+    setP('error','✗ ERROR');
+    toast('❌ '+e.message, 5000);
+    document.getElementById('ov-empty').style.display='flex';
+    document.getElementById('ov-empty').innerHTML=`
+      <div class="empty-ic">⚠️</div>
+      <p style="color:var(--rd)">โหลดข้อมูลไม่ได้</p>
+      <p style="font-size:.75rem;color:var(--tx3)">${e.message}</p>
+      <button class="btn btn-p" style="margin-top:.75rem" onclick="fetchData()">ลองใหม่</button>`;
+  }finally{document.getElementById('fetchBtn').disabled=false;}
+}
+
+function updateBadges(){
+  const d=S.data;
+  document.getElementById('nb-dv').textContent=fmt(d.daily.length);
+  document.getElementById('nb-dr').textContent=fmt(d.summary.unique_drugs);
+  document.getElementById('nb-cl').textContent=fmt(d.top_clinics.length);
+  document.getElementById('nb-mo').textContent=fmt(d.monthly.length);
+  const h=S.fcs.filter(f=>f.urgency==='high').length;
+  const nb=document.getElementById('nb-fc');
+  nb.textContent=h;nb.className='nbadge'+(h?' hot':'');
+}
+
+/* ════ OV PAGE ════ */
+function kCard(l,v,s,col,fs='1.5rem'){
+  return `<div class="kpi"><div class="kl">${l}</div><div class="kv" style="color:${col};font-size:${fs}">${v}</div><div class="ks">${s}</div></div>`;
+}
+function renderOv(){
+  const d=S.data;const {summary,daily,monthly,top_drugs,top_clinics}=d;
+  document.getElementById('ov-empty').style.display='none';
+  document.getElementById('ov-data').style.display='block';
+  const avgD=daily.length?Math.round(summary.total_rows/daily.length):0;
+  const avgCP=summary.unique_patients?Math.round(summary.total_cost/summary.unique_patients):0;
+  document.getElementById('ov-kpi').innerHTML=
+    kCard('รายการทั้งหมด',fmt(summary.total_rows),'dispenses','var(--ac)')+
+    kCard('ผู้ป่วยไม่ซ้ำ',fmt(summary.unique_patients),'unique HN','var(--gr)')+
+    kCard('ชนิดยา',fmt(summary.unique_drugs),'รายการ','var(--a2)')+
+    kCard('ปริมาณรวม',fmt(summary.total_qty),'หน่วย','var(--a3)')+
+    kCard('มูลค่ารวม',fmtC(summary.total_cost),'total cost','var(--yl)','1.1rem')+
+    kCard('เฉลี่ย/วัน',fmt(avgD),'รายการ/วัน','var(--pk)')+
+    kCard('ต้นทุน/ราย',fmtC(avgCP),'avg/patient','var(--rd)','1.05rem')+
+    kCard('ช่วงข้อมูล',summary.date_range.from,'→ '+summary.date_range.to,'var(--tx2)','.9rem');
+  // charts
+  kc('dailyTrend');
+  const grad1=document.getElementById('dailyTrend').getContext('2d');
+  rc('dailyTrend',new Chart(grad1,{type:'bar',
+    data:{labels:daily.map(d=>sd(d.date)),datasets:[
+      {label:'รายการ',data:daily.map(d=>d.dispense_count),backgroundColor:'rgba(61,214,245,.18)',borderColor:C.ac,borderWidth:1.2,order:2},
+      {label:'ผู้ป่วย',data:daily.map(d=>d.patient_count),type:'line',borderColor:C.gr,backgroundColor:'rgba(52,211,153,.07)',borderWidth:2,pointRadius:0,fill:true,tension:.4,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{boxWidth:10,font:{size:13}}}},
+      scales:{x:{ticks:{maxTicksLimit:14,maxRotation:0,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}}},
+      onClick:(_,els)=>{if(!els.length)return;openDrillDay(daily[els[0].index]);}
+    }
+  }));
+
+  kc('topPie');
+  const t8=top_drugs.slice(0,8);
+  rc('topPie',new Chart(document.getElementById('topPie').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:t8.map(d=>d.name.length>15?d.name.substring(0,15)+'…':d.name),
+      datasets:[{data:t8.map(d=>d.qty),backgroundColor:C.pal.slice(0,8).map(c=>c+'aa'),borderColor:C.pal.slice(0,8),borderWidth:1.2,hoverOffset:8}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'57%',
+      plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:12}}}},
+      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(t8[els[0].index]?.name);}
+    }
+  }));
+
+  kc('costLine');
+  const gCost=document.getElementById('costLine').getContext('2d');
+  const cg=gCost.createLinearGradient(0,0,0,180);cg.addColorStop(0,'rgba(124,106,255,.4)');cg.addColorStop(1,'rgba(124,106,255,.02)');
+  rc('costLine',new Chart(gCost,{type:'line',
+    data:{labels:daily.map(d=>sd(d.date)),datasets:[{label:'฿',data:daily.map(d=>d.total_cost),borderColor:C.a2,backgroundColor:cg,borderWidth:1.5,pointRadius:0,fill:true,tension:.4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{maxTicksLimit:8,maxRotation:0,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>'฿'+v.toLocaleString('th-TH'),font:{size:12}}}}
+    }
+  }));
+
+  kc('mBar');
+  rc('mBar',new Chart(document.getElementById('mBar').getContext('2d'),{type:'bar',
+    data:{labels:monthly.map(m=>m.month),datasets:[{label:'รายการ',data:monthly.map(m=>m.dispense_count),
+      backgroundColor:monthly.map((_,i)=>C.pal[i%C.pal.length]+'55'),borderColor:monthly.map((_,i)=>C.pal[i%C.pal.length]),borderWidth:1.2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{maxRotation:45,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}}},
+      onClick:(_,els)=>{if(!els.length)return;goPage('mo');setTimeout(()=>selMo(monthly[els[0].index]?.month),300);}
+    }
+  }));
+
+  kc('clBar');
+  rc('clBar',new Chart(document.getElementById('clBar').getContext('2d'),{type:'bar',
+    data:{labels:top_clinics.map(c=>(c.name||'?').substring(0,16)),datasets:[{label:'รายการ',data:top_clinics.map(c=>c.count),backgroundColor:C.pal.map(c=>c+'55'),borderColor:C.pal,borderWidth:1.2}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},y:{ticks:{font:{size:12}}}},
+      onClick:()=>goPage('cl')
+    }
+  }));
+}
+
+/* ════ TREND PAGE ════ */
+function renderTr(){
+  if(!S.data)return;
+  const {daily,monthly}=S.data;
+  const gran=document.getElementById('tGran').value;
+  const met=document.getElementById('tMet').value;
+  const type=document.getElementById('tType').value;
+  const src=gran==='daily'?daily:monthly;
+  const labels=gran==='daily'?src.map(d=>sd(d.date)):src.map(m=>m.month);
+  const ml={count:'รายการ',patients:'ผู้ป่วย',qty:'ปริมาณ',cost:'มูลค่า (฿)'}[met];
+  const data=src.map(r=>({count:r.dispense_count||0,patients:r.patient_count||0,qty:r.total_qty||0,cost:r.total_cost||0})[met]);
+  document.getElementById('tTitle').textContent=`${ml} · ${gran==='daily'?'รายวัน':'รายเดือน'}`;
+  document.getElementById('tInfo').textContent=`${fmt(src.length)} ${gran==='daily'?'วัน':'เดือน'}`;
+  kc('tMain');
+  const ctx=document.getElementById('tMain').getContext('2d');
+  const g=ctx.createLinearGradient(0,0,0,340);g.addColorStop(0,'rgba(61,214,245,.3)');g.addColorStop(1,'rgba(61,214,245,.02)');
+  rc('tMain',new Chart(ctx,{type:type==='area'?'line':type,
+    data:{labels,datasets:[{label:ml,data,borderColor:C.ac,backgroundColor:type==='area'?g:'rgba(61,214,245,.18)',borderWidth:1.8,pointRadius:0,fill:type==='area',tension:.4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{maxTicksLimit:16,maxRotation:40}},
+        y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>met==='cost'?'฿'+v.toLocaleString('th-TH'):v.toLocaleString('th-TH')}}}
+    }
+  }));
+  // MoM
+  const mVals=monthly.map(m=>({count:m.dispense_count,patients:m.patient_count,qty:m.total_qty||0,cost:m.total_cost||0})[met]);
+  const chg=mVals.map((v,i)=>i===0?0:mVals[i-1]?Math.round((v-mVals[i-1])/mVals[i-1]*1000)/10:0);
+  kc('momC');
+  rc('momC',new Chart(document.getElementById('momC').getContext('2d'),{type:'bar',
+    data:{labels:monthly.map(m=>m.month),datasets:[{label:'MoM%',data:chg,
+      backgroundColor:chg.map(v=>v>=0?'rgba(52,211,153,.35)':'rgba(248,113,113,.35)'),
+      borderColor:chg.map(v=>v>=0?C.gr:C.rd),borderWidth:1.2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{maxRotation:45,font:{size:12}}},y:{grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>v+'%',font:{size:12}}}}
+    }
+  }));
+  // Scatter
+  kc('pvC');
+  rc('pvC',new Chart(document.getElementById('pvC').getContext('2d'),{type:'scatter',
+    data:{datasets:[{label:'เดือน',data:monthly.map(m=>({x:m.patient_count,y:m.total_cost,label:m.month})),
+      backgroundColor:monthly.map((_,i)=>C.pal[i%C.pal.length]+'99'),borderColor:monthly.map((_,i)=>C.pal[i%C.pal.length]),
+      borderWidth:1,pointRadius:6,pointHoverRadius:9}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.label} ผู้ป่วย:${fmt(ctx.raw.x)} ฿${fmt(Math.round(ctx.raw.y))}`}}},
+      scales:{x:{title:{display:true,text:'ผู้ป่วย (ราย)',color:'#5578a0',font:{size:12}},grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},
+        y:{beginAtZero:true,title:{display:true,text:'มูลค่า (฿)',color:'#5578a0',font:{size:12}},grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>'฿'+v.toLocaleString('th-TH'),font:{size:12}}}}
+    }
+  }));
+}
+
+/* ════════════════════════════════════════════════════════
+   DRUG MAP
+   S.dmap  : { name → [{ym, qty}] }  ← จาก drug_monthly API
+   S.dmeta : { name → {unit, code} }
+   S.allMonths : ['2024-01', ...]     ← sorted
+════════════════════════════════════════════════════════ */
+function buildDmapFallback(monthly){
+  /* fallback: สร้างจาก top_drugs ของแต่ละเดือน (ไม่ครบทุกตัว) */
+  S.dmap  = {};
+  S.dmeta = {};
+  const tmp = {};
+  monthly.forEach(m=>(m.top_drugs||[]).forEach(d=>{
+    if(!tmp[d.name]) tmp[d.name]={};
+    tmp[d.name][m.month]=(tmp[d.name][m.month]||0)+d.qty;
+  }));
+  const mons = monthly.map(m=>m.month).sort();
+  Object.keys(tmp).forEach(n=>{
+    S.dmap[n] = mons.map(ym=>({ym, qty: tmp[n][ym]||0}));
+    S.dmeta[n]= {unit:'',code:''};
+  });
+  S.allMonths = mons;
+}
+
+/* ════════════════════════════════════════════════════════
+   FORECAST ENGINE  (แก้ใหม่ทั้งหมด)
+
+   ปัญหาเดิม:
+   1. หาร nM ทั้งหมด → ยาที่ใช้แค่บางเดือนถูกดึงลง
+   2. lrSlope ใช้ 0 รวมทุกเดือน → slope บิดเบือน
+   3. wma3 ดึง 3 ตัวท้ายซึ่งอาจเป็น 0 → forecast ต่ำเกิน
+   4. CV คำนวณเฉพาะเดือนที่มีข้อมูล แต่ไม่ consistent
+
+   แก้:
+   - avgPerActiveMonth  = รวม / จำนวนเดือนที่มีการใช้จริง
+   - lrSlope ใช้เฉพาะ series ที่มีค่า > 0 (active months)
+   - wma ใช้ 3 เดือนล่าสุดที่มีข้อมูล ≥ 1 (ไม่นับ trailing zero)
+   - CV คำนวณจาก active months เท่านั้น
+   - นับ activeMonths / totalMonths สำหรับ availability
+════════════════════════════════════════════════════════ */
+
+/* ── Math helpers ─────────────────────────────────────── */
+function lrSlopeArr(arr){
+  /* Linear regression slope บน array ใดๆ (ใช้ index เป็น x) */
+  const n=arr.length; if(n<2) return 0;
+  const mx=(n-1)/2;
+  const my=arr.reduce((s,v)=>s+v,0)/n;
+  const num=arr.reduce((s,v,i)=>s+(i-mx)*(v-my),0);
+  const den=arr.reduce((s,_,i)=>s+(i-mx)**2,0);
+  return den ? num/den : 0;
+}
+function wmaRecent(series, k=3){
+  /* WMA k จาก active months ล่าสุด (กรอง trailing zero ออก) */
+  const active = [];
+  for(let i=series.length-1; i>=0 && active.length<k; i--){
+    if(series[i].qty > 0) active.unshift(series[i].qty);
+  }
+  if(!active.length) return 0;
+  if(active.length===1) return active[0];
+  if(active.length===2) return (active[1]*2+active[0])/3;
+  return (active[2]*3+active[1]*2+active[0])/6;
+}
+function cvCalcArr(vals){
+  /* Coefficient of Variation จาก array ตัวเลข */
+  if(!vals.length) return 0;
+  const mu=vals.reduce((s,v)=>s+v,0)/vals.length;
+  if(!mu) return 0;
+  const sd=Math.sqrt(vals.reduce((s,v)=>s+(v-mu)**2,0)/vals.length);
+  return sd/mu;
+}
+
+/* ── Main compute ──────────────────────────────────────── */
+function computeFcs(){
+  const mons   = S.allMonths;
+  const totalM = mons.length || 1;
+  const spanD  = totalM * 30.44;
+
+  return Object.entries(S.dmap).map(([name, series])=>{
+
+    /* รวมปริมาณทั้งหมด */
+    const total = series.reduce((s,p)=>s+p.qty, 0);
+    if(!total) return null;
+
+    /* Active months = เดือนที่มีการใช้จริง (qty > 0) */
+    const activeSeries = series.filter(p=>p.qty>0);
+    const activeM = activeSeries.length || 1;
+    const activeQtys = activeSeries.map(p=>p.qty);
+
+    /* อัตราเฉลี่ย — แยก 2 แบบ */
+    const avgPerActiveMonth = total / activeM;          // เฉลี่ยเฉพาะเดือนที่ใช้
+    const avgPerTotalMonth  = total / totalM;           // เฉลี่ยรวมทุกเดือน (สำหรับ forecast)
+
+    const avgPerDay = total / spanD;
+
+    /* Slope — คำนวณบน active series เท่านั้น */
+    const slope = lrSlopeArr(activeQtys);
+
+    /* WMA — 3 เดือนล่าสุดที่มีข้อมูล */
+    const wma = wmaRecent(series, 3);
+
+    /* CV — จาก active months */
+    const cv = cvCalcArr(activeQtys);
+
+    /* Availability = สัดส่วนเดือนที่ใช้ */
+    const availability = activeM / totalM;
+
+    /* Safety buffer: สูงขึ้นถ้า CV สูงหรือ availability ต่ำ */
+    const buf = (cv > 0.4 || availability < 0.5) ? 0.25
+              : cv > 0.25 ? 0.20
+              : 0.10;
+
+    /* Trend direction — slope เทียบ avg ต่อเดือน */
+    const slopePct = avgPerActiveMonth > 0 ? slope / avgPerActiveMonth : 0;
+    const tdir = slopePct >  0.05 ? 'up'
+               : slopePct < -0.05 ? 'down' : 'flat';
+
+    /* Urgency */
+    const urgency = (tdir==='up' && cv>0.25)  ? 'high'
+                  : (tdir==='up' || cv>0.35)  ? 'medium' : 'low';
+
+    /* Unit จาก dmeta */
+    const unit = S.dmeta[name]?.unit || '';
+    const code = S.dmeta[name]?.code || '';
+
+    return {
+      name, unit, code,
+      total,
+      activeM, totalM,
+      availability: Math.round(availability*1000)/10,  // %
+      avgPerActiveMonth: Math.round(avgPerActiveMonth*10)/10,
+      avgPerTotalMonth:  Math.round(avgPerTotalMonth*10)/10,
+      avgPerDay:         Math.round(avgPerDay*100)/100,
+      slope:    Math.round(slope*10)/10,
+      slopePct: Math.round(slopePct*1000)/10,
+      cv:       Math.round(cv*1000)/10,
+      wma, buf, tdir, urgency,
+      qtys: series.map(p=>p.qty),   // for sparkline
+    };
+  }).filter(Boolean);
+}
+
+/* ── Project forward (ใช้ wma + slope ต่อจาก active base) ── */
+function proj(fc, h){
+  let p = 0;
+  for(let i=1; i<=h; i++){
+    /* slope ปรับ wma ทีละเดือน, floor ที่ 0 */
+    p += Math.max(0, fc.wma + fc.slope * i);
+  }
+  /* คูณ buffer + ceiling */
+  return {
+    proj: Math.round(p),
+    rec:  Math.ceil(p * (1 + fc.buf))
+  };
+}
+/* ════ DRUGS PAGE ════ */
+function renderDr(){
+  if(!S.data||!S.fcs.length)return;
+  const q=(document.getElementById('drSearch').value||'').toLowerCase();
+  const sk=S.drSk;
+  const totalQty=S.data.summary.total_qty||1;
+
+  let list=S.fcs.filter(fc=>!q||fc.name.toLowerCase().includes(q));
+  list.sort((a,b)=>{
+    const va=sk==='name'?a.name:sk==='qty'?a.total:sk==='avg'?a.avgPerActiveMonth:a.avgPerDay;
+    const vb=sk==='name'?b.name:sk==='qty'?b.total:sk==='avg'?b.avgPerActiveMonth:b.avgPerDay;
+    return S.drAsc?(sk==='name'?va.localeCompare(vb):va-vb):(sk==='name'?vb.localeCompare(va):vb-va);
+  });
+  document.getElementById('drCount').textContent=`${fmt(list.length)} รายการ`;
+  const mx=list[0]?.total||1;
+  const avCol=v=>v>=80?'var(--gr)':v>=50?'var(--yl)':'var(--rd)';
+  document.getElementById('drTb').innerHTML=list.map((d,i)=>{
+    const pct=Math.round(d.total/mx*100);
+    const sp=Math.round(d.total/totalQty*1000)/10;
+    const rbcls=i===0?'g':i===1?'s':i===2?'b':'';
+    const unitStr=d.unit?`<span style="font-size:.65rem;color:var(--tx3);margin-left:.4rem">${d.unit}</span>`:'';
+    const codeStr=d.code?`<span style="font-size:.6rem;color:var(--tx3);margin-left:.3rem">[${d.code}]</span>`:'';
+    return`<tr onclick="openDrillDrug('${d.name.replace(/'/g,"\\'")}')">
+      <td><span class="rb ${rbcls}">${i+1}</span></td>
+      <td class="tn">${d.name}${unitStr}${codeStr}</td>
+      <td>${fmt(Math.round(d.total))}</td>
+      <td style="color:var(--ac)">${fmtF(d.avgPerActiveMonth)}</td>
+      <td style="color:var(--tx2)">${fmtF(d.avgPerTotalMonth)}</td>
+      <td>${d.avgPerDay}</td>
+      <td><span style="color:${avCol(d.availability)}">${d.availability}%</span><span style="color:var(--tx3);font-size:.68rem"> ${d.activeM}/${d.totalM}mo</span></td>
+      <td><div class="br"><span style="min-width:36px;font-size:.75rem">${sp}%</span><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div></td>
+      <td><canvas id="dsp${i}" width="80" height="24"></canvas></td>
+    </tr>`;
+  }).join('');
+  requestAnimationFrame(()=>list.forEach((d,i)=>{const c=document.getElementById('dsp'+i);if(c)spark(c,d.qtys);}));
+}
+function sDr(k){S.drSk===k?S.drAsc=!S.drAsc:(S.drSk=k,S.drAsc=false);renderDr();}
+
+/* ════ CLINICS PAGE ════ */
+function renderCl(){
+  if(!S.data)return;
+  const cls=S.data.top_clinics;const tot=cls.reduce((a,b)=>a+b.count,0)||1;
+  document.getElementById('clTb').innerHTML=cls.map((c,i)=>{
+    const pct=Math.round(c.count/tot*1000)/10;const rc=i===0?'g':i===1?'s':i===2?'b':'';
+    return`<tr onclick="showCl('${(c.name||'').replace(/'/g,"\\'")}',${c.count},${pct})">
+      <td><span class="rb ${rc}">${i+1}</span></td><td class="tn">${c.name||'(ไม่ระบุ)'}</td>
+      <td>${fmt(c.count)}</td>
+      <td><div class="br"><span style="min-width:34px;font-size:.75rem">${pct}%</span><div class="bt"><div class="bf or" style="width:${Math.round(c.count/cls[0].count*100)}%"></div></div></div></td>
+    </tr>`;
+  }).join('');
+  kc('clPie');
+  rc('clPie',new Chart(document.getElementById('clPie').getContext('2d'),{type:'doughnut',
+    data:{labels:cls.slice(0,10).map(c=>c.name||'?'),
+      datasets:[{data:cls.slice(0,10).map(c=>c.count),backgroundColor:C.pal.slice(0,10).map(c=>c+'aa'),borderColor:C.pal.slice(0,10),borderWidth:1.2,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'54%',
+      plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:12}}}},
+      onClick:(_,els)=>{if(!els.length)return;const cl=cls[els[0].index];if(cl)showCl(cl.name,cl.count,Math.round(cl.count/tot*1000)/10);}
+    }
+  }));
+}
+function showCl(name,count,pct){
+  document.getElementById('clDetail').style.display='block';
+  document.getElementById('clDetailT').textContent='คลินิก: '+name;
+  document.getElementById('clDetailB').innerHTML=`<div class="dkpi">
+    <div class="dk"><div class="dkl">รายการ</div><div class="dkv" style="color:var(--ac)">${fmt(count)}</div></div>
+    <div class="dk"><div class="dkl">สัดส่วน</div><div class="dkv" style="color:var(--yl)">${pct}%</div></div>
+  </div>`;
+  toast(`${name||'?'} — ${fmt(count)} รายการ (${pct}%)`);
+}
+
+/* ════ MONTHLY PAGE ════ */
+function renderMo(){
+  if(!S.data)return;
+  const monthly=S.data.monthly;
+  document.getElementById('moGrid').innerHTML=monthly.map(m=>`
+    <div class="mc ${S.selMo===m.month?'active':''}" onclick="selMo('${m.month}')">
+      <div class="mcy">${m.month}</div><div class="mcn">${fmt(m.dispense_count)}</div>
+      <div class="mcs">${fmt(m.patient_count)} ราย · ฿${fmt(Math.round(m.total_cost))}</div>
+    </div>`).join('');
+  if(S.selMo)selMo(S.selMo);
+}
+function selMo(ym){
+  S.selMo=ym;
+  renderMo();
+  const m=S.data.monthly.find(x=>x.month===ym);if(!m)return;
+  document.getElementById('moDetail').style.display='grid';
+  document.getElementById('moDetailT').textContent=`Top 10 ยา — ${ym}`;
+  const topD=(m.top_drugs||[]).slice(0,10);
+  kc('moBar');
+  rc('moBar',new Chart(document.getElementById('moBar').getContext('2d'),{type:'bar',
+    data:{labels:topD.map(d=>d.name.substring(0,18)),datasets:[{label:'qty',data:topD.map(d=>d.qty),backgroundColor:C.pal.map(c=>c+'66'),borderColor:C.pal,borderWidth:1.2}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},y:{ticks:{font:{size:12}}}},
+      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(topD[els[0].index]?.name);}
+    }
+  }));
+  document.getElementById('moKpi').innerHTML=`
+    <div class="dk"><div class="dkl">รายการ</div><div class="dkv" style="color:var(--ac)">${fmt(m.dispense_count)}</div></div>
+    <div class="dk"><div class="dkl">ผู้ป่วย</div><div class="dkv" style="color:var(--gr)">${fmt(m.patient_count)}</div></div>
+    <div class="dk"><div class="dkl">ปริมาณรวม</div><div class="dkv" style="color:var(--a3)">${fmt(m.total_qty||0)}</div></div>
+    <div class="dk"><div class="dkl">มูลค่า</div><div class="dkv" style="color:var(--yl);font-size:1rem">${fmtC(m.total_cost)}</div></div>`;
+}
+
+
+/* ════ FORECAST PAGE ════ */
+function renderFc(){
+  if(!S.fcs.length)return;
+  const h=parseInt(document.getElementById('fcH').value||'3');
+  const fv=document.getElementById('fcF').value;
+  const q=(document.getElementById('fcSearch').value||'').toLowerCase();
+  const topN=parseInt(document.getElementById('fcN').value||'50');
+  const enr=S.fcs.map(fc=>({...fc,...proj(fc,h)}));
+  let filt=enr;
+  if(fv==='high')filt=enr.filter(d=>d.urgency==='high');
+  else if(fv==='medium')filt=enr.filter(d=>d.urgency==='medium');
+  else if(fv==='low')filt=enr.filter(d=>d.urgency==='low');
+  else if(fv==='up')filt=enr.filter(d=>d.tdir==='up');
+  else if(fv==='down')filt=enr.filter(d=>d.tdir==='down');
+  if(q)filt=filt.filter(d=>d.name.toLowerCase().includes(q));
+  const sk=S.fcSk,sa=S.fcAsc;
+  filt.sort((a,b)=>{
+    const va=sk==='avg'?a.avgPerActiveMonth:sk==='slope'?a.slope:sk==='cv'?a.cv:sk==='proj'?a.proj:sk==='urgency'?['low','medium','high'].indexOf(a.urgency):a.rec;
+    const vb=sk==='avg'?b.avgPerActiveMonth:sk==='slope'?b.slope:sk==='cv'?b.cv:sk==='proj'?b.proj:sk==='urgency'?['low','medium','high'].indexOf(b.urgency):b.rec;
+    return sa?va-vb:vb-va;
+  });
+  const show=filt.slice(0,topN);
+  const tot=enr.length,totR=enr.reduce((s,d)=>s+d.rec,0);
+  const high=enr.filter(d=>d.urgency==='high').length;
+  const med=enr.filter(d=>d.urgency==='medium').length;
+  const low=enr.filter(d=>d.urgency==='low').length;
+  const up=enr.filter(d=>d.tdir==='up').length;
+  const dn=enr.filter(d=>d.tdir==='down').length;
+  const flat=enr.filter(d=>d.tdir==='flat').length;
+  document.getElementById('fcKpi').innerHTML=
+    kCard('ยาทั้งหมด',fmt(tot),'รายการ','var(--ac)')+
+    kCard(`แนะนำเบิก(${h}mo)`,fmt(totR),'หน่วย+buffer','var(--a3)','1.05rem')+
+    kCard('Trend ขึ้น▲',fmt(up),'รายการ','var(--rd)')+
+    kCard('Trend ลง▼',fmt(dn),'รายการ','var(--gr)')+
+    kCard('High 🔴',fmt(high),'Urgent','var(--rd)')+
+    kCard('แสดง',fmt(show.length),'จาก '+fmt(filt.length),'var(--tx2)');
+  // Bar chart — top 20 by rec (ใช้ copy ป้องกัน mutation)
+  const t20=[...enr].sort((a,b)=>b.rec-a.rec).slice(0,20);
+  kc('fcBar');
+  rc('fcBar',new Chart(document.getElementById('fcBar').getContext('2d'),{type:'bar',
+    data:{labels:t20.map(d=>d.name.length>22?d.name.substring(0,22)+'…':d.name),datasets:[
+      {label:'คาดการณ์',data:t20.map(d=>d.proj),backgroundColor:'rgba(61,214,245,.2)',borderColor:C.ac,borderWidth:1.2},
+      {label:'แนะนำเบิก',data:t20.map(d=>d.rec),backgroundColor:'rgba(249,115,22,.2)',borderColor:C.a3,borderWidth:1.2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{boxWidth:10,font:{size:13}}}},
+      scales:{x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>v.toLocaleString('th-TH'),font:{size:12}}},y:{ticks:{font:{size:11}}}},
+      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(t20[els[0].index]?.name);}
+    }
+  }));
+  // Urgency pie
+  kc('fcUrgPie');
+  rc('fcUrgPie',new Chart(document.getElementById('fcUrgPie').getContext('2d'),{type:'doughnut',
+    data:{labels:['🔴 High','🟡 Medium','🟢 Low'],datasets:[{data:[high,med,low],
+      backgroundColor:['rgba(248,113,113,.55)','rgba(251,191,36,.45)','rgba(52,211,153,.4)'],
+      borderColor:[C.rd,C.yl,C.gr],borderWidth:1.2,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'52%',
+      plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:12}}}},
+      onClick:(_,els)=>{if(!els.length)return;document.getElementById('fcF').value=['high','medium','low'][els[0].index];renderFc();}
+    }
+  }));
+  // Trend pie
+  kc('fcTrPie');
+  rc('fcTrPie',new Chart(document.getElementById('fcTrPie').getContext('2d'),{type:'doughnut',
+    data:{labels:['▲ ขึ้น','─ คงที่','▼ ลง'],datasets:[{data:[up,flat,dn],
+      backgroundColor:['rgba(248,113,113,.5)','rgba(74,96,128,.35)','rgba(52,211,153,.45)'],
+      borderColor:[C.rd,'#3d5a7a',C.gr],borderWidth:1.2,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'52%',
+      plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:12}}}},
+      onClick:(_,els)=>{if(!els.length)return;document.getElementById('fcF').value=['up','flat','down'][els[0].index];renderFc();}
+    }
+  }));
+  // Scatter
+  kc('fcScat');
+  const colorOf=u=>u==='high'?C.rd:u==='medium'?C.yl:C.gr;
+  const spts=enr.map(d=>({x:d.slopePct,y:d.cv,label:d.name,urgency:d.urgency}));
+  rc('fcScat',new Chart(document.getElementById('fcScat').getContext('2d'),{type:'scatter',
+    data:{datasets:[{data:spts,backgroundColor:spts.map(p=>colorOf(p.urgency)+'88'),borderColor:spts.map(p=>colorOf(p.urgency)),borderWidth:1,pointRadius:5,pointHoverRadius:8}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.label}  slope:${ctx.raw.x}%  CV:${ctx.raw.y}%`}}},
+      scales:{x:{title:{display:true,text:'Slope %/mo',color:'#5578a0',font:{size:12}},grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>v+'%',font:{size:12}}},
+        y:{beginAtZero:true,title:{display:true,text:'CV%',color:'#5578a0',font:{size:12}},grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>v+'%',font:{size:12}}}},
+      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(spts[els[0].index]?.label);}
+    }
+  }));
+  // Table
+  const sign=v=>v>=0?'+':'';
+  const avCol=v=>v>=80?'var(--gr)':v>=50?'var(--yl)':'var(--rd)';
+  document.getElementById('fcTb').innerHTML=show.map((d,i)=>{
+    const rbcls=i===0?'g':i===1?'s':i===2?'b':'';
+    const tc=d.tdir==='up'?C.rd:d.tdir==='down'?C.gr:'#5578a0';
+    const unitStr=d.unit?`<span style="font-size:.65rem;color:var(--tx3);margin-left:.35rem">${d.unit}</span>`:'';
+    return`<tr onclick="openDrillDrug('${d.name.replace(/'/g,"\\'")}')">
+      <td><span class="rb ${rbcls}">${i+1}</span></td>
+      <td class="tn">${d.name}${unitStr}</td>
+      <td style="color:var(--ac)">${fmtF(d.avgPerActiveMonth)}</td>
+      <td>${d.avgPerDay}</td>
+      <td style="color:${tc}">${sign(d.slope)}${d.slope}</td>
+      <td>${d.cv}%</td>
+      <td><span style="color:${avCol(d.availability)};font-size:.78rem">${d.availability}%</span><span style="color:var(--tx3);font-size:.65rem"> ${d.activeM}/${d.totalM}</span></td>
+      <td><canvas id="fsp${i}" width="80" height="22"></canvas></td>
+      <td style="color:var(--ac)">${fmt(d.proj)}</td>
+      <td style="color:var(--yl);font-weight:600">${fmt(d.rec)}</td>
+      <td style="font-size:.75rem;color:var(--tx3)">+${Math.round(d.buf*100)}%</td>
+      <td><span class="tag ${d.urgency}">${d.urgency==='high'?'🔴สูง':d.urgency==='medium'?'🟡กลาง':'🟢ปกติ'}</span></td>
+    </tr>`;
+  }).join('');
+  requestAnimationFrame(()=>show.forEach((d,i)=>{const c=document.getElementById('fsp'+i);if(c)spark(c,d.qtys);}));
+}
+function sFC(k){S.fcSk===k?S.fcAsc=!S.fcAsc:(S.fcSk=k,S.fcAsc=false);renderFc();}
+
+/* ════ USAGE RATE PAGE ════ */
+function renderUr(){
+  if(!S.fcs.length)return;
+  const q=(document.getElementById('urSearch').value||'').toLowerCase();
+  const sk=S.urSk;
+  let list=[...S.fcs];
+  if(q)list=list.filter(d=>d.name.toLowerCase().includes(q));
+  list.sort((a,b)=>{
+    const va=sk==='daily'?a.avgPerDay:sk==='avg'?a.avgPerActiveMonth:sk==='cv'?a.cv:a.slope;
+    const vb=sk==='daily'?b.avgPerDay:sk==='avg'?b.avgPerActiveMonth:sk==='cv'?b.cv:b.slope;
+    return S.urAsc?va-vb:vb-va;
+  });
+  document.getElementById('urCount').textContent=`${fmt(list.length)} รายการ`;
+  const t20=list.slice(0,20);
+  kc('urBar');
+  rc('urBar',new Chart(document.getElementById('urBar').getContext('2d'),{type:'bar',
+    data:{labels:t20.map(d=>d.name.length>22?d.name.substring(0,22)+'…':d.name),
+      datasets:[{label:'หน่วย/วัน',data:t20.map(d=>d.avgPerDay),backgroundColor:C.pal.map(c=>c+'55'),borderColor:C.pal,borderWidth:1.2}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},y:{ticks:{font:{size:11}}}},
+      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(t20[els[0].index]?.name);}
+    }
+  }));
+  const tslo=[...S.fcs].sort((a,b)=>Math.abs(b.slope)-Math.abs(a.slope)).slice(0,15);
+  kc('urSlope');
+  rc('urSlope',new Chart(document.getElementById('urSlope').getContext('2d'),{type:'bar',
+    data:{labels:tslo.map(d=>d.name.length>22?d.name.substring(0,22)+'…':d.name),
+      datasets:[{label:'slope/mo',data:tslo.map(d=>d.slope),
+        backgroundColor:tslo.map(d=>d.slope>=0?'rgba(248,113,113,.4)':'rgba(52,211,153,.4)'),
+        borderColor:tslo.map(d=>d.slope>=0?C.rd:C.gr),borderWidth:1.2}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},y:{ticks:{font:{size:11}}}},
+      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(tslo[els[0].index]?.name);}
+    }
+  }));
+  const sign=v=>v>=0?'+':'';
+  const tco=d=>d.tdir==='up'?C.rd:d.tdir==='down'?C.gr:'#5578a0';
+  const avCol=v=>v>=80?'var(--gr)':v>=50?'var(--yl)':'var(--rd)';
+  document.getElementById('urTb').innerHTML=list.map((d,i)=>`<tr onclick="openDrillDrug('${d.name.replace(/'/g,"\\'")}')">
+    <td>${i+1}</td>
+    <td class="tn">${d.name}${d.unit?`<span style="font-size:.65rem;color:var(--tx3);margin-left:.35rem">${d.unit}</span>`:''}</td>
+    <td style="color:var(--ac)">${d.avgPerDay}</td>
+    <td>${fmtF(d.avgPerActiveMonth)}</td>
+    <td style="color:var(--tx2)">${fmtF(d.avgPerTotalMonth)}</td>
+    <td style="color:${tco(d)}">${sign(d.slope)}${d.slope}</td>
+    <td>${d.cv}%</td>
+    <td><span style="color:${avCol(d.availability)};font-size:.78rem">${d.availability}%</span><span style="color:var(--tx3);font-size:.65rem"> ${d.activeM}/${d.totalM}mo</span></td>
+    <td><span class="tag ${d.tdir}">${d.tdir==='up'?'▲ขึ้น':d.tdir==='down'?'▼ลง':'─คงที่'}</span></td>
+    <td><canvas id="usp${i}" width="80" height="22"></canvas></td>
+  </tr>`).join('');
+  requestAnimationFrame(()=>list.forEach((d,i)=>{const c=document.getElementById('usp'+i);if(c)spark(c,d.qtys);}));
+}
+function sUR(k){S.urSk===k?S.urAsc=!S.urAsc:(S.urSk=k,S.urAsc=false);renderUr();}
+
+/* ════ DRILL-DOWN ════ */
+function openDrillDrug(name){
+  if(!name||!S.dmap[name])return;
+  const fc  = S.fcs.find(f=>f.name===name);
+  const ser = S.dmap[name];   // [{ym, qty}]
+  document.getElementById('dTitle').textContent=name;
+  document.getElementById('dFcastWrap').style.display='';
+  if(fc){
+    const s=fc.slope>=0?'+':'';
+    const tc=fc.tdir==='up'?C.rd:fc.tdir==='down'?C.gr:'var(--tx3)';
+    const avCol=fc.availability>=80?C.gr:fc.availability>=50?C.yl:C.rd;
+    document.getElementById('dSub').textContent=
+      `avg(active):${fmtF(fc.avgPerActiveMonth)}/mo · avg(all):${fmtF(fc.avgPerTotalMonth)}/mo · ${fc.avgPerDay}/day · slope:${s}${fc.slope}/mo · CV:${fc.cv}%`;
+    const{proj:p,rec:r}=proj(fc,3);
+    document.getElementById('dKpi').innerHTML=`
+      <div class="dk"><div class="dkl">หน่วย / รหัส</div><div class="dkv" style="color:var(--tx2);font-size:.95rem">${fc.unit||'—'} ${fc.code?'['+fc.code+']':''}</div></div>
+      <div class="dk"><div class="dkl">ปริมาณรวม</div><div class="dkv" style="color:var(--ac)">${fmt(fc.total)}</div></div>
+      <div class="dk"><div class="dkl">เฉลี่ย/เดือน(active)</div><div class="dkv" style="color:var(--a2)">${fmtF(fc.avgPerActiveMonth)}</div></div>
+      <div class="dk"><div class="dkl">เฉลี่ย/เดือน(รวม)</div><div class="dkv" style="color:var(--tx2)">${fmtF(fc.avgPerTotalMonth)}</div></div>
+      <div class="dk"><div class="dkl">เฉลี่ย/วัน</div><div class="dkv" style="color:var(--yl)">${fc.avgPerDay}</div></div>
+      <div class="dk"><div class="dkl">Slope/mo</div><div class="dkv" style="color:${tc}">${s}${fc.slope}</div></div>
+      <div class="dk"><div class="dkl">CV%</div><div class="dkv" style="color:var(--a3)">${fc.cv}%</div></div>
+      <div class="dk"><div class="dkl">Availability</div><div class="dkv" style="color:${avCol}">${fc.availability}% <span style="font-size:.8rem;color:var(--tx3)">(${fc.activeM}/${fc.totalM}mo)</span></div></div>
+      <div class="dk"><div class="dkl">Urgency</div><div class="dkv"><span class="tag ${fc.urgency}">${fc.urgency}</span></div></div>
+      <div class="dk"><div class="dkl">คาดการณ์3mo</div><div class="dkv" style="color:var(--ac)">${fmt(p)}</div></div>
+      <div class="dk"><div class="dkl">แนะนำเบิก3mo</div><div class="dkv" style="color:var(--yl)">${fmt(r)}</div></div>`;
+  }
+  /* History chart */
+  kc('dHistC');
+  const labels=ser.map(s=>s.ym);
+  const qtys  =ser.map(s=>s.qty);
+  const g=document.getElementById('dHistC').getContext('2d').createLinearGradient(0,0,0,190);
+  g.addColorStop(0,'rgba(61,214,245,.3)'); g.addColorStop(1,'rgba(61,214,245,.02)');
+  rc('dHistC',new Chart(document.getElementById('dHistC').getContext('2d'),{type:'line',
+    data:{labels,datasets:[{label:'qty',data:qtys,borderColor:C.ac,backgroundColor:g,borderWidth:2,pointRadius:3,fill:true,tension:.35}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{maxRotation:45,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}}}
+    }
+  }));
+  /* Forecast chart */
+  if(fc){
+    kc('dFcastC');
+    const lastYm=labels[labels.length-1]||'2024-01';
+    const futL=[],futP=[],futR=[];
+    let dt=new Date(lastYm+'-01');
+    for(let i=1;i<=6;i++){
+      dt.setMonth(dt.getMonth()+1);
+      futL.push(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0'));
+      const pv=Math.max(0, fc.wma + fc.slope*i);
+      futP.push(Math.round(pv));
+      futR.push(Math.ceil(pv*(1+fc.buf)));
+    }
+    const allL=[...labels.slice(-6),...futL];
+    const histPad=labels.slice(-6).map((_,j)=>qtys[qtys.length-6+j]??null);
+    const pp=[...new Array(6).fill(null),...futP];
+    const rp=[...new Array(6).fill(null),...futR];
+    rc('dFcastC',new Chart(document.getElementById('dFcastC').getContext('2d'),{type:'line',
+      data:{labels:allL,datasets:[
+        {label:'ประวัติ',data:histPad,borderColor:C.ac,backgroundColor:'transparent',borderWidth:1.5,pointRadius:3,tension:.3},
+        {label:'คาดการณ์',data:pp,borderColor:C.a2,backgroundColor:'rgba(124,106,255,.1)',borderWidth:1.5,borderDash:[5,4],pointRadius:3,fill:true,tension:.3},
+        {label:'แนะนำเบิก',data:rp,borderColor:C.yl,backgroundColor:'transparent',borderWidth:1.2,borderDash:[3,3],pointRadius:2,tension:.3}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{labels:{boxWidth:9,font:{size:12}}}},
+        scales:{x:{ticks:{maxRotation:45,font:{size:12}}},y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}}}
+      }
+    }));
+  }
+  document.getElementById('dov').classList.add('open');
+}
+
+function openDrillDay(day){
+  document.getElementById('dTitle').textContent='วันที่ '+day.date;
+  document.getElementById('dSub').textContent=`${fmt(day.dispense_count)} รายการ · ${fmt(day.patient_count)} ราย`;
+  document.getElementById('dFcastWrap').style.display='none';
+  const topD=(day.top_drugs||[]).slice(0,8);
+  document.getElementById('dKpi').innerHTML=`
+    <div class="dk"><div class="dkl">รายการ</div><div class="dkv" style="color:var(--ac)">${fmt(day.dispense_count)}</div></div>
+    <div class="dk"><div class="dkl">ผู้ป่วย</div><div class="dkv" style="color:var(--gr)">${fmt(day.patient_count)}</div></div>
+    <div class="dk"><div class="dkl">ปริมาณ</div><div class="dkv" style="color:var(--a3)">${fmt(day.total_qty||0)}</div></div>
+    <div class="dk"><div class="dkl">มูลค่า</div><div class="dkv" style="color:var(--yl);font-size:.85rem">${fmtC(day.total_cost||0)}</div></div>`;
+  kc('dHistC');
+  rc('dHistC',new Chart(document.getElementById('dHistC').getContext('2d'),{type:'bar',
+    data:{labels:topD.map(d=>d.name.substring(0,14)),datasets:[{label:'qty',data:topD.map(d=>d.qty),backgroundColor:C.pal.map(c=>c+'66'),borderColor:C.pal,borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,ticks:{font:{size:12}}},y:{ticks:{font:{size:11}}}}}
+  }));
+  document.getElementById('dov').classList.add('open');
+}
+
+function cDrill(e){
+  if(!e||e.target===document.getElementById('dov'))
+    document.getElementById('dov').classList.remove('open');
+}
+
+/* ════════════════════════════════════════════════════════
+   DAILY VIEW PAGE
+   ใช้ S.data.daily = [{date,dispense_count,patient_count,
+     total_qty,total_cost,top_drugs:[{name,qty}],top_clinics}]
+   หมายเหตุ: top_drugs ใน daily มีแค่ top 5 ต่อวัน
+   → สร้าง drugDayMap ครั้งเดียวหลังโหลด เพื่อรวมยาทุกตัว
+════════════════════════════════════════════════════════ */
+
+/* ── State สำหรับ Daily view ── */
+const DV = {
+  sortKey: 'qty',
+  sortAsc: false,
+  activeQuick: null,
+};
+
+/* ── สร้าง index วันที่ → { drug → qty, dispenses } จาก daily ── */
+function buildDayDrugIndex(){
+  /* เนื่องจาก API daily ให้แค่ top_drugs 5 ตัว/วัน
+     เราสร้าง index จากนั้น เพื่อให้ lookup เร็ว O(1) */
+  S.dayDrugIdx = {};  // date → { drugName: {qty, disp} }
+  (S.data.daily||[]).forEach(d=>{
+    const map={};
+    (d.top_drugs||[]).forEach(dr=>{ map[dr.name]={qty:dr.qty, disp:1}; });
+    S.dayDrugIdx[d.date]=map;
+  });
+}
+
+/* ── รวมยาในช่วงวันที่ (dateArr) ── */
+function aggregateDrugsForDates(dateArr){
+  const agg={};  // name → {qty, disp, days}
+  const daily=S.data.daily;
+  dateArr.forEach(date=>{
+    const day=daily.find(d=>d.date===date);
+    if(!day) return;
+    (day.top_drugs||[]).forEach(dr=>{
+      if(!agg[dr.name]) agg[dr.name]={qty:0,disp:0,days:0};
+      agg[dr.name].qty  += dr.qty;
+      agg[dr.name].disp += 1;
+      agg[dr.name].days += 1;
+    });
+  });
+  return agg;
+}
+
+/* ── รวม KPI ในช่วงวันที่ ── */
+function aggregateKpiForDates(dateArr){
+  const daily=S.data.daily;
+  let count=0,qty=0,cost=0,pts=new Set();
+  dateArr.forEach(date=>{
+    const d=daily.find(x=>x.date===date);
+    if(!d) return;
+    count+=d.dispense_count||0;
+    qty  +=d.total_qty||0;
+    cost +=d.total_cost||0;
+    // patient_count ใน daily ไม่สามารถ deduplicate ข้ามวันได้ — รวมเลย
+    pts.add(d.patient_count||0);
+  });
+  return {count, qty:Math.round(qty), cost:Math.round(cost*100)/100,
+          avgPerDay: dateArr.length>1?Math.round(count/dateArr.length):count,
+          days:dateArr.length};
+}
+
+/* ── สร้าง array วันที่ใน range ── */
+function dateBetween(from, to){
+  const dates=[];
+  const daily=S.data.daily;
+  daily.forEach(d=>{
+    if(d.date>=from && d.date<=to) dates.push(d.date);
+  });
+  return dates.sort();
+}
+
+/* ── Init page: set default date = วันล่าสุดที่มีข้อมูล ── */
+function renderDvPage(){
+  if(!S.data) return;
+  const daily=S.data.daily;
+  if(!daily?.length) return;
+
+  /* ตั้งค่า default date เป็นวันล่าสุด */
+  const lastDate=daily[daily.length-1].date;
+  const firstDate=daily[0].date;
+  const dvDate=document.getElementById('dvDate');
+  if(!dvDate.value) dvDate.value=lastDate;
+
+  /* ตั้ง range default = 7 วันล่าสุด */
+  const dvTo=document.getElementById('dvTo');
+  const dvFrom=document.getElementById('dvFrom');
+  if(!dvTo.value) dvTo.value=lastDate;
+  if(!dvFrom.value){
+    const d7=new Date(lastDate);
+    d7.setDate(d7.getDate()-6);
+    dvFrom.value=d7.toISOString().substring(0,10);
+  }
+
+  /* Quick buttons: วันล่าสุดที่มีข้อมูลใน 14 วัน */
+  buildQuickBtns(daily, lastDate);
+
+  renderDv();
+}
+
+function buildQuickBtns(daily, lastDate){
+  /* แสดง 14 วันล่าสุด เรียงใหม่สุดก่อน */
+  const recent=daily.slice(-14).reverse();
+  document.getElementById('dv-quick').innerHTML=
+    `<span style="font-size:.7rem;color:var(--tx3);font-family:var(--mo);align-self:center">วันล่าสุด:</span>`+
+    recent.map(d=>{
+      const label=d.date.substring(5); // MM-DD
+      return`<button class="dv-qbtn" data-date="${d.date}" onclick="dvQuick('${d.date}')">${label}<span style="font-size:.6rem;color:var(--tx3);margin-left:.3rem">${fmt(d.dispense_count)}</span></button>`;
+    }).join('');
+}
+
+function dvQuick(date){
+  document.getElementById('dvMode').value='single';
+  document.getElementById('dvDate').value=date;
+  onDvModeChange();
+  DV.activeQuick=date;
+  /* อัป active style */
+  document.querySelectorAll('.dv-qbtn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.date===date);
+  });
+  renderDv();
+}
+
+function onDvModeChange(){
+  const mode=document.getElementById('dvMode').value;
+  document.getElementById('dv-single-wrap').style.display=mode==='single'?'flex':'none';
+  document.getElementById('dv-range-wrap').style.display =mode==='range' ?'flex':'none';
+  renderDv();
+}
+
+function dvStep(dir){
+  /* ก้าว +1/-1 วันจาก current date */
+  const inp=document.getElementById('dvDate');
+  const d=new Date(inp.value||new Date().toISOString().substring(0,10));
+  d.setDate(d.getDate()+dir);
+  inp.value=d.toISOString().substring(0,10);
+  DV.activeQuick=inp.value;
+  document.querySelectorAll('.dv-qbtn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.date===inp.value);
+  });
+  renderDv();
+}
+
+function sortDv(key){
+  DV.sortKey===key ? DV.sortAsc=!DV.sortAsc : (DV.sortKey=key, DV.sortAsc=false);
+  renderDv();
+}
+
+/* ── Main render ── */
+function renderDv(){
+  if(!S.data?.daily) return;
+
+  const mode=document.getElementById('dvMode').value;
+  const topN=parseInt(document.getElementById('dvTopN').value||'50');
+  const q=(document.getElementById('dvSearch').value||'').toLowerCase();
+
+  let dateArr=[], label='';
+
+  if(mode==='single'){
+    const date=document.getElementById('dvDate').value;
+    if(!date){showDvEmpty();return;}
+    dateArr=[date];
+    label=`วันที่ ${date}`;
+  } else {
+    const from=document.getElementById('dvFrom').value;
+    const to  =document.getElementById('dvTo').value;
+    if(!from||!to){showDvEmpty();return;}
+    if(from>to){toast('⚠ วันที่เริ่มต้นต้องน้อยกว่าวันสุดท้าย');return;}
+    dateArr=dateBetween(from,to);
+    label=`${from} ถึง ${to} (${dateArr.length} วัน)`;
+  }
+
+  if(!dateArr.length){showDvEmpty();return;}
+
+  /* รวมข้อมูล */
+  const agg=aggregateDrugsForDates(dateArr);
+  const kpi=aggregateKpiForDates(dateArr);
+
+  /* กรองและเรียง */
+  let entries=Object.entries(agg).map(([name,v])=>({name,...v}));
+  if(q) entries=entries.filter(e=>e.name.toLowerCase().includes(q));
+  entries.sort((a,b)=>{
+    const va=DV.sortKey==='name'?a.name:DV.sortKey==='disp'?a.disp:a.qty;
+    const vb=DV.sortKey==='name'?b.name:DV.sortKey==='disp'?b.disp:b.qty;
+    return DV.sortAsc?(typeof va==='string'?va.localeCompare(vb):va-vb)
+                     :(typeof va==='string'?vb.localeCompare(va):vb-va);
+  });
+
+  const shown=entries.slice(0,topN);
+  document.getElementById('dv-info').textContent=`${label} · ${fmt(entries.length)} ชนิดยา`;
+
+  /* แสดง/ซ่อน empty */
+  if(!entries.length){showDvEmpty();return;}
+  hideDvEmpty();
+
+  /* KPI strip */
+  document.getElementById('dv-kpi').style.display='';
+  document.getElementById('dv-kpi').innerHTML=
+    kCard('รายการจ่าย',fmt(kpi.count),'dispensings','var(--ac)')+
+    kCard('ปริมาณรวม',fmt(kpi.qty),'หน่วย','var(--a3)')+
+    kCard('มูลค่า',fmtC(kpi.cost),'total','var(--yl)','1.1rem')+
+    kCard('ชนิดยา',fmt(entries.length),'รายการ','var(--a2)')+
+    (mode==='range'?kCard('เฉลี่ย/วัน',fmt(kpi.avgPerDay),'รายการ','var(--gr)'):'');
+
+  /* Charts */
+  document.getElementById('dv-charts').style.display='grid';
+  document.getElementById('dv-bar-title').innerHTML=
+    `ปริมาณยา ${mode==='single'?'':'(รวม)'} <span class="ca">(คลิกแถบ = Drill-down)</span>
+    <button class="xbtn" onclick="xChart('dvBar')">⬇PNG</button>`;
+
+  const top20=shown.slice(0,20);
+  const maxQ=top20[0]?.qty||1;
+
+  kc('dvBar');
+  rc('dvBar',new Chart(document.getElementById('dvBar').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:top20.map(d=>d.name.length>26?d.name.substring(0,26)+'…':d.name),
+      datasets:[{
+        label:'ปริมาณ (หน่วย)',
+        data:top20.map(d=>d.qty),
+        backgroundColor:top20.map((_,i)=>C.pal[i%C.pal.length]+'55'),
+        borderColor:top20.map((_,i)=>C.pal[i%C.pal.length]),
+        borderWidth:1.5
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{
+          label:ctx=>`${fmt(ctx.raw)} หน่วย`
+        }}
+      },
+      scales:{
+        x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{callback:v=>v.toLocaleString('th-TH'),font:{size:12}}},
+        y:{ticks:{font:{size:11}}}
+      },
+      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(top20[els[0].index]?.name);}
+    }
+  }));
+
+  /* Pie top 8 */
+  const top8=shown.slice(0,8);
+  kc('dvPie');
+  rc('dvPie',new Chart(document.getElementById('dvPie').getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:top8.map(d=>d.name.length>16?d.name.substring(0,16)+'…':d.name),
+      datasets:[{
+        data:top8.map(d=>d.qty),
+        backgroundColor:C.pal.slice(0,8).map(c=>c+'aa'),
+        borderColor:C.pal.slice(0,8),borderWidth:1.2,hoverOffset:8
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:11}}}},
+      onClick:(_,els)=>{if(!els.length)return;openDrillDrug(top8[els[0].index]?.name);}
+    }
+  }));
+
+  /* Range trend chart — แสดงเฉพาะ mode=range */
+  const rtCard=document.getElementById('dv-range-trend-card');
+  if(mode==='range' && dateArr.length>1){
+    rtCard.style.display='';
+    /* top 5 drugs ตาม qty รวม */
+    const top5=shown.slice(0,5).map(d=>d.name);
+    const daily=S.data.daily;
+    kc('dvTrend');
+    rc('dvTrend',new Chart(document.getElementById('dvTrend').getContext('2d'),{
+      type:'line',
+      data:{
+        labels:dateArr.map(d=>d.substring(5)),
+        datasets:top5.map((name,i)=>({
+          label:name.length>18?name.substring(0,18)+'…':name,
+          data:dateArr.map(date=>{
+            const day=daily.find(x=>x.date===date);
+            const dr=(day?.top_drugs||[]).find(x=>x.name===name);
+            return dr?.qty||0;
+          }),
+          borderColor:C.pal[i],backgroundColor:'transparent',
+          borderWidth:1.8,pointRadius:2,tension:.3
+        }))
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{legend:{labels:{boxWidth:9,font:{size:10}}}},
+        scales:{x:{ticks:{maxTicksLimit:14,maxRotation:40,font:{size:11}}},
+          y:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:11}}}}
+      }
+    }));
+  } else {
+    rtCard.style.display='none';
+    kc('dvTrend');
+  }
+
+  /* Table */
+  document.getElementById('dv-table-card').style.display='';
+  document.getElementById('dv-table-title').innerHTML=
+    `ยาทั้งหมด ${mode==='range'?`(รวม ${dateArr.length} วัน)`:''} — ${fmt(shown.length)} รายการ
+    <button class="xbtn" onclick="xDvCSV()">⬇CSV</button>`;
+
+  const totalQty=entries.reduce((s,e)=>s+e.qty,0)||1;
+  document.getElementById('dv-tbody').innerHTML=shown.map((d,i)=>{
+    const pct=Math.round(d.qty/totalQty*1000)/10;
+    const barW=Math.round(d.qty/maxQ*100);
+    const rbcls=i===0?'g':i===1?'s':i===2?'b':'';
+    /* หา unit จาก dmeta */
+    const unitStr=S.dmeta[d.name]?.unit?`<span style="font-size:.65rem;color:var(--tx3);margin-left:.35rem">${S.dmeta[d.name].unit}</span>`:'';
+    const modeDisp=mode==='range'?`<span style="font-size:.65rem;color:var(--tx3)"> (${d.days}วัน)</span>`:'';
+    return`<tr onclick="openDrillDrug('${d.name.replace(/'/g,"\\'")}')">
+      <td><span class="rb ${rbcls}">${i+1}</span></td>
+      <td class="tn">${d.name}${unitStr}</td>
+      <td style="color:var(--ac);font-weight:600">${fmt(d.qty)}${modeDisp}</td>
+      <td>${fmt(d.disp)}</td>
+      <td><span style="font-size:.78rem">${pct}%</span></td>
+      <td><div class="br" style="min-width:120px">
+        <div class="bt" style="flex:1"><div class="bf" style="width:${barW}%;background:${C.pal[i%C.pal.length]}88"></div></div>
+        <span style="font-size:.65rem;color:var(--tx3);min-width:28px;text-align:right">${barW}%</span>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function showDvEmpty(){
+  document.getElementById('dv-kpi').style.display='none';
+  document.getElementById('dv-charts').style.display='none';
+  document.getElementById('dv-table-card').style.display='none';
+  document.getElementById('dv-empty').style.display='flex';
+  document.getElementById('dv-info').textContent='ไม่มีข้อมูล';
+}
+function hideDvEmpty(){
+  document.getElementById('dv-empty').style.display='none';
+}
+
+/* ── Export CSV สำหรับ daily view ── */
+function xDvCSV(){
+  const mode=document.getElementById('dvMode').value;
+  let dateArr=[], label='';
+  if(mode==='single'){
+    const date=document.getElementById('dvDate').value;
+    if(!date) return;
+    dateArr=[date]; label=date;
+  } else {
+    const from=document.getElementById('dvFrom').value;
+    const to=document.getElementById('dvTo').value;
+    if(!from||!to) return;
+    dateArr=dateBetween(from,to); label=`${from}_${to}`;
+  }
+  const agg=aggregateDrugsForDates(dateArr);
+  const rows=[['ชื่อยา','ปริมาณรวม','จำนวนวันที่พบ','หน่วย']];
+  Object.entries(agg).sort((a,b)=>b[1].qty-a[1].qty)
+    .forEach(([name,v])=>rows.push([name,v.qty,v.days,S.dmeta[name]?.unit||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`drug_daily_${label}.csv`;
+  a.click();
+  toast(`⬇ CSV: ${Object.keys(agg).length} รายการ`);
+}
+
+/* ── ให้ openDrillDay เรียก renderDvPage ได้ด้วย ── */
+function openDrillDayFromDv(date){
+  const day=S.data.daily.find(d=>d.date===date);
+  if(day) openDrillDay(day);
+}
+
+/* ════ SPARKLINE ════ */
+function spark(canvas,data){
+  if(!data?.length)return;
+  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const mx=Math.max(...data,1),mn=Math.min(...data),rng=mx-mn||1;
+  const pts=data.map((v,i)=>({x:(i/(data.length-1||1))*(W-4)+2,y:H-3-((v-mn)/rng)*(H-6)}));
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(61,214,245,.3)');g.addColorStop(1,'rgba(61,214,245,.02)');
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,H);ctx.lineTo(pts[0].x,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.strokeStyle='#3dd6f5';ctx.lineWidth=1.2;ctx.stroke();
+}
+
+/* ════ EXPORT ════ */
+function xChart(id){
+  const ch=CR[id];if(!ch){toast('⚠ ยังไม่มีกราฟ');return;}
+  const a=document.createElement('a');a.href=ch.toBase64Image();a.download=id+'.png';a.click();
+  toast('⬇ บันทึก PNG แล้ว');
+}
+function xCSV(){
+  if(!S.fcs.length){toast('⚠ ยังไม่มีข้อมูล');return;}
+  const h=parseInt(document.getElementById('fcH')?.value||'3');
+  const enr=S.fcs.map(fc=>({...fc,...proj(fc,h)}));
+  const rows=[['ชื่อยา','หน่วย','รหัส','รวม','เฉลี่ย/เดือน(active)','เฉลี่ย/เดือน(รวม)','เฉลี่ย/วัน',
+    'Active months','Total months','Availability%','Slope','CV%','Trend','Urgency','คาดการณ์','แนะนำเบิก','Buffer%']];
+  enr.forEach(d=>rows.push([
+    d.name, d.unit||'', d.code||'', d.total,
+    d.avgPerActiveMonth, d.avgPerTotalMonth, d.avgPerDay,
+    d.activeM, d.totalM, d.availability,
+    d.slope, d.cv, d.tdir, d.urgency, d.proj, d.rec, Math.round(d.buf*100)+'%'
+  ]));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='drug_usage_forecast.csv';a.click();
+  toast('⬇ CSV บันทึกแล้ว '+fmt(enr.length)+' รายการ');
+}
+
+/* ════ KEYBOARD ESC ════ */
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('dov').classList.remove('open');});
+
+/* ════ AUTO-LOAD ════ */
+fetchData();
+</script>
+</body>
+</html>
