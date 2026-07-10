@@ -662,19 +662,58 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   grid-auto-rows:74px;                /* ← ความสูงแถวคงที่ ทุกชั้นเท่ากัน */
   gap:7px;margin-top:9px;position:relative;z-index:2;
 }
-/* ชั้นแนวนอน — แถวเดียว เลื่อนซ้าย-ขวาได้ (เหมือนชั้นวางจริง) */
+/* ชั้นแนวนอน — ทุกช่องพอดีหน้าจอ ไม่ต้องเลื่อน · ชื่อยาแนวนอนใต้กล่อง */
 .cab-shelf-grid.horiz{
-  display:flex;flex-wrap:nowrap;gap:7px;
-  overflow-x:auto;overflow-y:hidden;
-  padding-bottom:4px;scroll-snap-type:x proximity;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:thin;scrollbar-color:#BCAE8C transparent;
+  display:flex;flex-wrap:nowrap;gap:5px;
+  overflow:visible;margin-top:9px;position:relative;z-index:2;
+  align-items:flex-start;
 }
-.cab-shelf-grid.horiz::-webkit-scrollbar{height:5px;}
-.cab-shelf-grid.horiz::-webkit-scrollbar-track{background:rgba(0,0,0,.05);border-radius:3px;}
-.cab-shelf-grid.horiz::-webkit-scrollbar-thumb{background:#BCAE8C;border-radius:3px;}
 .cab-shelf-grid.horiz .cab-slot{
-  flex:0 0 108px;width:108px;height:74px;scroll-snap-align:start;
+  flex:1 1 0;min-width:0;height:auto;
+  padding:0;border:none;background:none;box-shadow:none;border-radius:7px;
+  display:flex;flex-direction:column;gap:3px;overflow:visible;
+}
+.cab-shelf-grid.horiz .cab-slot::after{display:none;}
+.cab-shelf-grid.horiz .cab-slot:hover{transform:none;box-shadow:none;}
+.cab-shelf-grid.horiz .cab-slot:active{transform:scale(.95);}
+
+/* กล่องยา (เตี้ยลง) — แสดงจำนวนคงเหลือ */
+.cab-shelf-grid.horiz .cab-slot-foot{
+  order:1;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  height:50px;width:100%;margin:0;padding:3px 2px;
+  border-radius:6px;position:relative;overflow:hidden;
+  background:linear-gradient(170deg,#FFFFFF,#FBFAF6 55%,#F4F1E8);
+  border:1px solid #E3DDD0;border-left:4px solid #ccc;
+  box-shadow:0 3px 5px -1px rgba(90,74,44,.2), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.cab-shelf-grid.horiz .cab-slot-foot::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:38%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,0));
+}
+.cab-shelf-grid.horiz .cab-slot.red    .cab-slot-foot{border-left-color:var(--red);}
+.cab-shelf-grid.horiz .cab-slot.yellow .cab-slot-foot{border-left-color:var(--amber);}
+.cab-shelf-grid.horiz .cab-slot.green  .cab-slot-foot{border-left-color:var(--teal);}
+.cab-shelf-grid.horiz .cab-slot.empty  .cab-slot-foot{
+  border-left-color:#C6D2BC;
+  background:repeating-linear-gradient(135deg,#F6F5F0,#F6F5F0 5px,#F1F0E9 5px,#F1F0E9 10px);
+  box-shadow:inset 0 2px 4px rgba(120,110,80,.12);
+}
+.cab-shelf-grid.horiz .cab-slot-qty{font-size:15px;line-height:1;position:relative;z-index:1;}
+.cab-shelf-grid.horiz .cab-slot-unit{font-size:7px;letter-spacing:0;position:relative;z-index:1;}
+
+/* ชื่อยาแนวนอน อยู่ใต้กล่อง */
+.cab-shelf-grid.horiz .cab-slot-name{
+  order:2;writing-mode:horizontal-tb;transform:none;
+  width:100%;font-size:7.5px;font-weight:700;line-height:1.2;
+  text-align:center;color:var(--text2);letter-spacing:-.1px;
+  word-break:break-word;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+}
+.cab-shelf-grid.horiz .cab-slot.empty .cab-slot-name{color:#A3AC9C;}
+@media (min-width:420px){
+  .cab-shelf-grid.horiz .cab-slot-name{font-size:8.5px;}
+  .cab-shelf-grid.horiz .cab-slot-foot{height:54px;}
+  .cab-shelf-grid.horiz .cab-slot-qty{font-size:16px;}
 }
 
 /* แผ่นชั้นวาง — ไม้/เหล็ก มีความหนา + เงาตกกระทบ */
@@ -1947,7 +1986,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.10.10.41</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.10.12.48</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2641,15 +2680,50 @@ let _expRangeMonths=1,_allStockItems=[];
 // ══ ชั้นวางยา NCD — กำหนดชั้นเอง (แก้ลำดับ/เพิ่ม-ลบยาได้ที่นี่) ═══════════
 // แต่ละ sub-array = 1 ชั้น เรียงซ้าย→ขวา ตามลำดับที่เขียน
 const NCD_SHELF_LAYOUT=[
-  // ชั้น 1
   ['1000016','1440105','1530008','ATO','Carve','CAP RED','5COL'],
-  // ชั้น 2
   ['CAR','1460151','1000122','FURO','1GABA','1419041','1019001'],
-  // ชั้น 3
   ['5HCT','HY251','ISO','1LST2','MNDP','1000184','1500016','1OME','PIO1'],
-  // ชั้น 4
   ['5PNL','SIM3']
 ];
+
+// ══ ชั้นวางยาคลัง PCU — กำหนดตู้/ชั้นเอง (แก้ได้ที่นี่) ═══════════
+// แต่ละตู้: {title, icon, shelves:[[รหัสยา,...], ...]}  · sub-array = 1 ชั้น เรียงซ้าย→ขวา
+// ลำดับยาในชั้น = ลำดับที่เขียนไว้ (ไม่เรียง A→Z อัตโนมัติ)
+const PCU_CABINETS=[
+  {
+    title:'ตู้ที่ 1 · ยาแผนปัจจุบัน',
+    icon:'💊',
+    shelves:[
+      ['1ALB','1AMIT','1AMX','1AMO','Beta','BRO TAB','1CAL','5CPM','1DEXT'],
+      ['1DIC','1DCL','1DIM','DP CRP','1DOM','1FBC','FLU20','110104480112','HYZ'],
+      ['1HOC','1BUF','KTCNZ','LORA','1MET','1MTV','1NAPRO','NI20','NORET5MG','1NOC'],
+      ['1PARA325','1CET','1STC','TOL50','1TFD','1VIB','1VIC'],
+      ['3AOM','2SOAT','2MTUS','6CPM','3HYO','5NOL']   // ยาน้ำ/ยาใช้ภายนอก
+    ]
+  },
+  {
+    title:'ตู้ที่ 2 · ชั้นวางยา NCD',
+    icon:'🩺',
+    shelves:NCD_SHELF_LAYOUT   // ใช้ผังเดียวกับ sub-tab ชั้นวางยา NCD
+  },
+  {
+    title:'ตู้ที่ 3 · ยาใช้ภายนอก และ ยาน้ำ',
+    icon:'🧴',
+    shelves:[
+      // ชั้น 1 — ครีม/ขี้ผึ้ง
+      ['ACV CREAM','3ANAL','BET-SA','BET-1N','3CALA','4CRP','CHL'],
+      // ชั้น 2 — ครีม/โลชัน/น้ำยาฆ่าเชื้อ
+      ['4CTC','4TRI','TRIAM LO1','3TRIA01','3TRIA002','5ACH','4HSC','5PVD'],
+      // ชั้น 3 — ยาน้ำ
+      ['3ALB','3ALM','3AMI','CEP SYR','DEX50','2DOMP','3DCL','FER'],
+      // ชั้น 4 — ยาน้ำ/ยาคุม
+      ['2MTVS','2SALB','3SIM','6014','6024'],
+      // ชั้น 5 — สมุนไพร/ยาคุม
+      ['1VAN','1SENN','1AMY','6023','6033']
+    ]
+  }
+];
+
 const _ncdRaw=NCD_SHELF_LAYOUT.flat();
 const _ncdNorm=s=>String(s||'').replace(/\s+/g,'').toLowerCase(); // ตัดช่องว่าง+ไม่สนตัวพิมพ์
 const NCD_CABINET_CODES=new Set(_ncdRaw.map(_ncdNorm));
@@ -2881,7 +2955,7 @@ function renderOutOfStock(){
 }
 
 function renderSummaryTable(items){
-  const PER=60; // 4 ชั้น × 15 ตัว = 60 ต่อหน้า
+  const PER=10;
   // ── สร้าง nameMap ─────────────────────────────────────────
   const nm={};
   items.forEach(i=>{
@@ -2947,8 +3021,13 @@ function renderSummaryTable(items){
   };
 
   document.getElementById('stock-summary-card').innerHTML=`
+    <!-- View toggle -->
+    <div style="display:flex;gap:5px;padding:9px 10px 3px;">
+      <button onclick="setPCUView('list')" style="flex:1;padding:7px;border-radius:9px;border:none;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;background:${window._pcuView!=='rack'?'var(--blue)':'var(--surface2)'};color:${window._pcuView!=='rack'?'#fff':'var(--text3)'};">📋 รายการ</button>
+      <button onclick="setPCUView('rack')" style="flex:1;padding:7px;border-radius:9px;border:none;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;background:${window._pcuView==='rack'?'#8A6D3B':'var(--surface2)'};color:${window._pcuView==='rack'?'#fff':'var(--text3)'};">🗄️ ชั้นวางยา</button>
+    </div>
     <!-- Filter bar -->
-    <div style="padding:10px 10px 8px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+    <div style="padding:10px 10px 8px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;align-items:center;${window._pcuView==='rack'?'display:none;':''}">
       <button onclick="setSumFilter('all')"    style="${chipStyle('all',   'var(--blue-l)',  'rgba(26,95,212,.4)',  'var(--blue)'  )}">ทั้งหมด (${cntAll})</button>
       <button onclick="setSumFilter('red')"    style="${chipStyle('red',   'var(--red-l)',   'rgba(217,48,37,.4)', 'var(--red)'   )}">🔴 &lt;6 เดือน (${cntR})</button>
       <button onclick="setSumFilter('yellow')" style="${chipStyle('yellow','var(--amber-l)', 'rgba(192,112,0,.4)', 'var(--amber)' )}">🟡 6–12 เดือน (${cntY})</button>
@@ -2961,13 +3040,31 @@ function renderSummaryTable(items){
         ${(window._sumFilterSearch||'')?`<button onclick="window._sumFilterSearch='';summaryPage=1;renderSummaryTable(_allStockItems)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;line-height:1;padding:0;">✕</button>`:''}
       </div>
     </div>
-    <!-- ชั้นวางยาคลัง PCU (4 ชั้น × 15 ตัว) -->
-    <div style="padding:12px 12px 4px;">
-      ${_buildCabinetHTML(pageRows.map(i=>({
-        name:i.name, qty:i.qty, unit:i.unit, exp:i.exp, inStock:true,
-        onClick:`showDrugDetail('${i.name.replace(/'/g,"\\'")}')`
-      })),{shelves:4,emptyText:'— ว่าง —'})}
-    </div>
+    ${window._pcuView==='rack' ? `
+    <!-- มุมมองชั้นวางยา (ตู้กำหนดเอง) -->
+    <div id="pcu-rack-body" style="padding:12px 10px 4px;"></div>
+    ` : `
+    <!-- Stock list (รายการ) -->
+    <div>${pageRows.map(i=>{
+      const g=i._grp;
+      const grpLabel=g==='red'?'🔴 <6เดือน':g==='yellow'?'🟡 6-12เดือน':'🟢 >12เดือน';
+      const sn=i.name.replace(/'/g,"\\'");
+      return `<div class="stk-row" onclick="showDrugDetail('${sn}')">
+        <div class="stk-strip ${g}"></div>
+        <div class="stk-body">
+          <div class="stk-name">${i.name}</div>
+          <div class="stk-meta">
+            <span class="stk-dot ${g}">${grpLabel}</span>
+            <span>EXP ${fmtExp(i.exp)}</span>
+          </div>
+        </div>
+        <div class="stk-right">
+          <div class="stk-qty ${g}">${Math.round(i.qty)}</div>
+          <div class="stk-unit">${i.unit||''}</div>
+        </div>
+      </div>`;
+    }).join('')}</div>`}
+    ${window._pcuView==='rack' ? '' : `
     <!-- Sort bar -->
     <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);">
       <span style="font-weight:700;">เรียง:</span>
@@ -2980,7 +3077,8 @@ function renderSummaryTable(items){
       <button class="pg-btn" onclick="goSummaryPage(${summaryPage-1})" ${summaryPage<=1?'disabled':''}>‹</button>
       <span class="pg-info">หน้า ${summaryPage}/${totalPages} · ${total} รายการ</span>
       <button class="pg-btn" onclick="goSummaryPage(${summaryPage+1})" ${summaryPage>=totalPages?'disabled':''}>›</button>
-    </div>`;
+    </div>`}`;
+  if(window._pcuView==='rack')renderPCURack();
 }
 function setSummarySort(col){if(summarySort===col){summarySortDir=summarySortDir==='asc'?'desc':'asc';}else{summarySort=col;summarySortDir=col==='qty'?'asc':'asc';}summaryPage=1;renderSummaryTable(_allStockItems);}
 function toggleCollapse(hdId,bodyId){
@@ -3003,6 +3101,49 @@ function stkFabGo(secId){
 }
 function goSummaryPage(p){summaryPage=p;renderSummaryTable(_allStockItems);}
 function setSumFilter(grp){window._sumFilterGrp=grp;summaryPage=1;renderSummaryTable(_allStockItems);}
+
+// ══ สลับมุมมองคลัง PCU: รายการ ↔ ชั้นวางยา ═══════════════════════
+function setPCUView(v){window._pcuView=v;renderSummaryTable(_allStockItems);}
+
+// ══ ชั้นวางยาคลัง PCU (ตู้กำหนดเอง) ═══════════════════════════════
+function renderPCURack(){
+  const body=document.getElementById('pcu-rack-body');
+  if(!body)return;
+
+  // รวมยาในคลังตามชื่อ (หลาย LOT รวมกัน, ใช้ exp ใกล้สุด)
+  const map={};
+  _allStockItems.forEach(i=>{
+    if(!map[i.name])map[i.name]={name:i.name,qty:0,unit:i.unit,exp:i.exp};
+    map[i.name].qty+=i.qty;
+    const cur=parseExpDate(map[i.name].exp),nw=parseExpDate(i.exp);
+    if(nw&&(!cur||nw<cur))map[i.name].exp=i.exp;
+  });
+  const byCode={};
+  drugDB.forEach(d=>{byCode[_ncdNorm(d[0])]=d;});
+
+  const mkItem=code=>{
+    const d=byCode[_ncdNorm(code)];
+    const nm=d?d[1]:code;
+    const s=map[nm]||Object.values(map).find(x=>x.name.toLowerCase()===nm.toLowerCase());
+    return s
+      ? {name:nm,qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
+         onClick:`showDrugDetail('${nm.replace(/'/g,"\\'")}')`}
+      : {name:nm,qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
+  };
+
+  body.innerHTML=PCU_CABINETS.map(cab=>{
+    const shelfArrays=cab.shelves.map(codes=>codes.map(mkItem));
+    const flat=shelfArrays.flat();
+    const inStock=flat.filter(x=>x.inStock&&x.qty>0).length;
+    return `<div style="margin-bottom:18px;">
+      <div class="cab-topinfo">
+        <span style="font-weight:800;color:var(--text1);font-size:12.5px;">${cab.icon||'🗄️'} ${cab.title}</span>
+        <span><b>${inStock}</b>/${flat.length} มีในคลัง</span>
+      </div>
+      ${_buildCabinetHTML(flat,{shelfArrays,horizontal:true})}
+    </div>`;
+  }).join('')||'<div class="empty" style="padding:2rem;"><div class="empty-icon">🗄️</div>ยังไม่ได้กำหนดชั้นวางยา</div>';
+}
 // ══ ตัวสร้างชั้นวางยา (ใช้ร่วมกันทั้ง NCD / คลังนอก / คลัง PCU) ═══════════
 // items: [{name, qty, unit, exp, inStock, onClick?}]
 // opts.shelfArrays: [[item,...],[item,...]] → กำหนดชั้นเอง (ถ้าไม่ส่ง จะแบ่งเท่าๆกันจาก opts.shelves)
@@ -3038,7 +3179,7 @@ function _buildCabinetHTML(items,opts){
       const g=grpOf(it);
       const qty=it.inStock&&it.qty>0?Math.round(it.qty):'0';
       const click=(it.inStock&&it.onClick)?`onclick="${it.onClick}"`:'';
-      return `<div class="cab-slot ${g}" ${click}>
+      return `<div class="cab-slot ${g}" ${click} title="${it.name.replace(/"/g,'&quot;')}${it.inStock?' · คงเหลือ '+qty+' '+(it.unit||''):' · ไม่มีในคลัง'}">
         <div class="cab-slot-name">${it.name}</div>
         <div class="cab-slot-foot">
           <span class="cab-slot-qty ${g}">${qty}</span>
