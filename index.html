@@ -662,6 +662,20 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   grid-auto-rows:74px;                /* ← ความสูงแถวคงที่ ทุกชั้นเท่ากัน */
   gap:7px;margin-top:9px;position:relative;z-index:2;
 }
+/* ชั้นแนวนอน — แถวเดียว เลื่อนซ้าย-ขวาได้ (เหมือนชั้นวางจริง) */
+.cab-shelf-grid.horiz{
+  display:flex;flex-wrap:nowrap;gap:7px;
+  overflow-x:auto;overflow-y:hidden;
+  padding-bottom:4px;scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;scrollbar-color:#BCAE8C transparent;
+}
+.cab-shelf-grid.horiz::-webkit-scrollbar{height:5px;}
+.cab-shelf-grid.horiz::-webkit-scrollbar-track{background:rgba(0,0,0,.05);border-radius:3px;}
+.cab-shelf-grid.horiz::-webkit-scrollbar-thumb{background:#BCAE8C;border-radius:3px;}
+.cab-shelf-grid.horiz .cab-slot{
+  flex:0 0 108px;width:108px;height:74px;scroll-snap-align:start;
+}
 
 /* แผ่นชั้นวาง — ไม้/เหล็ก มีความหนา + เงาตกกระทบ */
 .cab-shelf-board{
@@ -1933,7 +1947,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.10.07.14</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.10.10.41</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2624,12 +2638,19 @@ let _dispDateFilter='';   // กรองวันที่เบิก
 let scanTarget='',scanStream=null,scanCanvas=null,scanCtx=null,scanLoop=null,lastScan='';
 let summaryPage=1,summarySort='qty',summarySortDir='asc';
 let _expRangeMonths=1,_allStockItems=[];
-// ══ ชั้นวางยา NCD — รายการรหัสยาในกลุ่ม (เพิ่ม/ลบได้ที่นี่) ═══════════
-const _ncdRaw=[
-  '1000016','1000122','1000184','1019001','1419041','1440105','1460151',
-  '1500016','1530008','1GABA','1LST2','1OME','5COL','5HCT','5PNL',
-  'ATO','CAP RED','CAR','Carve','HY251','ISO','MNDP','PIO1','SIM3'
+// ══ ชั้นวางยา NCD — กำหนดชั้นเอง (แก้ลำดับ/เพิ่ม-ลบยาได้ที่นี่) ═══════════
+// แต่ละ sub-array = 1 ชั้น เรียงซ้าย→ขวา ตามลำดับที่เขียน
+const NCD_SHELF_LAYOUT=[
+  // ชั้น 1
+  ['1000016','1440105','1530008','ATO','Carve','CAP RED','5COL'],
+  // ชั้น 2
+  ['CAR','1460151','1000122','FURO','1GABA','1419041','1019001'],
+  // ชั้น 3
+  ['5HCT','HY251','ISO','1LST2','MNDP','1000184','1500016','1OME','PIO1'],
+  // ชั้น 4
+  ['5PNL','SIM3']
 ];
+const _ncdRaw=NCD_SHELF_LAYOUT.flat();
 const _ncdNorm=s=>String(s||'').replace(/\s+/g,'').toLowerCase(); // ตัดช่องว่าง+ไม่สนตัวพิมพ์
 const NCD_CABINET_CODES=new Set(_ncdRaw.map(_ncdNorm));
 function _isNCDDrug(item){
@@ -2982,17 +3003,26 @@ function stkFabGo(secId){
 }
 function goSummaryPage(p){summaryPage=p;renderSummaryTable(_allStockItems);}
 function setSumFilter(grp){window._sumFilterGrp=grp;summaryPage=1;renderSummaryTable(_allStockItems);}
-// ══ ตัวสร้างตู้ยา (ใช้ร่วมกันทั้งตู้ยา NCD และคลังยานอก) ═══════════
-// items: [{name, qty, unit, exp, inStock, onClick?}]  · shelves: จำนวนชั้น
+// ══ ตัวสร้างชั้นวางยา (ใช้ร่วมกันทั้ง NCD / คลังนอก / คลัง PCU) ═══════════
+// items: [{name, qty, unit, exp, inStock, onClick?}]
+// opts.shelfArrays: [[item,...],[item,...]] → กำหนดชั้นเอง (ถ้าไม่ส่ง จะแบ่งเท่าๆกันจาก opts.shelves)
+// opts.horizontal: true → แต่ละชั้นเป็นแถวเดียว เลื่อนแนวนอนได้ (ไม่ตัดบรรทัด)
 function _buildCabinetHTML(items,opts){
-  const o=Object.assign({shelves:4,cols:3,emptyText:'— ว่าง —'},opts||{});
+  const o=Object.assign({shelves:4,emptyText:'— ว่าง —',horizontal:false},opts||{});
   const now=new Date();now.setHours(0,0,0,0);
-  const total=items.length;
 
-  // แบ่งชั้นให้จำนวนต่อชั้นเท่ากันที่สุด (24→6,6,6,6 · 22→6,6,5,5)
-  const base=Math.floor(total/o.shelves), rem=total%o.shelves;
-  const sizes=[];
-  for(let s=0;s<o.shelves;s++)sizes.push(base+(s<rem?1:0));
+  let shelfArrays=o.shelfArrays;
+  if(!shelfArrays){
+    // แบ่งชั้นให้จำนวนต่อชั้นเท่ากันที่สุด (24→6,6,6,6 · 22→6,6,5,5)
+    const total=items.length;
+    const base=Math.floor(total/o.shelves), rem=total%o.shelves;
+    shelfArrays=[];let idx=0;
+    for(let s=0;s<o.shelves;s++){
+      const n=base+(s<rem?1:0);
+      shelfArrays.push(items.slice(idx,idx+n));
+      idx+=n;
+    }
+  }
 
   const grpOf=it=>{
     if(!it.inStock||it.qty<=0)return 'empty';
@@ -3002,10 +3032,8 @@ function _buildCabinetHTML(items,opts){
     return mo<=6?'red':mo<=12?'yellow':'green';
   };
 
-  let idx=0,shelves='';
-  for(let s=0;s<o.shelves;s++){
-    const slice=items.slice(idx,idx+sizes[s]);
-    idx+=sizes[s];
+  const gridCls=o.horizontal?'cab-shelf-grid horiz':'cab-shelf-grid';
+  const shelves=shelfArrays.map((slice,s)=>{
     const slots=slice.map(it=>{
       const g=grpOf(it);
       const qty=it.inStock&&it.qty>0?Math.round(it.qty):'0';
@@ -3018,12 +3046,13 @@ function _buildCabinetHTML(items,opts){
         </div>
       </div>`;
     }).join('');
-    shelves+=`<div class="cab-shelf">
+    return `<div class="cab-shelf">
       <span class="cab-shelf-tag">ชั้น ${s+1}</span>
-      <div class="cab-shelf-grid">${slots||`<div style="grid-column:1/-1;text-align:center;color:#b0a88f;font-size:11px;padding:14px;">${o.emptyText}</div>`}</div>
+      <div class="${gridCls}">${slots||`<div style="grid-column:1/-1;text-align:center;color:#b0a88f;font-size:11px;padding:14px;">${o.emptyText}</div>`}</div>
       <div class="cab-shelf-board"></div>
     </div>`;
-  }
+  }).join('');
+
   return `<div class="cab-cabinet"><div class="cab-door-frame">${shelves}</div>
     <div class="cab-feet"><span></span><span></span></div></div>
     <div class="cab-legend">
@@ -3056,30 +3085,31 @@ function renderNCDCabinet(){
     if(nw&&(!cur||nw<cur))map[key].exp=i.exp;
   });
 
-  // ยา NCD ทั้งหมดจากรายการกำหนด (โชว์ช่องว่างของยาที่ยังไม่มีในคลังด้วย)
-  const allNCD=drugDB.filter(d=>_isNCDDrug({code:d[0]})).map(d=>{
-    const nm=d[1];
+  // จัดยาเข้าชั้นตาม NCD_SHELF_LAYOUT (เรียงตามที่กำหนด ไม่เรียง A→Z อัตโนมัติ)
+  const byCode={};
+  drugDB.forEach(d=>{byCode[_ncdNorm(d[0])]=d;});
+
+  const mkItem=code=>{
+    const d=byCode[_ncdNorm(code)];
+    const nm=d?d[1]:code;
     const s=map[nm]||Object.values(map).find(x=>x.name.toLowerCase()===nm.toLowerCase());
-    return s?{...s,inStock:true}:{name:nm,code:d[0],qty:0,unit:d[3]||'',exp:'',inStock:false};
-  });
+    return s
+      ? {name:nm,qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
+         onClick:`showDrugDetail('${nm.replace(/'/g,"\\'")}')`}
+      : {name:nm,qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
+  };
 
-  // เรียงชื่อยา A→Z
-  allNCD.sort((a,b)=>a.name.localeCompare(b.name,'th',{numeric:true,sensitivity:'base'}));
-
-  const total=allNCD.length;
-  const inStockCnt=allNCD.filter(x=>x.inStock&&x.qty>0).length;
-
-  const cabItems=allNCD.map(it=>({
-    name:it.name, qty:it.qty, unit:it.unit, exp:it.exp, inStock:it.inStock,
-    onClick:`showDrugDetail('${it.name.replace(/'/g,"\\'")}')`
-  }));
+  const shelfArrays=NCD_SHELF_LAYOUT.map(codes=>codes.map(mkItem));
+  const flat=shelfArrays.flat();
+  const total=flat.length;
+  const inStockCnt=flat.filter(x=>x.inStock&&x.qty>0).length;
 
   body.innerHTML=`
     <div class="cab-topinfo">
-      <span>เรียงชื่อยา A→Z · ${NCD_SHELVES} ชั้น</span>
+      <span>จัดตามชั้นจริง · ${NCD_SHELF_LAYOUT.length} ชั้น</span>
       <span><b>${inStockCnt}</b>/${total} มีในคลัง</span>
     </div>
-    ${_buildCabinetHTML(cabItems,{shelves:NCD_SHELVES})}`;
+    ${_buildCabinetHTML(flat,{shelfArrays,horizontal:true})}`;
 }
 
 // ══ ชั้นวางยาคลังนอก — เรียง A→Z 4 ชั้น เหมือนชั้นวางยา NCD ═══════════════
