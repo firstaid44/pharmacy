@@ -1933,7 +1933,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.10.07.01</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.10.07.14</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2195,11 +2195,11 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       <button id="subtab-ncd" onclick="switchStockSubtab('ncd')"
         style="flex:1;padding:9px 6px;border-radius:10px;border:none;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;
                background:transparent;color:var(--text3);">
-        💊 ตู้ยา NCD
+        💊 ชั้นวางยา NCD
       </button>
     </div>
 
-    <!-- ══ View C: ตู้ยา NCD ══ -->
+    <!-- ══ View C: ชั้นวางยา NCD ══ -->
     <div id="stock-view-ncd" style="display:none;">
       <div id="ncd-cab-body-inline"></div>
     </div>
@@ -2624,7 +2624,7 @@ let _dispDateFilter='';   // กรองวันที่เบิก
 let scanTarget='',scanStream=null,scanCanvas=null,scanCtx=null,scanLoop=null,lastScan='';
 let summaryPage=1,summarySort='qty',summarySortDir='asc';
 let _expRangeMonths=1,_allStockItems=[];
-// ══ ตู้ยา NCD — รายการรหัสยาในกลุ่ม (เพิ่ม/ลบได้ที่นี่) ═══════════
+// ══ ชั้นวางยา NCD — รายการรหัสยาในกลุ่ม (เพิ่ม/ลบได้ที่นี่) ═══════════
 const _ncdRaw=[
   '1000016','1000122','1000184','1019001','1419041','1440105','1460151',
   '1500016','1530008','1GABA','1LST2','1OME','5COL','5HCT','5PNL',
@@ -2860,7 +2860,7 @@ function renderOutOfStock(){
 }
 
 function renderSummaryTable(items){
-  const PER=10;
+  const PER=60; // 4 ชั้น × 15 ตัว = 60 ต่อหน้า
   // ── สร้าง nameMap ─────────────────────────────────────────
   const nm={};
   items.forEach(i=>{
@@ -2940,26 +2940,13 @@ function renderSummaryTable(items){
         ${(window._sumFilterSearch||'')?`<button onclick="window._sumFilterSearch='';summaryPage=1;renderSummaryTable(_allStockItems)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;line-height:1;padding:0;">✕</button>`:''}
       </div>
     </div>
-    <!-- Stock list (clean card rows) -->
-    <div>${pageRows.map(i=>{
-      const g=i._grp;
-      const grpLabel=g==='red'?'🔴 <6เดือน':g==='yellow'?'🟡 6-12เดือน':'🟢 >12เดือน';
-      const sn=i.name.replace(/'/g,"\\'");
-      return `<div class="stk-row" onclick="showDrugDetail('${sn}')">
-        <div class="stk-strip ${g}"></div>
-        <div class="stk-body">
-          <div class="stk-name">${i.name}</div>
-          <div class="stk-meta">
-            <span class="stk-dot ${g}">${grpLabel}</span>
-            <span>EXP ${fmtExp(i.exp)}</span>
-          </div>
-        </div>
-        <div class="stk-right">
-          <div class="stk-qty ${g}">${Math.round(i.qty)}</div>
-          <div class="stk-unit">${i.unit||''}</div>
-        </div>
-      </div>`;
-    }).join('')}</div>
+    <!-- ชั้นวางยาคลัง PCU (4 ชั้น × 15 ตัว) -->
+    <div style="padding:12px 12px 4px;">
+      ${_buildCabinetHTML(pageRows.map(i=>({
+        name:i.name, qty:i.qty, unit:i.unit, exp:i.exp, inStock:true,
+        onClick:`showDrugDetail('${i.name.replace(/'/g,"\\'")}')`
+      })),{shelves:4,emptyText:'— ว่าง —'})}
+    </div>
     <!-- Sort bar -->
     <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);">
       <span style="font-weight:700;">เรียง:</span>
@@ -3049,7 +3036,7 @@ function _buildCabinetHTML(items,opts){
 
 function toggleNCDFilter(){window._sumFilterNCD=!window._sumFilterNCD;summaryPage=1;renderSummaryTable(_allStockItems);}
 
-// ══ ตู้ยา NCD — มุมมองตู้ 4 ชั้น เรียง A→Z (แสดงเหมือนตู้จริง) ══════
+// ══ ชั้นวางยา NCD — มุมมองชั้นวาง 4 ชั้น เรียง A→Z (แสดงเหมือนตู้จริง) ══════
 const NCD_SHELVES=4;
 function openNCDCabinet(){ switchStockSubtab('ncd'); }
 function closeNCDCabinet(){ switchStockSubtab('pcu'); }
@@ -3095,7 +3082,7 @@ function renderNCDCabinet(){
     ${_buildCabinetHTML(cabItems,{shelves:NCD_SHELVES})}`;
 }
 
-// ══ ตู้ยาคลังนอก — เรียง A→Z 4 ชั้น เหมือนตู้ยา NCD ═══════════════
+// ══ ชั้นวางยาคลังนอก — เรียง A→Z 4 ชั้น เหมือนชั้นวางยา NCD ═══════════════
 function renderOuterCabinet(outMapValues){
   const el=document.getElementById('outer-stock-list');
   if(!el)return;
@@ -6268,7 +6255,7 @@ function renderOuterStock(){
   document.getElementById('out-total').textContent=items.length;
   document.getElementById('out-qty').textContent=Math.round(totalQty);
 
-  // แสดงเป็นตู้ยา 4 ชั้น เรียง A→Z (เหมือนตู้ยา NCD)
+  // แสดงเป็นชั้นวางยา 4 ชั้น เรียง A→Z
   renderOuterCabinet(items);
 }
 // ══ คลังยานอก END ═════════════════════════════════════════════
