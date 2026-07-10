@@ -1986,7 +1986,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.10.12.59</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.10.16.20</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2726,6 +2726,9 @@ const PCU_CABINETS=[
 
 const _ncdRaw=NCD_SHELF_LAYOUT.flat();
 const _ncdNorm=s=>String(s||'').replace(/\s+/g,'').toLowerCase(); // ตัดช่องว่าง+ไม่สนตัวพิมพ์
+// คีย์เทียบชื่อยาแบบทนทาน: ตัดช่องว่าง/วงเล็บ/จุด/ขีด/ทับ + ไม่สนตัวพิมพ์
+// ใช้จับคู่ชื่อยาในชั้นวาง กับชื่อที่บันทึกไว้ในคลัง (อาจพิมพ์ต่างกันเล็กน้อย)
+const _drugKey=s=>String(s||'').toLowerCase().replace(/[\s().,\-/*]+/g,'');
 const NCD_CABINET_CODES=new Set(_ncdRaw.map(_ncdNorm));
 function _isNCDDrug(item){
   return NCD_CABINET_CODES.has(_ncdNorm(item.code));
@@ -3120,14 +3123,17 @@ function renderPCURack(){
   });
   const byCode={};
   drugDB.forEach(d=>{byCode[_ncdNorm(d[0])]=d;});
+  // index ชื่อยาในคลังแบบ normalize (กันชื่อพิมพ์ต่างกันเล็กน้อย เช่น วงเล็บ/ช่องว่างเกิน)
+  const stockByKey={};
+  Object.values(map).forEach(s=>{stockByKey[_drugKey(s.name)]=s;});
 
   const mkItem=code=>{
     const d=byCode[_ncdNorm(code)];
     const nm=d?d[1]:code;
-    const s=map[nm]||Object.values(map).find(x=>x.name.toLowerCase()===nm.toLowerCase());
+    const s=map[nm]||stockByKey[_drugKey(nm)];
     return s
       ? {name:nm,qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
-         onClick:`showDrugDetail('${nm.replace(/'/g,"\\'")}')`}
+         onClick:`showDrugDetail('${s.name.replace(/'/g,"\\'")}')`}
       : {name:nm,qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
   };
 
@@ -3229,14 +3235,17 @@ function renderNCDCabinet(){
   // จัดยาเข้าชั้นตาม NCD_SHELF_LAYOUT (เรียงตามที่กำหนด ไม่เรียง A→Z อัตโนมัติ)
   const byCode={};
   drugDB.forEach(d=>{byCode[_ncdNorm(d[0])]=d;});
+  // index ชื่อยาในคลังแบบ normalize (กันชื่อพิมพ์ต่างกันเล็กน้อย เช่น วงเล็บ/ช่องว่างเกิน)
+  const stockByKey={};
+  Object.values(map).forEach(s=>{stockByKey[_drugKey(s.name)]=s;});
 
   const mkItem=code=>{
     const d=byCode[_ncdNorm(code)];
     const nm=d?d[1]:code;
-    const s=map[nm]||Object.values(map).find(x=>x.name.toLowerCase()===nm.toLowerCase());
+    const s=map[nm]||stockByKey[_drugKey(nm)];
     return s
       ? {name:nm,qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
-         onClick:`showDrugDetail('${nm.replace(/'/g,"\\'")}')`}
+         onClick:`showDrugDetail('${s.name.replace(/'/g,"\\'")}')`}
       : {name:nm,qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
   };
 
