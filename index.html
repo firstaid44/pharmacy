@@ -751,6 +751,18 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   background:repeating-linear-gradient(135deg,#F6F5F0,#F6F5F0 6px,#F1F0E9 6px,#F1F0E9 12px);
   box-shadow:inset 0 2px 5px rgba(120,110,80,.12);opacity:.85;
 }
+/* เตือนคงเหลือต่ำกว่าจุดสั่งซื้อ */
+.cab-slot.low{box-shadow:0 0 0 2px #D93025, 0 3px 6px -1px rgba(217,48,37,.35) !important;}
+.cab-low-badge{
+  position:absolute;top:-6px;right:-6px;z-index:5;
+  width:19px;height:19px;border-radius:50%;
+  background:#D93025;color:#fff;font-size:12px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 5px rgba(217,48,37,.5);border:1.5px solid #fff;
+  animation:lowPulse 1.6s ease-in-out infinite;
+}
+@keyframes lowPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.cab-shelf-grid.horiz .cab-low-badge{top:-5px;right:-3px;width:17px;height:17px;font-size:11px;}
 .cab-slot.empty:hover{transform:none;box-shadow:inset 0 2px 5px rgba(120,110,80,.12);}
 
 .cab-slot-name{
@@ -1986,7 +1998,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.10.16.20</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.12.09.13</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2729,6 +2741,26 @@ const _ncdNorm=s=>String(s||'').replace(/\s+/g,'').toLowerCase(); // ตัด�
 // คีย์เทียบชื่อยาแบบทนทาน: ตัดช่องว่าง/วงเล็บ/จุด/ขีด/ทับ + ไม่สนตัวพิมพ์
 // ใช้จับคู่ชื่อยาในชั้นวาง กับชื่อที่บันทึกไว้ในคลัง (อาจพิมพ์ต่างกันเล็กน้อย)
 const _drugKey=s=>String(s||'').toLowerCase().replace(/[\s().,\-/*]+/g,'');
+
+// ══ จุดสั่งซื้อ (reorder point) — เตือนเมื่อคงเหลือ ≤ ค่านี้ ═══════════
+// key = รหัสยา, value = จำนวนขั้นต่ำ (หน่วยบรรจุใหญ่ เช่น กล่อง/ลัง)
+const REORDER_POINTS={"1000016":1, "1000122":3, "1000184":7, "1019001":4, "110104480112":1, "1419041":1, "1440105":3, "1460151":2, "1500016":1, "1530008":2, "1ALB":1, "1AMIT":1, "1AMO":1, "1AMX":1, "1BUF":1, "1CAL":2, "1CET":1, "1DCL":1, "1DEXT":1, "1DIC":1, "1DIM":1, "1DOM":1, "1FBC":4, "1GABA":1, "1HOC":1, "1LST2":2, "1MET":1, "1MTV":1, "1NAPRO":1, "1NOC":1, "1OME":1, "1ORS":1, "1PARA325":1, "1STC":1, "1TFD":3, "1VIB":1, "1VIC":1, "2DOMP":1, "2MCAR":1, "2MILK":1, "2MTUS":1, "2MTVS":1, "2ORS":1, "2SOAT":1, "3ALB":1, "3ALM":10, "3AMI":1, "3ANAL":1, "3AOM":1, "3CALA":10, "3DCL":1, "3HYO":1, "3SIM":1, "3TRIA002":12, "3TRIA01":12, "4BEN":1, "4CET":1, "4CRP":10, "4CTC":12, "4GEN":10, "4HSC2":1, "4OPA":10, "4POV":10, "4SLV":10, "4TRI":1, "5ACH":1, "5COL":2, "5CPM":1, "5HCT":1, "5NOL":1, "5PNL":1, "6CPM":1, "ACV CREAM":1, "ATO":1, "BET-1N":12, "BET-SA":12, "Beta":1, "BRO TAB":1, "BROM2":1, "CAP RED":1, "CAR":1, "Carve":1, "CEP SYR":1, "CHL":10, "DP CRP":1, "FER":30, "FERDEK Syrub":30, "FLU20":1, "HY251":1, "HYZ":1, "ISO":1, "LORA":1, "MNDP":1, "NI20":1, "NORET5MG":1, "PIO1":1, "POLY E":1, "SIM3":2, "TOL50":1, "TRIAM LO1":1, "1AMY":1, "1PTL":1, "1SENN":1, "1VAN":1, "3PET":1, "410000000239140020182750":1, "4.1003E+18":1, "4.101E+18":1, "4.2002E+18":1, "4.2003E+18":1, "HERB1":1, "HERB2":1, "SHT1":1, "6014":1, "6023":1, "6024":1, "6028":1, "6033":1, "FURO":1, "2SALB":1, "DEX50":1};
+// map ชื่อยา(normalize) → ค่าจุดสั่งซื้อ (เผื่อจับคู่ด้วยชื่อ)
+const _reorderByName={};
+(function(){
+  drugDB.forEach(d=>{ if(REORDER_POINTS[d[0]]!=null) _reorderByName[_drugKey(d[1])]=REORDER_POINTS[d[0]]; });
+})();
+// คืนค่าจุดสั่งซื้อของยา (หาโดยรหัสก่อน แล้วชื่อ) · ไม่มี = null
+function getReorderPoint(code,name){
+  if(code!=null&&REORDER_POINTS[code]!=null)return REORDER_POINTS[code];
+  if(name){const k=_drugKey(name); if(_reorderByName[k]!=null)return _reorderByName[k];}
+  return null;
+}
+// ยานี้ต่ำกว่าจุดสั่งซื้อไหม (qty = คงเหลือหน่วยใหญ่)
+function isLowStock(qty,code,name){
+  const rp=getReorderPoint(code,name);
+  return rp!=null && qty<=rp;
+}
 const NCD_CABINET_CODES=new Set(_ncdRaw.map(_ncdNorm));
 function _isNCDDrug(item){
   return NCD_CABINET_CODES.has(_ncdNorm(item.code));
@@ -3052,17 +3084,20 @@ function renderSummaryTable(items){
       const g=i._grp;
       const grpLabel=g==='red'?'🔴 <6เดือน':g==='yellow'?'🟡 6-12เดือน':'🟢 >12เดือน';
       const sn=i.name.replace(/'/g,"\\'");
+      const low=isLowStock(i.qty,i.code,i.name);
+      const rp=getReorderPoint(i.code,i.name);
       return `<div class="stk-row" onclick="showDrugDetail('${sn}')">
         <div class="stk-strip ${g}"></div>
         <div class="stk-body">
-          <div class="stk-name">${i.name}</div>
+          <div class="stk-name">${low?'<span title="ต่ำกว่าจุดสั่งซื้อ (≤'+rp+')" style="color:#D93025;">⚠️</span> ':''}${i.name}</div>
           <div class="stk-meta">
             <span class="stk-dot ${g}">${grpLabel}</span>
             <span>EXP ${fmtExp(i.exp)}</span>
+            ${low?'<span style="color:#D93025;font-weight:800;">🔻 ใกล้หมด (จุดสั่ง ≤'+rp+')</span>':''}
           </div>
         </div>
         <div class="stk-right">
-          <div class="stk-qty ${g}">${Math.round(i.qty)}</div>
+          <div class="stk-qty ${g}" style="${low?'color:#D93025;':''}">${Math.round(i.qty)}</div>
           <div class="stk-unit">${i.unit||''}</div>
         </div>
       </div>`;
@@ -3132,9 +3167,9 @@ function renderPCURack(){
     const nm=d?d[1]:code;
     const s=map[nm]||stockByKey[_drugKey(nm)];
     return s
-      ? {name:nm,qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
+      ? {name:nm,code:(d?d[0]:code),qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
          onClick:`showDrugDetail('${s.name.replace(/'/g,"\\'")}')`}
-      : {name:nm,qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
+      : {name:nm,code:(d?d[0]:code),qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
   };
 
   body.innerHTML=PCU_CABINETS.map(cab=>{
@@ -3185,7 +3220,10 @@ function _buildCabinetHTML(items,opts){
       const g=grpOf(it);
       const qty=it.inStock&&it.qty>0?Math.round(it.qty):'0';
       const click=(it.inStock&&it.onClick)?`onclick="${it.onClick}"`:'';
-      return `<div class="cab-slot ${g}" ${click} title="${it.name.replace(/"/g,'&quot;')}${it.inStock?' · คงเหลือ '+qty+' '+(it.unit||''):' · ไม่มีในคลัง'}">
+      const low=it.inStock&&isLowStock(it.qty,it.code,it.name);
+      const rp=low?getReorderPoint(it.code,it.name):null;
+      return `<div class="cab-slot ${g}${low?' low':''}" ${click} title="${it.name.replace(/"/g,'&quot;')}${it.inStock?' · คงเหลือ '+qty+' '+(it.unit||''):' · ไม่มีในคลัง'}${low?' · ⚠️ ต่ำกว่าจุดสั่งซื้อ (≤'+rp+')':''}">
+        ${low?'<span class="cab-low-badge" title="ใกล้หมด ≤'+rp+'">!</span>':''}
         <div class="cab-slot-name">${it.name}</div>
         <div class="cab-slot-foot">
           <span class="cab-slot-qty ${g}">${qty}</span>
@@ -3244,9 +3282,9 @@ function renderNCDCabinet(){
     const nm=d?d[1]:code;
     const s=map[nm]||stockByKey[_drugKey(nm)];
     return s
-      ? {name:nm,qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
+      ? {name:nm,code:(d?d[0]:code),qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
          onClick:`showDrugDetail('${s.name.replace(/'/g,"\\'")}')`}
-      : {name:nm,qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
+      : {name:nm,code:(d?d[0]:code),qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
   };
 
   const shelfArrays=NCD_SHELF_LAYOUT.map(codes=>codes.map(mkItem));
