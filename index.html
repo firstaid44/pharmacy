@@ -1998,7 +1998,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.12.09.13</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.10.18</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2916,9 +2916,17 @@ async function loadStock(){
     renderSummaryTable(_allStockItems);renderExpiringList();renderExpiryDashboard();
 
     // ── ยาหมดคลัง: เทียบฐานข้อมูล drugDB กับยาที่มีคงเหลือ > 0 ──
+    //    จับคู่ด้วย "รหัสยา" ก่อน (แม่นสุด) แล้วค่อยชื่อ — กันกรณีชื่อในคลังพิมพ์ต่างจากฐานข้อมูล
     const inStockNames=new Set(_allStockItems.map(i=>i.name));
+    const inStockCodes=new Set(_allStockItems.map(i=>_ncdNorm(i.code)).filter(Boolean));
+    const inStockKeys=new Set(_allStockItems.map(i=>_drugKey(i.name)));
     const outOfStockDrugs=drugDB
-      .filter(d=>!inStockNames.has(d[1]))
+      .filter(d=>{
+        if(inStockCodes.has(_ncdNorm(d[0])))return false; // รหัสตรง = มีในคลัง
+        if(inStockNames.has(d[1]))return false;           // ชื่อตรงเป๊ะ
+        if(inStockKeys.has(_drugKey(d[1])))return false;  // ชื่อ normalize ตรง
+        return true;
+      })
       .map(d=>({code:d[0],name:d[1],unitPack:d[2]||'',unitSub:d[3]||'',type:d[4]||''}));
     window._outOfStockDrugs=outOfStockDrugs;
     const stOut=document.getElementById('st-outstock');
@@ -3161,11 +3169,20 @@ function renderPCURack(){
   // index ชื่อยาในคลังแบบ normalize (กันชื่อพิมพ์ต่างกันเล็กน้อย เช่น วงเล็บ/ช่องว่างเกิน)
   const stockByKey={};
   Object.values(map).forEach(s=>{stockByKey[_drugKey(s.name)]=s;});
+  // index คงเหลือด้วย "รหัสยา" (แม่นกว่าชื่อ — กันชื่อในคลังพิมพ์ต่างจากฐานข้อมูล เช่น FURO)
+  const stockByCode={};
+  _allStockItems.forEach(i=>{
+    const ck=_ncdNorm(i.code); if(!ck)return;
+    if(!stockByCode[ck])stockByCode[ck]={name:i.name,qty:0,unit:i.unit,exp:i.exp};
+    stockByCode[ck].qty+=i.qty;
+    const cur=parseExpDate(stockByCode[ck].exp),nw=parseExpDate(i.exp);
+    if(nw&&(!cur||nw<cur))stockByCode[ck].exp=i.exp;
+  });
 
   const mkItem=code=>{
     const d=byCode[_ncdNorm(code)];
     const nm=d?d[1]:code;
-    const s=map[nm]||stockByKey[_drugKey(nm)];
+    const s=stockByCode[_ncdNorm(code)]||map[nm]||stockByKey[_drugKey(nm)]; // รหัสก่อน แล้วชื่อ
     return s
       ? {name:nm,code:(d?d[0]:code),qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
          onClick:`showDrugDetail('${s.name.replace(/'/g,"\\'")}')`}
@@ -3276,11 +3293,20 @@ function renderNCDCabinet(){
   // index ชื่อยาในคลังแบบ normalize (กันชื่อพิมพ์ต่างกันเล็กน้อย เช่น วงเล็บ/ช่องว่างเกิน)
   const stockByKey={};
   Object.values(map).forEach(s=>{stockByKey[_drugKey(s.name)]=s;});
+  // index คงเหลือด้วย "รหัสยา" (แม่นกว่าชื่อ — กันชื่อในคลังพิมพ์ต่างจากฐานข้อมูล เช่น FURO)
+  const stockByCode={};
+  _allStockItems.forEach(i=>{
+    const ck=_ncdNorm(i.code); if(!ck)return;
+    if(!stockByCode[ck])stockByCode[ck]={name:i.name,qty:0,unit:i.unit,exp:i.exp};
+    stockByCode[ck].qty+=i.qty;
+    const cur=parseExpDate(stockByCode[ck].exp),nw=parseExpDate(i.exp);
+    if(nw&&(!cur||nw<cur))stockByCode[ck].exp=i.exp;
+  });
 
   const mkItem=code=>{
     const d=byCode[_ncdNorm(code)];
     const nm=d?d[1]:code;
-    const s=map[nm]||stockByKey[_drugKey(nm)];
+    const s=stockByCode[_ncdNorm(code)]||map[nm]||stockByKey[_drugKey(nm)]; // รหัสก่อน แล้วชื่อ
     return s
       ? {name:nm,code:(d?d[0]:code),qty:s.qty,unit:s.unit,exp:s.exp,inStock:true,
          onClick:`showDrugDetail('${s.name.replace(/'/g,"\\'")}')`}
