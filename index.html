@@ -2005,7 +2005,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.20.15</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.22.30</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2110,10 +2110,10 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         </div>
         <div class="form-group"><label class="form-label">วันหมดอายุ <span class="req">*</span></label><input class="form-input" id="r-exp" type="date"/></div>
         <div class="form-row">
+          <div class="form-group"><label class="form-label">จำนวน <span class="req">*</span></label><input class="form-input" id="r-qty" type="number" min="1" placeholder="0" inputmode="numeric" pattern="[0-9]*" style="font-family:'IBM Plex Mono',monospace;"/></div>
           <div class="form-group"><label class="form-label">หน่วยนับ</label>
             <select class="form-input" id="r-unit"><option>เม็ด</option><option>แคปซูล</option><option>ขวด</option><option>หลอด</option><option>ซอง</option><option>กล่อง</option><option>แพ็ค</option><option>ลัง</option><option>อัน</option><option>ชิ้น</option><option>หน่วย</option></select>
           </div>
-          <div class="form-group"><label class="form-label">จำนวน <span class="req">*</span></label><input class="form-input" id="r-qty" type="number" min="1" placeholder="0" inputmode="numeric" pattern="[0-9]*" style="font-family:'IBM Plex Mono',monospace;"/></div>
         </div>
         <div class="form-group"><label class="form-label">หมายเหตุ</label><textarea class="form-input" id="r-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
         <div class="btn-row">
@@ -2199,6 +2199,10 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         </div>
 
         <div class="form-row">
+          <div class="form-group"><label class="form-label">จำนวนเบิก <span class="req">*</span></label>
+            <select class="form-input" id="d-qty" style="font-family:'IBM Plex Mono',monospace;"><option value="">— เลือก —</option></select>
+            <div id="d-stock-info" class="d-stock-info"></div>
+          </div>
           <div class="form-group"><label class="form-label">หน่วยนับ</label>
             <select class="form-input" id="d-unit">
               <option>เม็ด</option><option>แคปซูล</option><option>ขวด</option>
@@ -2206,10 +2210,6 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
               <option>แพ็ค</option><option>ลัง</option>
               <option>อัน</option><option>ชิ้น</option><option>หน่วย</option>
             </select>
-          </div>
-          <div class="form-group"><label class="form-label">จำนวนเบิก <span class="req">*</span></label>
-            <select class="form-input" id="d-qty" style="font-family:'IBM Plex Mono',monospace;"><option value="">— เลือก —</option></select>
-            <div id="d-stock-info" class="d-stock-info"></div>
           </div>
         </div>
         <div class="form-group"><label class="form-label">ชื่อผู้เบิก <span class="req">*</span></label>
@@ -3559,7 +3559,12 @@ function showDrugDetail(name){
   const totalDis=dispenseRows.filter(d=>d.name===name).reduce((s,d)=>s+(parseFloat(d.qty)||0),0);
   const left=Math.max(0,Math.round(totalRec-totalDis));
   const lotMap={};
-  rLots.forEach(r=>{if(!lotMap[r.lot])lotMap[r.lot]={lot:r.lot,exp:r.exp,group:r.group||'',received:0,dispensed:0,unit:r.unit};lotMap[r.lot].received+=parseFloat(r.qty)||0;});
+  rLots.forEach(r=>{
+    if(!lotMap[r.lot])lotMap[r.lot]={lot:r.lot,exp:r.exp,group:r.group||'',received:0,dispensed:0,unit:r.unit,recvDate:''};
+    lotMap[r.lot].received+=parseFloat(r.qty)||0;
+    const rd=parseExpDate(fmtDate(r.date)),cur=parseExpDate(fmtDate(lotMap[r.lot].recvDate));
+    if(rd&&(!cur||rd>cur))lotMap[r.lot].recvDate=r.date;
+  });
   dispenseRows.filter(d=>d.name===name).forEach(d=>{if(lotMap[d.lot])lotMap[d.lot].dispensed+=parseFloat(d.qty)||0;});
   const lotItems=Object.values(lotMap).sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
   const code=rLots[0].code||'',unit=rLots[0].unit||'';
@@ -3611,7 +3616,7 @@ function showDrugDetail(name){
   <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">รายละเอียดแต่ละ LOT</div>
   <table class="drug-lot-table">
     <thead><tr>
-      <th>LOT</th><th>EXP</th>
+      <th>LOT</th><th style="white-space:nowrap;">วันที่รับ</th><th>EXP</th>
       <th style="text-align:right;">รับ</th>
       <th style="text-align:right;color:var(--red);">เบิก</th>
       <th style="text-align:right;">คงเหลือ</th>
@@ -3626,6 +3631,7 @@ function showDrugDetail(name){
       const lcl=lR?'exp-warn':lY?'exp-caution':'';
       return `<tr class="${lcl}">
         <td style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text2);">${l.lot}</td>
+        <td style="font-size:11px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;color:var(--text3);">${l.recvDate?fmtDate(l.recvDate):'—'}</td>
         <td style="font-size:11px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;color:${lc};font-weight:600;">${fmtExp(l.exp)}</td>
         <td style="text-align:right;font-size:12px;color:var(--text2);">${Math.round(l.received)}</td>
         <td style="text-align:right;font-size:12px;color:var(--red);font-weight:600;">${Math.round(l.dispensed)||'0'}</td>
