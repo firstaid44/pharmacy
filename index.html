@@ -1012,16 +1012,17 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .ls-info-card{
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;padding:11px 8px;
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  text-align:center;
+  border-radius:16px;padding:17px 8px 15px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  text-align:center;cursor:pointer;position:relative;
   backdrop-filter:blur(10px);
-  transition:background .15s;
+  transition:background .15s,transform .12s,border-color .15s;
 }
-.ls-info-card:active{background:rgba(255,255,255,.1);}
-.ls-info-icon{font-size:18px;line-height:1;}
-.ls-info-val{font-size:18px;font-weight:800;color:#fff;font-family:'IBM Plex Mono',monospace;line-height:1;}
-.ls-info-lbl{font-size:9.5px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.6px;line-height:1.2;}
+.ls-info-card:active{background:rgba(255,255,255,.14);transform:scale(.96);border-color:rgba(255,255,255,.25);}
+.ls-info-card::after{content:'ดูรายละเอียด ›';position:absolute;bottom:5px;left:0;right:0;font-size:8px;color:rgba(255,255,255,.28);letter-spacing:.3px;}
+.ls-info-icon{font-size:25px;line-height:1;}
+.ls-info-val{font-size:27px;font-weight:800;color:#fff;font-family:'IBM Plex Mono',monospace;line-height:1;}
+.ls-info-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.4px;line-height:1.25;}
 
 /* ── DROPDOWN USER SELECT ── */
 .ls-select-wrap{
@@ -1533,9 +1534,9 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
 
       <!-- Analog Clock -->
       <div class="ls-center-logo">
-        <div id="ls-clock-wrap" style="position:relative;width:200px;height:200px;margin-bottom:1rem;animation:logoPop .6s cubic-bezier(.34,1.6,.64,1) both;">
+        <div id="ls-clock-wrap" style="position:relative;width:132px;height:132px;margin-bottom:.55rem;animation:logoPop .6s cubic-bezier(.34,1.6,.64,1) both;">
           <!-- SVG clock -->
-          <svg id="ls-clock-svg" viewBox="0 0 200 200" width="200" height="200" style="position:absolute;inset:0;">
+          <svg id="ls-clock-svg" viewBox="0 0 200 200" width="132" height="132" style="position:absolute;inset:0;">
             <defs>
               <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="#A855F7"/>
@@ -1568,7 +1569,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         </div>
         <!-- Digital time below clock -->
         <div style="text-align:center;animation:infoIn .5s .3s both;">
-          <div id="ls-digital-time" style="font-size:44px;font-weight:300;color:#fff;letter-spacing:-1px;font-family:'IBM Plex Mono',monospace;line-height:1;">
+          <div id="ls-digital-time" style="font-size:34px;font-weight:300;color:#fff;letter-spacing:-1px;font-family:'IBM Plex Mono',monospace;line-height:1;">
             <span id="ls-dtime-h">00</span><span style="opacity:.6;animation:blink 1s step-end infinite;">.</span><span id="ls-dtime-m">00</span>
             <span id="ls-dtime-ampm" style="font-size:16px;font-weight:500;color:rgba(255,255,255,.5);margin-left:4px;vertical-align:middle;letter-spacing:.5px;">AM</span>
           </div>
@@ -1582,19 +1583,19 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         <div class="ls-sub">PCU สะบ้าย้อย</div>
       </div>
 
-      <!-- Info cards row — live stats -->
+      <!-- Info cards row — live stats (กดดูรายละเอียดได้) -->
       <div class="ls-info-row" id="ls-info-row">
-        <div class="ls-info-card">
+        <div class="ls-info-card" onclick="loginCardClick('drugs')">
           <div class="ls-info-icon">💊</div>
           <div class="ls-info-val" id="ls-stat-drugs">—</div>
           <div class="ls-info-lbl">รายการยา</div>
         </div>
-        <div class="ls-info-card">
-          <div class="ls-info-icon">📦</div>
-          <div class="ls-info-val" id="ls-stat-recv">—</div>
-          <div class="ls-info-lbl">รับเข้าวันนี้</div>
+        <div class="ls-info-card" onclick="loginCardClick('low')">
+          <div class="ls-info-icon">📉</div>
+          <div class="ls-info-val" id="ls-stat-low" style="color:#FBBF24;">—</div>
+          <div class="ls-info-lbl">ต่ำกว่า Min</div>
         </div>
-        <div class="ls-info-card">
+        <div class="ls-info-card" onclick="loginCardClick('exp')">
           <div class="ls-info-icon">⚠️</div>
           <div class="ls-info-val" id="ls-stat-exp" style="color:#F87171;">—</div>
           <div class="ls-info-lbl">ใกล้หมดอายุ</div>
@@ -1998,7 +1999,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.10.18</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.10.44</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3531,6 +3532,9 @@ function showDrugDetail(name){
   window._currentDrugDetail=name; // เก็บไว้ใช้ปุ่ม "เพิ่มเข้าใบเบิกยา"
   const modal=document.getElementById('drug-detail-modal'),el=document.getElementById('drug-detail-content');
   if(!modal||!el)return;
+  // รีเซ็ตปุ่มล่างให้กลับเป็นค่าเริ่มต้น (กันสถานะค้างจาก modal ใกล้หมดอายุ/ต่ำกว่า Min)
+  const _addBtn=document.getElementById('drug-req-add-btn');
+  if(_addBtn){_addBtn.style.display='';_addBtn.textContent='＋ เพิ่มเข้าใบเบิกยา';_addBtn.onclick=()=>addDrugToReqFromDetail();}
   const rLots=receiveRows.filter(r=>r.name===name);
   if(!rLots.length){el.innerHTML='<div class="empty">ไม่พบข้อมูลยานี้</div>';modal.classList.add('open');return;}
   const totalRec=rLots.reduce((s,r)=>s+(parseFloat(r.qty)||0),0);
@@ -6619,14 +6623,31 @@ function clearDispenseDateFilter(){
       if(rr&&rr.status==='ok'){
         const names=new Set((rr.rows||[]).map(r=>r.name));
         const dEl=document.getElementById('ls-stat-drugs');if(dEl)dEl.textContent=names.size;
-        const todayStr=todayTH();
-        const todayCnt=(rr.rows||[]).filter(r=>fmtDate(r.date)===todayStr).length;
-        const rEl=document.getElementById('ls-stat-recv');if(rEl)rEl.textContent=todayCnt;
         if(dr&&dr.status==='ok'){
-          const sm={};
-          (rr.rows||[]).forEach(r=>{const k=r.name+'|'+r.lot;if(!sm[k])sm[k]={qty:0,exp:r.exp};sm[k].qty+=parseFloat(r.qty)||0;});
-          (dr.rows||[]).forEach(d=>{const k=d.name+'|'+d.lot;if(sm[k])sm[k].qty-=parseFloat(d.qty)||0;});
+          const sm={},byName={};
+          (rr.rows||[]).forEach(r=>{
+            const k=r.name+'|'+r.lot;
+            if(!sm[k])sm[k]={qty:0,exp:r.exp};
+            sm[k].qty+=parseFloat(r.qty)||0;
+            if(!byName[r.name])byName[r.name]={name:r.name,code:r.code,qty:0};
+            byName[r.name].qty+=parseFloat(r.qty)||0;
+          });
+          (dr.rows||[]).forEach(d=>{
+            const k=d.name+'|'+d.lot;
+            if(sm[k])sm[k].qty-=parseFloat(d.qty)||0;
+            if(byName[d.name])byName[d.name].qty-=parseFloat(d.qty)||0;
+          });
           const now2=new Date();now2.setHours(0,0,0,0);
+          // (2) ยาต่ำกว่า Minimum — คงเหลือ < จุดสั่งซื้อ (เท่ากับ = ไม่นับ)
+          let lowCnt=0;
+          try{
+            lowCnt=Object.values(byName).filter(b=>{
+              const rp=getReorderPoint(b.code,b.name);
+              return rp!=null && b.qty<rp;
+            }).length;
+          }catch(e){}
+          const lEl=document.getElementById('ls-stat-low');if(lEl)lEl.textContent=lowCnt;
+          // (3) ยาใกล้หมดอายุ < 6 เดือน
           const ec=Object.values(sm).filter(s=>{if(s.qty<=0)return false;const ed=parseExpDate(fmtExp(s.exp));return ed&&(ed-now2)/(1000*60*60*24*30.4)<=6;}).length;
           const eEl=document.getElementById('ls-stat-exp');if(eEl)eEl.textContent=ec;
         }
@@ -7032,6 +7053,138 @@ function showTodayDetail(mode){
 
 // ══ EXPIRING DETAIL MODAL ════════════════════════════════════
 // ══ EXPIRING DETAIL MODAL ════════════════════════════════════
+// ══ กดกล่องสถิติหน้า Login → โหลดคลังแล้วเปิดรายละเอียด ═══════════
+async function loginCardClick(which){
+  const open=()=>{
+    if(which==='low')showLowStockDetail();
+    else if(which==='exp')showExpiringDetail();
+    else showAllDrugsFromLogin();
+  };
+  if(!_allStockItems.length){
+    const idMap={drugs:'ls-stat-drugs',low:'ls-stat-low',exp:'ls-stat-exp'};
+    const el=document.getElementById(idMap[which]);const old=el?el.textContent:'';
+    if(el)el.textContent='…';
+    try{await loadStock();}catch(e){}
+    if(el&&el.textContent==='…')el.textContent=old;
+  }
+  open();
+}
+
+// ══ MODAL: ยาต่ำกว่าจุดสั่งซื้อ (คงเหลือ < reorder point) ═════════
+function showLowStockDetail(){
+  if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
+  const nm={};
+  _allStockItems.forEach(i=>{
+    if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,group:i.group||'',exp:'',earliestExp:null};
+    nm[i.name].qty+=i.qty;
+    const ed=parseExpDate(i.exp);
+    if(ed&&(!nm[i.name].earliestExp||ed<nm[i.name].earliestExp)){nm[i.name].earliestExp=ed;nm[i.name].exp=i.exp;}
+    if(i.group)nm[i.name].group=i.group;
+  });
+  const lowList=Object.values(nm).map(i=>{i._rp=getReorderPoint(i.code,i.name);return i;})
+    .filter(i=>i._rp!=null && i.qty<i._rp)
+    .sort((a,b)=>(a.qty/Math.max(a._rp,1))-(b.qty/Math.max(b._rp,1)));
+  window._lowListCache=lowList;
+
+  const modal=document.getElementById('drug-detail-modal');
+  const el=document.getElementById('drug-detail-content');
+  if(!modal||!el)return;
+
+  el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#B45309,#D97706);border-radius:14px;padding:14px 16px;margin-bottom:12px;color:#fff;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:26px;flex-shrink:0;">📉</div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;">ยาคงเหลือต่ำกว่าจุดสั่งซื้อ</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px;">คงเหลือน้อยกว่าจุดสั่งซื้อ · พบ ${lowList.length} รายการ</div>
+      </div>
+      ${lowList.length?`<button onclick="addAllLowStock()" style="padding:7px 12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.18);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;">＋ ทั้งหมด</button>`:''}
+    </div>
+    ${lowList.length?`
+    <table class="sum-table">
+      <thead><tr>
+        <th>ชื่อยา</th>
+        <th style="text-align:right;white-space:nowrap;">คงเหลือ</th>
+        <th style="text-align:right;white-space:nowrap;">จุดสั่งซื้อ</th>
+        <th style="width:60px;"></th>
+      </tr></thead>
+      <tbody>${lowList.map((i,idx)=>{
+        const sn=i.name.replace(/'/g,"\\'");
+        const c=i.qty===0?'var(--red)':'var(--amber)';
+        const outTag=i.qty===0?' · <span style="color:var(--red);font-weight:700;">หมดคลัง</span>':'';
+        return `<tr class="exp-caution" id="lowrow-${idx}">
+          <td onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),200)" style="cursor:pointer;">
+            <div class="sum-name" style="font-size:12px;">${i.name}</div>
+            <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">${i.code||'—'}${outTag}</div>
+          </td>
+          <td style="text-align:right;"><div class="sum-qty" style="color:${c};font-size:16px;">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td>
+          <td style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:var(--text2);">${i._rp}</td>
+          <td><button onclick="addSingleLowStock(${idx})" style="padding:5px 8px;border-radius:8px;border:1.5px solid rgba(26,95,212,.25);background:var(--blue-l);color:var(--blue);font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;display:block;width:100%;">＋ เบิก</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`
+    :'<div style="text-align:center;padding:2.2rem 1rem;color:var(--teal);font-weight:600;">✓ ไม่มียาต่ำกว่าจุดสั่งซื้อ</div>'}`;
+
+  const addBtn=document.getElementById('drug-req-add-btn');
+  if(addBtn){
+    if(lowList.length){addBtn.style.display='';addBtn.textContent='＋ เพิ่มทั้งหมดเข้าใบเบิก';addBtn.onclick=()=>addAllLowStock();}
+    else{addBtn.style.display='none';}
+  }
+  modal.classList.add('open');
+}
+function addSingleLowStock(idx){
+  const list=window._lowListCache;if(!list||!list[idx])return;
+  const i=list[idx];const g=(i.group||'').trim();
+  const grp=(g==='สีแดง'||g==='แดง')?'red':(g==='สีเหลือง'||g==='เหลือง')?'yellow':'green';
+  addToCart(i.name,i.code,i.unit,Math.round(i.qty),i.exp,grp,1);
+  const row=document.getElementById('lowrow-'+idx);
+  if(row){const b=row.querySelector('button');if(b){b.textContent='✓ เพิ่มแล้ว';b.style.background='var(--green-l)';b.style.borderColor='rgba(30,138,74,.3)';b.style.color='var(--green)';}}
+}
+function addAllLowStock(){
+  const list=window._lowListCache;if(!list||!list.length){showAlert('ไม่มีรายการยา','warning');return;}
+  list.forEach((i,idx)=>{
+    const g=(i.group||'').trim();
+    const grp=(g==='สีแดง'||g==='แดง')?'red':(g==='สีเหลือง'||g==='เหลือง')?'yellow':'green';
+    addToCart(i.name,i.code,i.unit,Math.round(i.qty),i.exp,grp,1);
+    const row=document.getElementById('lowrow-'+idx);
+    if(row){const b=row.querySelector('button');if(b){b.textContent='✓ เพิ่มแล้ว';b.style.background='var(--green-l)';b.style.borderColor='rgba(30,138,74,.3)';b.style.color='var(--green)';}}
+  });
+  showAlert('เพิ่มยาต่ำกว่าจุดสั่งซื้อ '+list.length+' รายการเข้าใบเบิกแล้ว ✓','success');
+  setTimeout(()=>{document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>openCartModal(),200);},800);
+}
+
+// ══ MODAL: รายการยาทั้งหมด (กดจากกล่อง "รายการยา") ══════════════
+function showAllDrugsFromLogin(){
+  if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
+  const nm={};
+  _allStockItems.forEach(i=>{if(!nm[i.name])nm[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0};nm[i.name].qty+=i.qty;});
+  const list=Object.values(nm).sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  const modal=document.getElementById('drug-detail-modal');
+  const el=document.getElementById('drug-detail-content');
+  if(!modal||!el)return;
+  el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#1C6B45,#2D8A5A);border-radius:14px;padding:14px 16px;margin-bottom:12px;color:#fff;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:26px;flex-shrink:0;">💊</div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;">รายการยาทั้งหมดในคลัง</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px;">มียาคงเหลือ ${list.length} รายการ · แตะเพื่อดูรายละเอียด</div>
+      </div>
+    </div>
+    <table class="sum-table">
+      <thead><tr><th>ชื่อยา</th><th style="text-align:right;white-space:nowrap;">คงเหลือ</th></tr></thead>
+      <tbody>${list.map(i=>{
+        const sn=i.name.replace(/'/g,"\\'");
+        return `<tr onclick="document.getElementById('drug-detail-modal').classList.remove('open');setTimeout(()=>showDrugDetail('${sn}'),200)" style="cursor:pointer;">
+          <td><div class="sum-name" style="font-size:12px;">${i.name}</div>
+              <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">${i.code||'—'}</div></td>
+          <td style="text-align:right;"><div class="sum-qty" style="font-size:16px;">${Math.round(i.qty)}</div><div class="sum-unit">${i.unit}</div></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  const addBtn=document.getElementById('drug-req-add-btn');
+  if(addBtn)addBtn.style.display='none';
+  modal.classList.add('open');
+}
+
 function showExpiringDetail(){
   if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
   const nm={};
