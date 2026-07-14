@@ -2005,7 +2005,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.22.37</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.22.43</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2778,7 +2778,7 @@ function getReorderPoint(code,name){
 // ยานี้ต่ำกว่าจุดสั่งซื้อไหม (qty = คงเหลือหน่วยใหญ่)
 function isLowStock(qty,code,name){
   const rp=getReorderPoint(code,name);
-  return rp!=null && qty<=rp;
+  return rp!=null && qty<rp;   // แสดงสัญลักษณ์เมื่อคงเหลือ "น้อยกว่า" จุดสั่งซื้อ (เท่ากับ = ไม่แสดง)
 }
 const NCD_CABINET_CODES=new Set(_ncdRaw.map(_ncdNorm));
 function _isNCDDrug(item){
@@ -3256,7 +3256,7 @@ function _buildCabinetHTML(items,opts){
       const g=grpOf(it);
       const qty=it.inStock&&it.qty>0?Math.round(it.qty):'0';
       const click=(it.inStock&&it.onClick)?`onclick="${it.onClick}"`:'';
-      const low=isLowStock(it.qty,it.code,it.name); // แสดง ! เมื่อคงเหลือ ≤ จุดสั่งซื้อ (รวมหมดคลัง=0)
+      const low=isLowStock(it.qty,it.code,it.name); // แสดง ! เมื่อคงเหลือ < จุดสั่งซื้อ (รวมหมดคลัง=0, เท่ากับ=ไม่แสดง)
       const rp=low?getReorderPoint(it.code,it.name):null;
       const isOut=low&&(!it.inStock||it.qty<=0);
       return `<div class="cab-slot ${g}${low?' low':''}" ${click} title="${it.name.replace(/"/g,'&quot;')}${it.inStock?' · คงเหลือ '+qty+' '+(it.unit||''):' · ไม่มีในคลัง'}${low?' · ⚠️ '+(isOut?'หมดคลัง':'ต่ำกว่าจุดสั่งซื้อ')+' (จุดสั่งซื้อ ≤'+rp+')':''}">
