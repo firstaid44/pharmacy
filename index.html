@@ -2005,7 +2005,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.22.30</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.22.37</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3256,10 +3256,11 @@ function _buildCabinetHTML(items,opts){
       const g=grpOf(it);
       const qty=it.inStock&&it.qty>0?Math.round(it.qty):'0';
       const click=(it.inStock&&it.onClick)?`onclick="${it.onClick}"`:'';
-      const low=it.inStock&&isLowStock(it.qty,it.code,it.name);
+      const low=isLowStock(it.qty,it.code,it.name); // แสดง ! เมื่อคงเหลือ ≤ จุดสั่งซื้อ (รวมหมดคลัง=0)
       const rp=low?getReorderPoint(it.code,it.name):null;
-      return `<div class="cab-slot ${g}${low?' low':''}" ${click} title="${it.name.replace(/"/g,'&quot;')}${it.inStock?' · คงเหลือ '+qty+' '+(it.unit||''):' · ไม่มีในคลัง'}${low?' · ⚠️ ต่ำกว่าจุดสั่งซื้อ (≤'+rp+')':''}">
-        ${low?'<span class="cab-low-badge" title="ใกล้หมด ≤'+rp+'">!</span>':''}
+      const isOut=low&&(!it.inStock||it.qty<=0);
+      return `<div class="cab-slot ${g}${low?' low':''}" ${click} title="${it.name.replace(/"/g,'&quot;')}${it.inStock?' · คงเหลือ '+qty+' '+(it.unit||''):' · ไม่มีในคลัง'}${low?' · ⚠️ '+(isOut?'หมดคลัง':'ต่ำกว่าจุดสั่งซื้อ')+' (จุดสั่งซื้อ ≤'+rp+')':''}">
+        ${low?'<span class="cab-low-badge" title="'+(isOut?'หมดคลัง':'ใกล้หมด ≤'+rp)+'">!</span>':''}
         <div class="cab-slot-name">${it.name}</div>
         <div class="cab-slot-foot">
           <span class="cab-slot-qty ${g}">${qty}</span>
