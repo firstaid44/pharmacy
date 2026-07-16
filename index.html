@@ -737,6 +737,9 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   box-shadow:0 3px 6px -1px rgba(90,74,44,.2), inset 0 1px 0 rgba(255,255,255,.9);
 }
 .cab-slot:hover{transform:translateY(-2px);box-shadow:0 7px 14px -3px rgba(90,74,44,.32), inset 0 1px 0 rgba(255,255,255,.9);}
+.cab-slot.cab-blank{background:transparent;border:1.5px dashed #D9D2C2;border-left:1.5px dashed #D9D2C2;box-shadow:none;cursor:default;align-items:center;justify-content:center;min-height:52px;}
+.cab-slot.cab-blank:hover{transform:none;box-shadow:none;}
+.cab-slot.cab-blank::after{display:none;}
 .cab-slot:active{transform:scale(.96);}
 /* ไฮไลต์แสงบนหัวขวด */
 .cab-slot::after{
@@ -2005,7 +2008,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.14.23.00</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.16.15.46</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3253,6 +3256,7 @@ function _buildCabinetHTML(items,opts){
   const gridCls=o.horizontal?'cab-shelf-grid horiz':'cab-shelf-grid';
   const shelves=shelfArrays.map((slice,s)=>{
     const slots=slice.map(it=>{
+      if(it&&it._blank)return '<div class="cab-slot cab-blank" title="ช่องว่าง"><div class="cab-slot-name" style="color:#c9c1a8;font-style:italic;">— ว่าง —</div></div>';
       const g=grpOf(it);
       const qty=it.inStock&&it.qty>0?Math.round(it.qty):'0';
       const click=(it.inStock&&it.onClick)?`onclick="${it.onClick}"`:'';
@@ -3346,7 +3350,23 @@ function renderNCDCabinet(){
     ${_buildCabinetHTML(flat,{shelfArrays,horizontal:true})}`;
 }
 
-// ══ ชั้นวางยาคลังนอก — เรียง A→Z 4 ชั้น เหมือนชั้นวางยา NCD ═══════════════
+// ══ ผังชั้นวางยาคลังนอก (กำหนดเอง 12 ชั้น · '' = ช่องว่าง) ══════════════
+const OUTER_SHELF_LAYOUT=[
+  ['1ALB', '1AMO', '5CPM', '1DIC', '1DOM'],
+  ['1AMIT', 'Beta', 'DP CRP', '1DCL', 'FLU20'],
+  ['1AMX', 'BROM2', '1DEXT', '1DIM', '110104480112'],
+  ['Griss500', '1BUF', '1MET', '1NOC', '1ORS'],
+  ['HYZ', 'KTCNZ', '1MTV', 'NORET5MG', '2ORS'],
+  ['1HOC', 'LORA', '1NAPRO', '', ''],
+  ['1PARA325', '1STC', '1VIC', '6023', '6014'],
+  ['1CET', 'TOL50', '', '6024', '6028'],
+  ['PNSL', '1VIB', '', '6033', ''],
+  ['410000000239140020182750', '1AMY', 'HERB2', '', 'HERB1'],
+  ['4.2003E+18', '1VAN', '', '1SENN', '4.101E+18'],
+  ['4.2002E+18', '4.1003E+18', '', '', '']
+];
+
+// ══ ชั้นวางยาคลังนอก — ใช้ผัง OUTER_SHELF_LAYOUT (เรียงตามที่กำหนด) ══════════
 function renderOuterCabinet(outMapValues){
   const el=document.getElementById('outer-stock-list');
   if(!el)return;
@@ -3354,31 +3374,55 @@ function renderOuterCabinet(outMapValues){
   // รวมยาชื่อเดียวกัน (หลาย LOT) เป็นช่องเดียว · ใช้ EXP ที่ใกล้หมดอายุที่สุด
   const merged={};
   outMapValues.forEach(i=>{
-    if(!merged[i.name]){
-      merged[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,exp:i.exp,lots:0};
-    }
+    if(!merged[i.name]){merged[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0,exp:i.exp,lots:0};}
     const m=merged[i.name];
-    m.qty+=i.qty;
-    m.lots++;
+    m.qty+=i.qty; m.lots++;
     const cur=parseExpDate(m.exp),nw=parseExpDate(i.exp);
     if(nw&&(!cur||nw<cur))m.exp=i.exp;
   });
 
-  const items=Object.values(merged)
-    .sort((a,b)=>a.name.localeCompare(b.name,'th',{numeric:true,sensitivity:'base'}))
-    .map(i=>({name:i.name,qty:i.qty,unit:i.unit,exp:i.exp,inStock:i.qty>0}));
+  // lookup: รหัสยา + ชื่อยา(normalize)
+  const dbByCode={}; drugDB.forEach(d=>{dbByCode[_ncdNorm(d[0])]=d;});
+  const byNameKey={}, byCodeKey={};
+  Object.values(merged).forEach(s=>{byNameKey[_drugKey(s.name)]=s; if(s.code)byCodeKey[_ncdNorm(s.code)]=s;});
 
-  if(!items.length){
-    el.innerHTML='<div class="empty"><div class="empty-icon">📦</div>ไม่มียาในคลังยานอก</div>';
-    return;
+  const mkOuterItem=code=>{
+    if(!code)return {_blank:true};
+    const d=dbByCode[_ncdNorm(code)];
+    const s=byCodeKey[_ncdNorm(code)]||(d?byNameKey[_drugKey(d[1])]:null);
+    const nm=d?d[1]:(s?s.name:code);
+    return s
+      ? {name:nm,code:(d?d[0]:code),qty:s.qty,unit:s.unit,exp:s.exp,inStock:s.qty>0,
+         onClick:`showDrugDetail('${s.name.replace(/'/g,"\\'")}')`}
+      : {name:nm,code:(d?d[0]:code),qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
+  };
+
+  const shelfArrays=OUTER_SHELF_LAYOUT.map(shelf=>shelf.map(mkOuterItem));
+
+  // ยาในคลังนอกที่ไม่อยู่ในผัง → ต่อท้ายชั้นพิเศษ (กันตกหล่น)
+  const placedKeys=new Set();
+  OUTER_SHELF_LAYOUT.flat().forEach(code=>{
+    if(!code)return;
+    placedKeys.add(_ncdNorm(code));
+    const d=dbByCode[_ncdNorm(code)]; if(d)placedKeys.add(_drugKey(d[1]));
+  });
+  const extras=Object.values(merged).filter(s=>s.qty>0 &&
+    !placedKeys.has(_drugKey(s.name)) && !(s.code&&placedKeys.has(_ncdNorm(s.code))));
+  if(extras.length){
+    shelfArrays.push(extras.sort((a,b)=>a.name.localeCompare(b.name,'th',{numeric:true}))
+      .map(s=>({name:s.name,code:s.code,qty:s.qty,unit:s.unit,exp:s.exp,inStock:s.qty>0,
+        onClick:`showDrugDetail('${s.name.replace(/'/g,"\\'")}')`})));
   }
-  const totalQty=items.reduce((s,i)=>s+i.qty,0);
+
+  const placed=shelfArrays.flat().filter(x=>!x._blank);
+  const kinds=placed.filter(i=>i.inStock).length;
+  const totalQty=placed.reduce((s,i)=>s+(i.qty||0),0);
   el.innerHTML=`
     <div class="cab-topinfo">
-      <span>เรียงชื่อยา A→Z · 4 ชั้น</span>
-      <span><b>${items.length}</b> ชนิด · ${Math.round(totalQty).toLocaleString('th-TH')} หน่วย</span>
+      <span>ผังคลังยานอก · ${shelfArrays.length} ชั้น</span>
+      <span><b>${kinds}</b> ชนิดมีของ · ${Math.round(totalQty).toLocaleString('th-TH')} หน่วย</span>
     </div>
-    ${_buildCabinetHTML(items,{shelves:4,emptyText:'— ว่าง —'})}`;
+    ${_buildCabinetHTML([],{shelfArrays,emptyText:'— ว่าง —'})}`;
 }
 
 function setExpRange(btn,months){_expRangeMonths=months;document.querySelectorAll('.exp-range-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderExpiringList();}
