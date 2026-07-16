@@ -2008,7 +2008,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.16.20.24</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.16.20.44</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2364,6 +2364,14 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
           <div class="stat-value sv-red" id="out-expiring">—</div>
           <div style="font-size:9px;color:var(--red);opacity:.7;margin-top:4px;">≤ 6 เดือน</div>
         </div>
+      </div>
+
+      <!-- Dashboard ยาหมดอายุ 6 เดือน (คลังยานอกตรวจรักษา) -->
+      <div class="card" style="padding:1rem;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span class="section-title">📈 Dashboard ยาหมดอายุ 6 เดือนข้างหน้า</span>
+        </div>
+        <div id="outer-exp-dashboard"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
       </div>
 
       <!-- ยาใกล้หมดอายุ -->
@@ -3524,6 +3532,92 @@ function expDashSelect(k){
   _expDashSelMonth=(_expDashSelMonth===k)?null:k;
   renderExpiryDashboard();
 }
+
+// ══ EXPIRY DASHBOARD (คลังยานอกตรวจรักษา) — ข้อมูลจากชีต "คลังยานอก" ═══════
+let _outerExpDashSelMonth=null;
+function renderOuterExpiryDashboard(items){
+  const el=document.getElementById('outer-exp-dashboard');if(!el)return;
+  window._outerDashItems=items||[];
+  const now=new Date();now.setHours(0,0,0,0);
+  const buckets=[];
+  for(let k=0;k<6;k++){const d=new Date(now.getFullYear(),now.getMonth()+k,1);buckets.push({y:d.getFullYear(),m:d.getMonth(),label:_thMonthsAbbr[d.getMonth()],yr:(d.getFullYear()+543)%100,items:[]});}
+  const endDate=new Date(now.getFullYear(),now.getMonth()+6,1);
+  let expiredCount=0;
+  (items||[]).forEach(i=>{
+    const ed=parseExpDate(i.exp);
+    if(!ed)return;
+    if(ed<now){expiredCount++;return;}
+    if(ed>=endDate)return;
+    const b=buckets.find(b=>b.y===ed.getFullYear()&&b.m===ed.getMonth());
+    if(b)b.items.push({...i,_ed:ed});
+  });
+  buckets.forEach(b=>b.items.sort((a,x)=>a._ed-x._ed));
+  const total=buckets.reduce((s,b)=>s+b.items.length,0);
+  const maxCnt=Math.max(1,...buckets.map(b=>b.items.length));
+  const barColor=k=>k<=1?'var(--red)':k<=3?'var(--amber)':'var(--teal)';
+  const barBg=k=>k<=1?'var(--red-l)':k<=3?'var(--amber-l)':'var(--green-l)';
+
+  const CHART_H=110;
+  const chart=`<div style="display:flex;align-items:flex-end;gap:6px;height:${CHART_H+38}px;padding:6px 2px 0;">
+    ${buckets.map((b,k)=>{
+      const h=b.items.length?Math.max(14,Math.round(b.items.length/maxCnt*CHART_H)):4;
+      const sel=_outerExpDashSelMonth===k;
+      return `<div onclick="outerExpDashSelect(${k})" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        <div style="font-size:12px;font-weight:800;color:${b.items.length?barColor(k):'var(--text4)'};font-family:'IBM Plex Mono',monospace;">${b.items.length||''}</div>
+        <div style="width:100%;max-width:38px;height:${h}px;border-radius:7px 7px 3px 3px;
+          background:${b.items.length?barColor(k):'var(--border)'};
+          ${sel?'outline:2.5px solid var(--blue);outline-offset:2px;':''}
+          opacity:${_outerExpDashSelMonth===null||sel?1:.35};transition:opacity .15s;"></div>
+        <div style="font-size:10px;font-weight:${sel?'800':'600'};color:${sel?'var(--blue)':'var(--text3)'};line-height:1.15;text-align:center;">${b.label}<br><span style="font-size:8.5px;color:var(--text4);">${b.yr}</span></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  const showBuckets=_outerExpDashSelMonth===null?buckets:[buckets[_outerExpDashSelMonth]];
+  const dayDiff=ed=>Math.ceil((ed-now)/(1000*60*60*24));
+  const list=showBuckets.filter(b=>b.items.length).map(b=>{
+    const k=buckets.indexOf(b);
+    return `<div style="margin-top:10px;">
+      <div style="font-size:11px;font-weight:800;color:${barColor(k)};padding:4px 2px;display:flex;align-items:center;gap:6px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${barColor(k)};display:inline-block;"></span>
+        ${b.label} ${b.y+543} · ${b.items.length} รายการ
+      </div>
+      ${b.items.map(i=>{
+        const dd=dayDiff(i._ed);
+        return `<div class="stk-row" style="background:${barBg(k)}22;">
+          <div class="stk-strip" style="background:${barColor(k)};"></div>
+          <div class="stk-body" style="padding:9px 6px 9px 10px;">
+            <div class="stk-name" style="font-size:13px;">${i.name}</div>
+            <div class="stk-meta"><span>LOT ${i.lot||'—'}</span><span>EXP ${fmtExp(i.exp)}</span><span style="color:${barColor(k)};font-weight:800;">เหลือ ${dd} วัน</span></div>
+          </div>
+          <div class="stk-right" style="padding:9px 10px 9px 4px;min-width:52px;">
+            <div class="stk-qty" style="font-size:17px;color:${barColor(k)};">${Math.round(i.qty)}</div>
+            <div class="stk-unit">${i.unit||''}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  const emptyMsg=_outerExpDashSelMonth!==null&&!buckets[_outerExpDashSelMonth].items.length
+    ?`<div style="text-align:center;padding:18px 10px;color:var(--text3);font-size:12px;">✓ ไม่มียาหมดอายุในเดือน ${buckets[_outerExpDashSelMonth].label} ${buckets[_outerExpDashSelMonth].y+543}</div>`:'';
+
+  el.innerHTML=`
+    ${total===0
+      ?`<div style="text-align:center;padding:20px 10px;color:var(--text3);font-size:12.5px;">🎉 ไม่มียาที่จะหมดอายุใน 6 เดือนข้างหน้า</div>`
+      :chart+
+       `<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:8px;margin-top:2px;">
+          <span style="font-size:11px;color:var(--text3);">${_outerExpDashSelMonth===null?'รวม '+total+' รายการ · แตะแท่งเพื่อดูรายเดือน':'เดือน '+buckets[_outerExpDashSelMonth].label+' '+(buckets[_outerExpDashSelMonth].y+543)}</span>
+          ${_outerExpDashSelMonth!==null?`<button onclick="outerExpDashSelect(null)" style="border:none;background:var(--surface2);color:var(--text2);font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:12px;cursor:pointer;font-family:inherit;">แสดงทั้งหมด ✕</button>`:''}
+        </div>`+list+emptyMsg}
+    ${expiredCount>0?`<div style="margin-top:10px;padding:8px 12px;background:var(--red-l);border-radius:10px;font-size:11px;color:var(--red);font-weight:700;">⚠️ มียาหมดอายุไปแล้ว ${expiredCount} รายการ — ดูในส่วน "ยาใกล้หมดอายุ" ด้านล่าง</div>`:''}
+  `;
+}
+function outerExpDashSelect(k){
+  _outerExpDashSelMonth=(_outerExpDashSelMonth===k)?null:k;
+  renderOuterExpiryDashboard(window._outerDashItems||[]);
+}
+
 function renderExpiringList(){
   const el=document.getElementById('stock-expiring-list');if(!el)return;
   if(!_allStockItems.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีข้อมูลคลัง กดรีเฟรช</div>';return;}
@@ -6566,6 +6660,7 @@ function renderOuterStock(){
     document.getElementById('out-qty').textContent='0';
     const es=document.getElementById('out-expiring');if(es)es.textContent='0';
     const eel=document.getElementById('out-expiring-list');if(eel)eel.innerHTML='<div class="empty"><div class="empty-icon">✓</div>ไม่มียาใกล้หมดอายุ</div>';
+    const dsh=document.getElementById('outer-exp-dashboard');if(dsh)dsh.innerHTML='<div style="text-align:center;padding:20px 10px;color:var(--text3);font-size:12.5px;">🎉 ไม่มียาที่จะหมดอายุใน 6 เดือนข้างหน้า</div>';
     el.innerHTML=outerStockRows.length?
       '<div class="empty"><div class="empty-icon">📦</div>ไม่พบยาในคลังยานอก'+(q?'<br>ที่ตรงกับคำค้น':'')+'</div>':
       '<div class="empty"><div class="empty-icon">📦</div>ชีต "คลังยานอก" ยังไม่มีข้อมูล<br><span style="font-size:11px;color:var(--text4);">เพิ่มข้อมูลในชีต แล้วกดรีเฟรช</span></div>';
@@ -6626,6 +6721,9 @@ function renderOuterStock(){
       }).join('');
     }
   }
+
+  // Dashboard ยาหมดอายุ 6 เดือน (จากชีตคลังยานอก)
+  renderOuterExpiryDashboard(items);
 
   // แสดงเป็นชั้นวางยา (ผังกำหนดเอง)
   renderOuterCabinet(items);
