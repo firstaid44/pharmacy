@@ -82,7 +82,7 @@ body::before{
   width:calc(100% - 32px);max-width:398px;
   background:var(--primary);
   border-radius:28px;
-  display:grid;grid-template-columns:repeat(6,1fr);
+  display:grid;grid-template-columns:repeat(5,1fr);
   padding:6px;z-index:200;
   box-shadow:0 8px 32px rgba(28,107,69,.4),0 2px 8px rgba(0,0,0,.15);
 }
@@ -2008,7 +2008,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.17.17.04</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.17.21.49</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2670,18 +2670,6 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       </div>
       <span class="nav-label" style="font-size:8.5px;letter-spacing:-.2px;white-space:nowrap;">สรุปรับ-เบิก</span>
     </button>
-    <!-- คลังยานอก -->
-    <button class="nav-item" onclick="switchTab('extstock',this)">
-      <div class="nav-pill"></div>
-      <div class="nav-icon-wrap">
-        <svg viewBox="0 0 24 24">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-      </div>
-      <span class="nav-label" style="font-size:8.5px;letter-spacing:-.2px;white-space:nowrap;">คลังยานอก</span>
-      <span class="nav-badge" id="hist-badge" style="display:none;">0</span>
-    </button>
     <!-- วิเคราะห์ OPD Dashboard -->
     <button class="nav-item" onclick="switchTab('analytics',this)">
       <div class="nav-pill"></div>
@@ -2852,7 +2840,8 @@ function switchTab(tab,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
-  el.classList.add('active');
+  if(!el)el=document.querySelector(`.nav-item[onclick*="'${tab}'"]`);
+  if(el)el.classList.add('active');
   if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();setTimeout(_setDispenseDocNum,300);}
   if(tab==='stock'){if(!_allStockItems.length)loadStock();switchStockSubtab('pcu');}
   if(tab==='extstock')loadExtStock();
@@ -3492,7 +3481,7 @@ function renderExpiryDashboard(){
   const barBg=k=>k<=1?'var(--red-l)':k<=3?'var(--amber-l)':'var(--green-l)';
 
   // ── กราฟแท่ง ──
-  const CHART_H=110;
+  const CHART_H=64;
   const chart=`<div style="display:flex;align-items:flex-end;gap:6px;height:${CHART_H+38}px;padding:6px 2px 0;">
     ${buckets.map((b,k)=>{
       const h=b.items.length?Math.max(14,Math.round(b.items.length/maxCnt*CHART_H)):4;
@@ -3579,7 +3568,7 @@ function renderOuterExpiryDashboard(items){
   const barColor=k=>k<=1?'var(--red)':k<=3?'var(--amber)':'var(--teal)';
   const barBg=k=>k<=1?'var(--red-l)':k<=3?'var(--amber-l)':'var(--green-l)';
 
-  const CHART_H=110;
+  const CHART_H=64;
   const chart=`<div style="display:flex;align-items:flex-end;gap:6px;height:${CHART_H+38}px;padding:6px 2px 0;">
     ${buckets.map((b,k)=>{
       const h=b.items.length?Math.max(14,Math.round(b.items.length/maxCnt*CHART_H)):4;
@@ -7136,6 +7125,8 @@ function doLoginSuccess(user){
   loadDispense();     // เบิกยาออก
   loadStock();        // คลังยา PCU (สถิติ+Dashboard+สรุปคงคลัง)
   loadExtStock();     // คลังยานอก
+  // เปิดหน้า "คลังยา" เป็นหน้าแรกเสมอ (ทุกครั้งที่เข้าระบบ/refresh)
+  switchTab('stock');
 }
 
 function autoFillRequester(name){
