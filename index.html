@@ -742,6 +742,19 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .cab-slot.cab-blank::after{display:none;}
 /* ── ตู้ยา: หัวข้อพับ-กาง + sticky + สรุปสถานะ ── */
 .cab-section{margin-bottom:14px;border-radius:13px;background:var(--surface);border:1px solid var(--border);overflow:hidden;box-shadow:0 1px 4px rgba(90,74,44,.06);}
+/* ── ดูตู้ยาแบบปัดซ้าย-ขวา (carousel) ── */
+.cab-carousel{margin-bottom:8px;}
+.cab-pager-head{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;}
+.cab-nav{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);font-size:17px;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
+.cab-nav:active{background:var(--surface2);transform:scale(.9);}
+.cab-dots{display:flex;gap:6px;align-items:center;}
+.cab-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);cursor:pointer;transition:all .2s;border:none;padding:0;display:inline-block;}
+.cab-dot.active{background:var(--primary);width:22px;border-radius:4px;}
+.cab-scope.cab-swipe{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:0;
+  overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0;padding:0;}
+.cab-scope.cab-swipe::-webkit-scrollbar{display:none;}
+.cab-scope.cab-swipe > .cab-section{flex:0 0 100%;min-width:100%;scroll-snap-align:center;margin-bottom:0;box-sizing:border-box;}
 .cab-head{display:flex;align-items:center;justify-content:space-between;gap:8px;
   padding:10px 12px;background:linear-gradient(180deg,#FFFFFF,#F6F3EC);
   border-bottom:1px solid var(--border);}
@@ -2032,7 +2045,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.17.22.20</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.18.06.41</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3339,7 +3352,36 @@ function _cabToolbar(){
 // ครอบตู้ทั้งหมดด้วย scope (ให้ toolbar + collapse ทำงาน)
 function _cabScope(cabsHTML){
   const fc=_cabFilter!=='all'?' cab-filtered f-'+_cabFilter:'';
-  return _cabToolbar()+`<div class="cab-scope${fc}">${cabsHTML}</div>`;
+  const n=(String(cabsHTML).match(/class="cab-section"/g)||[]).length;
+  if(n<=1){ // ตู้เดียว — ไม่ต้องมี carousel
+    return _cabToolbar()+`<div class="cab-scope${fc}">${cabsHTML}</div>`;
+  }
+  // หลายตู้ — ปัดซ้าย-ขวาทีละตู้
+  const dots=Array.from({length:n},(_,i)=>`<span class="cab-dot${i===0?' active':''}" onclick="_cabDotGo(this,${i})"></span>`).join('');
+  return _cabToolbar()+`
+    <div class="cab-carousel">
+      <div class="cab-pager-head">
+        <button class="cab-nav" onclick="_cabStep(this,-1)" aria-label="ตู้ก่อนหน้า">‹</button>
+        <div class="cab-dots">${dots}</div>
+        <button class="cab-nav" onclick="_cabStep(this,1)" aria-label="ตู้ถัดไป">›</button>
+      </div>
+      <div class="cab-scope cab-swipe${fc}" onscroll="_cabSync(this)">${cabsHTML}</div>
+    </div>`;
+}
+function _cabSync(sc){
+  const car=sc.closest('.cab-carousel');if(!car)return;
+  const idx=Math.round(sc.scrollLeft/Math.max(1,sc.clientWidth));
+  car.querySelectorAll('.cab-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+}
+function _cabStep(btn,dir){
+  const car=btn.closest('.cab-carousel');const sc=car&&car.querySelector('.cab-swipe');if(!sc)return;
+  const max=sc.children.length-1;
+  const idx=Math.min(max,Math.max(0,Math.round(sc.scrollLeft/Math.max(1,sc.clientWidth))+dir));
+  sc.scrollTo({left:idx*sc.clientWidth,behavior:'smooth'});
+}
+function _cabDotGo(dot,i){
+  const car=dot.closest('.cab-carousel');const sc=car&&car.querySelector('.cab-swipe');if(!sc)return;
+  sc.scrollTo({left:i*sc.clientWidth,behavior:'smooth'});
 }
 function setCabFilter(f){
   _cabFilter=f;
