@@ -156,10 +156,10 @@ body::before{
 .card-body{padding:1rem 1rem .875rem;}
 
 /* ── STATS ── */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;}
 .stat-card{
-  background:var(--surface);border-radius:var(--r-xl);
-  padding:16px 14px 14px;border:1.5px solid var(--border);
+  background:var(--surface);border-radius:12px;
+  padding:8px 10px 7px;border:1.5px solid var(--border);
   box-shadow:var(--sh-sm);position:relative;overflow:hidden;
   transition:transform .12s,box-shadow .12s;
 }
@@ -169,8 +169,8 @@ body::before{
 .stat-card.c-teal{--ac:var(--teal);}
 .stat-card.c-amber{--ac:var(--accent);}
 .stat-card.c-red{--ac:var(--red);}
-.stat-label{font-size:10px;color:var(--text3);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
-.stat-value{font-size:32px;font-weight:700;color:var(--text1);letter-spacing:-1.5px;line-height:1;font-family:'IBM Plex Mono',monospace;}
+.stat-label{font-size:8.5px;color:var(--text3);margin-bottom:2px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+.stat-value{font-size:21px;font-weight:800;color:var(--text1);letter-spacing:-1px;line-height:1;font-family:'IBM Plex Mono',monospace;}
 .sv-blue{color:var(--primary);}.sv-teal{color:var(--teal);}.sv-amber{color:var(--amber);}.sv-red{color:var(--red);}
 
 /* ── SECTION ── */
@@ -664,8 +664,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 }
 /* ชั้นแนวนอน — ทุกช่องพอดีหน้าจอ ไม่ต้องเลื่อน · ชื่อยาแนวนอนใต้กล่อง */
 .cab-shelf-grid.horiz{
-  display:flex;flex-wrap:nowrap;gap:5px;
-  overflow:visible;margin-top:9px;position:relative;z-index:2;
+  display:flex;flex-wrap:nowrap;gap:3px;
+  overflow:visible;margin-top:6px;position:relative;z-index:2;
   align-items:flex-start;
 }
 .cab-shelf-grid.horiz .cab-slot{
@@ -680,7 +680,7 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 /* กล่องยา (เตี้ยลง) — แสดงจำนวนคงเหลือ */
 .cab-shelf-grid.horiz .cab-slot-foot{
   order:1;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-  height:50px;width:100%;margin:0;padding:3px 2px;
+  height:38px;width:100%;margin:0;padding:2px 2px;
   border-radius:6px;position:relative;overflow:hidden;
   background:linear-gradient(170deg,#FFFFFF,#FBFAF6 55%,#F4F1E8);
   border:1px solid #E3DDD0;border-left:4px solid #ccc;
@@ -698,22 +698,22 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
   background:repeating-linear-gradient(135deg,#F6F5F0,#F6F5F0 5px,#F1F0E9 5px,#F1F0E9 10px);
   box-shadow:inset 0 2px 4px rgba(120,110,80,.12);
 }
-.cab-shelf-grid.horiz .cab-slot-qty{font-size:15px;line-height:1;position:relative;z-index:1;}
+.cab-shelf-grid.horiz .cab-slot-qty{font-size:13px;line-height:1;position:relative;z-index:1;}
 .cab-shelf-grid.horiz .cab-slot-unit{font-size:7px;letter-spacing:0;position:relative;z-index:1;}
 
 /* ชื่อยาแนวนอน อยู่ใต้กล่อง */
 .cab-shelf-grid.horiz .cab-slot-name{
   order:2;writing-mode:horizontal-tb;transform:none;
-  width:100%;font-size:7.5px;font-weight:700;line-height:1.2;
+  width:100%;font-size:7px;font-weight:700;line-height:1.15;
   text-align:center;color:var(--text2);letter-spacing:-.1px;
   word-break:break-word;overflow-wrap:anywhere;
-  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
 }
 .cab-shelf-grid.horiz .cab-slot.empty .cab-slot-name{color:#A3AC9C;}
 @media (min-width:420px){
-  .cab-shelf-grid.horiz .cab-slot-name{font-size:8.5px;}
-  .cab-shelf-grid.horiz .cab-slot-foot{height:54px;}
-  .cab-shelf-grid.horiz .cab-slot-qty{font-size:16px;}
+  .cab-shelf-grid.horiz .cab-slot-name{font-size:7.5px;}
+  .cab-shelf-grid.horiz .cab-slot-foot{height:42px;}
+  .cab-shelf-grid.horiz .cab-slot-qty{font-size:14px;}
 }
 
 /* แผ่นชั้นวาง — ไม้/เหล็ก มีความหนา + เงาตกกระทบ */
@@ -2008,7 +2008,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.16.20.44</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.17.11.41</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2265,7 +2265,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       <button id="subtab-out" onclick="switchStockSubtab('out')"
         style="flex:1;padding:9px 6px;border-radius:10px;border:none;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;
                background:transparent;color:var(--text3);">
-        📦 คลังยานอกตรวจรักษา
+        📦 ตู้ยาคลังนอก
       </button>
       <button id="subtab-ncd" onclick="switchStockSubtab('ncd')"
         style="flex:1;padding:9px 6px;border-radius:10px;border:none;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;
@@ -2366,7 +2366,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         </div>
       </div>
 
-      <!-- Dashboard ยาหมดอายุ 6 เดือน (คลังยานอกตรวจรักษา) -->
+      <!-- Dashboard ยาหมดอายุ 6 เดือน (ตู้ยาคลังนอก) -->
       <div class="card" style="padding:1rem;margin-bottom:10px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
           <span class="section-title">📈 Dashboard ยาหมดอายุ 6 เดือนข้างหน้า</span>
@@ -3533,7 +3533,7 @@ function expDashSelect(k){
   renderExpiryDashboard();
 }
 
-// ══ EXPIRY DASHBOARD (คลังยานอกตรวจรักษา) — ข้อมูลจากชีต "คลังยานอก" ═══════
+// ══ EXPIRY DASHBOARD (ตู้ยาคลังนอก) — ข้อมูลจากชีต "คลังยานอก" ═══════
 let _outerExpDashSelMonth=null;
 function renderOuterExpiryDashboard(items){
   const el=document.getElementById('outer-exp-dashboard');if(!el)return;
