@@ -2008,7 +2008,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.17.16.07</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.17.17.04</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3306,34 +3306,37 @@ function closeNCDCabinet(){ switchStockSubtab('pcu'); }
 function renderNCDCabinet(){
   const body=document.getElementById('ncd-cab-body-inline');
   if(!body)return;
+  // อ่านจากชีตฐานข้อมูล "คลังยานอก" โดยตรง (ให้ตรงกับ Google Sheet)
+  if(!_outerLoaded){body.innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลดจากชีตคลังยานอก...</div>';loadOuterStock().then(()=>renderNCDCabinet());return;}
   const now=new Date();now.setHours(0,0,0,0);
 
-  // รวมยา NCD จากคลัง (ชื่อเดียวกันรวม qty, ใช้ exp ที่ใกล้สุด)
-  const map={};
-  _allStockItems.forEach(i=>{
-    if(!_isNCDDrug(i))return;
-    const key=i.name;
-    if(!map[key]){map[key]={name:i.name,code:i.code,qty:0,unit:i.unit,exp:i.exp};}
-    map[key].qty+=i.qty;
-    const cur=parseExpDate(map[key].exp),nw=parseExpDate(i.exp);
-    if(nw&&(!cur||nw<cur))map[key].exp=i.exp;
+  // รวมยาจากชีตคลังยานอก: ตามชื่อ+LOT ก่อน แล้วนับเฉพาะ LOT ที่คงเหลือ > 0
+  const _lotMap={};
+  outerStockRows.forEach(r=>{
+    const k=(r.name||'')+'|'+(r.lot||'');
+    if(!_lotMap[k])_lotMap[k]={name:r.name,code:r.code,qty:0,unit:r.unit,exp:r.exp};
+    _lotMap[k].qty+=parseFloat(r.qty)||0;
   });
-
-  // จัดยาเข้าชั้นตาม NCD_SHELF_LAYOUT (เรียงตามที่กำหนด ไม่เรียง A→Z อัตโนมัติ)
+  const map={}, stockByCode={};
+  Object.values(_lotMap).forEach(s=>{
+    if(s.qty<=0)return;
+    if(!map[s.name]){map[s.name]={name:s.name,code:s.code,qty:0,unit:s.unit,exp:s.exp};}
+    map[s.name].qty+=s.qty;
+    let cur=parseExpDate(map[s.name].exp),nw=parseExpDate(s.exp);
+    if(nw&&(!cur||nw<cur))map[s.name].exp=s.exp;
+    const ck=_ncdNorm(s.code);
+    if(ck){
+      if(!stockByCode[ck])stockByCode[ck]={name:s.name,qty:0,unit:s.unit,exp:s.exp};
+      stockByCode[ck].qty+=s.qty;
+      cur=parseExpDate(stockByCode[ck].exp);nw=parseExpDate(s.exp);
+      if(nw&&(!cur||nw<cur))stockByCode[ck].exp=s.exp;
+    }
+  });
+  // จัดยาเข้าชั้นตาม NCD_SHELF_LAYOUT (เรียงตามที่กำหนด)
   const byCode={};
   drugDB.forEach(d=>{byCode[_ncdNorm(d[0])]=d;});
-  // index ชื่อยาในคลังแบบ normalize (กันชื่อพิมพ์ต่างกันเล็กน้อย เช่น วงเล็บ/ช่องว่างเกิน)
   const stockByKey={};
   Object.values(map).forEach(s=>{stockByKey[_drugKey(s.name)]=s;});
-  // index คงเหลือด้วย "รหัสยา" (แม่นกว่าชื่อ — กันชื่อในคลังพิมพ์ต่างจากฐานข้อมูล เช่น FURO)
-  const stockByCode={};
-  _allStockItems.forEach(i=>{
-    const ck=_ncdNorm(i.code); if(!ck)return;
-    if(!stockByCode[ck])stockByCode[ck]={name:i.name,qty:0,unit:i.unit,exp:i.exp};
-    stockByCode[ck].qty+=i.qty;
-    const cur=parseExpDate(stockByCode[ck].exp),nw=parseExpDate(i.exp);
-    if(nw&&(!cur||nw<cur))stockByCode[ck].exp=i.exp;
-  });
 
   const mkItem=code=>{
     const d=byCode[_ncdNorm(code)];
