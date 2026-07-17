@@ -740,6 +740,30 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .cab-slot.cab-blank{background:transparent;border:1.5px dashed #D9D2C2;border-left:1.5px dashed #D9D2C2;box-shadow:none;cursor:default;align-items:center;justify-content:center;min-height:52px;}
 .cab-slot.cab-blank:hover{transform:none;box-shadow:none;}
 .cab-slot.cab-blank::after{display:none;}
+/* ── ตู้ยา: หัวข้อพับ-กาง + sticky + สรุปสถานะ ── */
+.cab-section{margin-bottom:14px;border-radius:13px;background:var(--surface);border:1px solid var(--border);overflow:hidden;box-shadow:0 1px 4px rgba(90,74,44,.06);}
+.cab-head{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:10px 12px;background:linear-gradient(180deg,#FFFFFF,#F6F3EC);
+  border-bottom:1px solid var(--border);}
+.cab-head-title{font-weight:800;color:var(--text1);font-size:12.5px;display:flex;align-items:center;gap:5px;min-width:0;}
+.cab-head-right{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.cab-head-count{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+.cab-body{padding:3px 9px 10px;}
+.cab-badge{font-size:9px;font-weight:800;padding:1px 6px;border-radius:9px;white-space:nowrap;line-height:1.6;}
+.cbadge-exp{background:#FDE8D6;color:#C2410C;}
+.cbadge-low{background:#FEF3C7;color:#B45309;}
+.cbadge-out{background:#FEE2E2;color:#B91C1C;}
+/* ── แถบกรองบนชั้น ── */
+.cab-toolbar{display:flex;gap:6px;overflow-x:auto;padding:1px 1px 9px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.cab-toolbar::-webkit-scrollbar{display:none;}
+.cab-fbtn{flex-shrink:0;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);
+  font-size:11px;font-weight:700;padding:5px 12px;border-radius:15px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;}
+.cab-fbtn.active{border-color:var(--blue);background:var(--blue-l);color:var(--blue);}
+.cab-filtered .cab-slot{transition:opacity .15s;}
+.cab-filtered.f-exp .cab-slot:not(.st-exp),
+.cab-filtered.f-low .cab-slot:not(.st-low),
+.cab-filtered.f-out .cab-slot:not(.st-out){opacity:.15;pointer-events:none;}
+.cab-filtered .cab-blank{opacity:.08;}
 .cab-slot:active{transform:scale(.96);}
 /* ไฮไลต์แสงบนหัวขวด */
 .cab-slot::after{
@@ -2008,7 +2032,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.17.21.49</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.17.22.20</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3208,18 +3232,11 @@ function renderPCURack(){
       : {name:nm,code:(d?d[0]:code),qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
   };
 
-  body.innerHTML=PCU_CABINETS.map(cab=>{
+  const cabs=PCU_CABINETS.map((cab,ci)=>{
     const shelfArrays=cab.shelves.map(codes=>codes.map(mkItem));
-    const flat=shelfArrays.flat();
-    const inStock=flat.filter(x=>x.inStock&&x.qty>0).length;
-    return `<div style="margin-bottom:18px;">
-      <div class="cab-topinfo">
-        <span style="font-weight:800;color:var(--text1);font-size:12.5px;">${cab.icon||'🗄️'} ${cab.title}</span>
-        <span><b>${inStock}</b>/${flat.length} มีในคลัง</span>
-      </div>
-      ${_buildCabinetHTML(flat,{shelfArrays,horizontal:true})}
-    </div>`;
+    return _cabinetSection(cab.title,cab.icon,shelfArrays,'pcu'+ci);
   }).join('')||'<div class="empty" style="padding:2rem;"><div class="empty-icon">🗄️</div>ยังไม่ได้กำหนดชั้นวางยา</div>';
+  body.innerHTML=_cabScope(cabs);
 }
 // ══ ตัวสร้างชั้นวางยา (ใช้ร่วมกันทั้ง NCD / คลังนอก / คลัง PCU) ═══════════
 // items: [{name, qty, unit, exp, inStock, onClick?}]
@@ -3260,7 +3277,11 @@ function _buildCabinetHTML(items,opts){
       const low=isLowStock(it.qty,it.code,it.name); // แสดง ! เมื่อคงเหลือ < จุดสั่งซื้อ (รวมหมดคลัง=0, เท่ากับ=ไม่แสดง)
       const rp=low?getReorderPoint(it.code,it.name):null;
       const isOut=low&&(!it.inStock||it.qty<=0);
-      return `<div class="cab-slot ${g}${low?' low':''}" ${click} title="${it.name.replace(/"/g,'&quot;')}${it.inStock?' · คงเหลือ '+qty+' '+(it.unit||''):' · ไม่มีในคลัง'}${low?' · ⚠️ '+(isOut?'หมดคลัง':'ต่ำกว่าจุดสั่งซื้อ')+' (จุดสั่งซื้อ ≤'+rp+')':''}">
+      // สถานะสำหรับโหมดกรอง
+      let stExp=false;
+      if(it.inStock&&it.qty>0){const _ed=parseExpDate(it.exp);if(_ed){const _mo=(_ed-Date.now())/(1000*60*60*24*30.4);if(_mo<=6)stExp=true;}}
+      const stCls=(stExp?' st-exp':'')+(low&&!isOut?' st-low':'')+(isOut?' st-out':'');
+      return `<div class="cab-slot ${g}${low?' low':''}${stCls}" ${click} title="${it.name.replace(/"/g,'&quot;')}${it.inStock?' · คงเหลือ '+qty+' '+(it.unit||''):' · ไม่มีในคลัง'}${low?' · ⚠️ '+(isOut?'หมดคลัง':'ต่ำกว่าจุดสั่งซื้อ')+' (จุดสั่งซื้อ ≤'+rp+')':''}">
         ${low?'<span class="cab-low-badge" title="'+(isOut?'หมดคลัง':'ใกล้หมด ≤'+rp)+'">!</span>':''}
         <div class="cab-slot-name">${it.name}</div>
         <div class="cab-slot-foot">
@@ -3284,6 +3305,49 @@ function _buildCabinetHTML(items,opts){
       <span><i style="background:var(--teal);"></i>&gt;12ด.</span>
       <span><i style="background:#CBD5C0;"></i>ไม่มีในคลัง</span>
     </div>`;
+}
+
+// ══ ตัวช่วยกลาง: ตู้ยาแบบพับได้ + หัวข้อ sticky + ป้ายสรุปสถานะ ═══════════
+let _cabFilter='all';   // โหมดกรอง: all|exp|low|out
+function _cabinetSection(title,icon,shelfArrays,key){
+  const flat=shelfArrays.flat().filter(x=>!x._blank);
+  const inStock=flat.filter(x=>x.inStock&&x.qty>0).length;
+  const now=new Date();now.setHours(0,0,0,0);
+  let expN=0,lowN=0,outN=0;
+  flat.forEach(i=>{
+    const rp=getReorderPoint(i.code,i.name);
+    if(rp!=null){ if(!i.inStock||i.qty<=0) outN++; else if(i.qty<rp) lowN++; }
+    if(i.inStock&&i.qty>0){const ed=parseExpDate(i.exp);if(ed){const mo=(ed-now)/(1000*60*60*24*30.4);if(mo<=6)expN++;}}
+  });
+  const badges=[];
+  if(expN)badges.push(`<span class="cab-badge cbadge-exp">⏰ ${expN}</span>`);
+  if(lowN)badges.push(`<span class="cab-badge cbadge-low">📉 ${lowN}</span>`);
+  if(outN)badges.push(`<span class="cab-badge cbadge-out">⛔ ${outN}</span>`);
+  return `<div class="cab-section" data-cab="${key}">
+    <div class="cab-head">
+      <span class="cab-head-title">${icon||'🗄️'} ${title}</span>
+      <span class="cab-head-right">${badges.join('')}<span class="cab-head-count">${inStock}/${flat.length}</span></span>
+    </div>
+    <div class="cab-body">${_buildCabinetHTML([],{shelfArrays,horizontal:true})}</div>
+  </div>`;
+}
+// แถบกรองบนชั้น
+function _cabToolbar(){
+  const b=(k,l)=>`<button class="cab-fbtn${_cabFilter===k?' active':''}" data-f="${k}" onclick="setCabFilter('${k}')">${l}</button>`;
+  return `<div class="cab-toolbar">${b('all','ทั้งหมด')}${b('exp','⏰ ใกล้หมดอายุ')}${b('low','📉 ต่ำกว่า Min')}${b('out','⛔ หมดคลัง')}</div>`;
+}
+// ครอบตู้ทั้งหมดด้วย scope (ให้ toolbar + collapse ทำงาน)
+function _cabScope(cabsHTML){
+  const fc=_cabFilter!=='all'?' cab-filtered f-'+_cabFilter:'';
+  return _cabToolbar()+`<div class="cab-scope${fc}">${cabsHTML}</div>`;
+}
+function setCabFilter(f){
+  _cabFilter=f;
+  document.querySelectorAll('.cab-fbtn').forEach(b=>b.classList.toggle('active',b.dataset.f===f));
+  document.querySelectorAll('.cab-scope').forEach(sc=>{
+    sc.classList.remove('cab-filtered','f-exp','f-low','f-out');
+    if(f!=='all')sc.classList.add('cab-filtered','f-'+f);
+  });
 }
 
 function toggleNCDFilter(){window._sumFilterNCD=!window._sumFilterNCD;summaryPage=1;renderSummaryTable(_allStockItems);}
@@ -3342,12 +3406,7 @@ function renderNCDCabinet(){
   const total=flat.length;
   const inStockCnt=flat.filter(x=>x.inStock&&x.qty>0).length;
 
-  body.innerHTML=`
-    <div class="cab-topinfo">
-      <span>จัดตามชั้นจริง · ${NCD_SHELF_LAYOUT.length} ชั้น</span>
-      <span><b>${inStockCnt}</b>/${total} มีในคลัง</span>
-    </div>
-    ${_buildCabinetHTML(flat,{shelfArrays,horizontal:true})}`;
+  body.innerHTML=_cabScope(_cabinetSection('ตู้ยานอก NCD','💊',shelfArrays,'ncd'));
 }
 
 // ══ ผังชั้นวางยาคลังนอก (กำหนดเอง 12 ชั้น · '' = ช่องว่าง) ══════════════
@@ -3412,17 +3471,9 @@ function renderOuterCabinet(outMapValues){
   };
 
   // เรนเดอร์ทีละตู้ พร้อมหัวข้อ
-  let cabsHTML=OUTER_CABINETS.map(cab=>{
+  let cabsHTML=OUTER_CABINETS.map((cab,ci)=>{
     const shelfArrays=cab.shelves.map(shelf=>shelf.map(mkOuterItem));
-    const flat=shelfArrays.flat().filter(x=>!x._blank);
-    const inStock=flat.filter(i=>i.inStock).length;
-    return `<div style="margin-bottom:18px;">
-      <div class="cab-topinfo">
-        <span style="font-weight:800;color:var(--text1);font-size:12.5px;">${cab.icon||'🗄️'} ${cab.title}</span>
-        <span><b>${inStock}</b>/${flat.length} มีในคลัง</span>
-      </div>
-      ${_buildCabinetHTML([],{shelfArrays,emptyText:'— ว่าง —',horizontal:true})}
-    </div>`;
+    return _cabinetSection(cab.title,cab.icon,shelfArrays,'out'+ci);
   }).join('');
 
   // ยาในคลังนอกที่ไม่อยู่ในผังตู้ใดเลย → ต่อท้ายตู้ "อื่นๆ" (กันตกหล่น)
@@ -3440,12 +3491,10 @@ function renderOuterCabinet(outMapValues){
     const exArr=[extras.sort((a,b)=>a.name.localeCompare(b.name,'th',{numeric:true}))
       .map(s=>({name:s.name,code:s.code,qty:s.qty,unit:s.unit,exp:s.exp,inStock:s.qty>0,
         onClick:`showDrugDetail('${s.name.replace(/'/g,"\\'")}')`}))];
-    cabsHTML+=`<div style="margin-bottom:18px;">
-      <div class="cab-topinfo"><span style="font-weight:800;color:var(--text1);font-size:12.5px;">📦 อื่นๆ (ไม่อยู่ในผัง)</span><span><b>${extras.length}</b> รายการ</span></div>
-      ${_buildCabinetHTML([],{shelfArrays:exArr,horizontal:true})}</div>`;
+    cabsHTML+=_cabinetSection('อื่นๆ (ไม่อยู่ในผัง)','📦',exArr,'outx');
   }
 
-  el.innerHTML=cabsHTML;
+  el.innerHTML=_cabScope(cabsHTML);
 }
 
 function setExpRange(btn,months){_expRangeMonths=months;document.querySelectorAll('.exp-range-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderExpiringList();}
