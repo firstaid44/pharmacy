@@ -2045,7 +2045,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.18.06.41</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.18.12.10</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2311,6 +2311,15 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       </button>
     </div>
 
+    <!-- ปุ่มไปหน้าสรุปรับ-เบิก -->
+    <button onclick="switchTab('summary')"
+      style="width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;
+             padding:11px;margin-bottom:12px;border-radius:12px;border:1.5px solid rgba(107,63,196,.25);
+             background:linear-gradient(135deg,#F3EEFF,#EDE6FF);color:#6B3FC4;font-size:13px;font-weight:800;
+             cursor:pointer;font-family:inherit;box-shadow:0 1px 4px rgba(107,63,196,.1);">
+      📊 สรุปรับ-เบิก (รายตัวยา) →
+    </button>
+
     <!-- ══ View C: ชั้นวางยา NCD ══ -->
     <div id="stock-view-ncd" style="display:none;">
       <div id="ncd-cab-body-inline"></div>
@@ -2448,6 +2457,14 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
   </div>
 
   <!-- ══ คลังยานอก ══ -->
+  <div class="page" id="page-overview">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h2 style="font-size:18px;font-weight:800;color:var(--text1);margin:0;">📊 ภาพรวมคลังยา</h2>
+      <button class="section-action" onclick="loadOverview(true)">↻ รีเฟรช</button>
+    </div>
+    <div id="overview-body"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></div>
+  </div>
+
   <div class="page" id="page-extstock">
     <div style="height:.75rem;"></div>
 
@@ -2695,17 +2712,18 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       </div>
       <span class="nav-label">คลังยา</span>
     </button>
-    <!-- สรุปรับเข้า-เบิกออก: chart bar icon -->
-    <button class="nav-item" onclick="switchTab('summary',this)">
+    <!-- ภาพรวมคลังยา -->
+    <button class="nav-item" onclick="switchTab('overview',this)">
       <div class="nav-pill"></div>
       <div class="nav-icon-wrap">
         <svg viewBox="0 0 24 24">
-          <rect x="3" y="12" width="4" height="9" rx="1"/>
-          <rect x="10" y="7" width="4" height="14" rx="1"/>
-          <rect x="17" y="3" width="4" height="18" rx="1"/>
+          <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+          <rect x="13" y="3" width="8" height="5" rx="1.5"/>
+          <rect x="13" y="10" width="8" height="11" rx="1.5"/>
+          <rect x="3" y="13" width="8" height="8" rx="1.5"/>
         </svg>
       </div>
-      <span class="nav-label" style="font-size:8.5px;letter-spacing:-.2px;white-space:nowrap;">สรุปรับ-เบิก</span>
+      <span class="nav-label" style="font-size:8.5px;letter-spacing:-.2px;white-space:nowrap;">ภาพรวม</span>
     </button>
     <!-- วิเคราะห์ OPD Dashboard -->
     <button class="nav-item" onclick="switchTab('analytics',this)">
@@ -2889,7 +2907,173 @@ function switchTab(tab,el){
   if(tab==='history')renderHistory();
   if(tab==='line')loadLineSettings();
   if(tab==='summary')renderSummaryDrugPage(1);
+  if(tab==='overview')loadOverview();
 }
+
+
+// ══════════════ ภาพรวมคลังยา (รวมคลังใน + คลังนอก + ทุกตู้) ══════════════
+let _ovSearch='',_ovFilter='all',_ovExpanded={};
+async function loadOverview(force){
+  const cont=document.getElementById('overview-body');
+  const tasks=[];
+  if(force||!_allStockItems.length)tasks.push(loadStock());
+  if(force||!_outerLoaded)tasks.push(loadOuterStock(force));
+  if(cont&&tasks.length)cont.innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลดข้อมูลทุกคลัง...</div>';
+  try{await Promise.all(tasks);}catch(e){}
+  renderOverview();
+}
+function _ovExp(raw){return parseExpDate(fmtExp(raw));}
+function _ovAggregate(){
+  const now=new Date();now.setHours(0,0,0,0);
+  const drugs={};
+  const getD=(name,code)=>{
+    if(!drugs[name])drugs[name]={name,code:code||'',inQty:0,outQty:0,unit:'',lots:[]};
+    if(!drugs[name].code&&code)drugs[name].code=code;
+    return drugs[name];
+  };
+  // คลังใน (PCU) — _allStockItems (qty>0 อยู่แล้ว)
+  _allStockItems.forEach(i=>{
+    if(!i.name)return;const q=parseFloat(i.qty)||0;
+    const d=getD(i.name,i.code);d.inQty+=q;if(!d.unit&&i.unit)d.unit=i.unit;
+    d.lots.push({src:'in',lot:i.lot||'',exp:fmtExp(i.exp),ed:_ovExp(i.exp),qty:q,unit:i.unit||''});
+  });
+  // คลังนอก — รวม outerStockRows ตามชื่อ+LOT แล้วนับเฉพาะ >0
+  const om={};
+  outerStockRows.forEach(r=>{
+    if(!r.name)return;const k=r.name+'|'+(r.lot||'');
+    if(!om[k])om[k]={name:r.name,code:r.code||'',lot:r.lot||'',exp:r.exp,unit:r.unit||'',qty:0};
+    om[k].qty+=parseFloat(r.qty)||0; if(!om[k].code&&r.code)om[k].code=r.code;
+  });
+  Object.values(om).forEach(o=>{
+    if(o.qty<=0)return;const d=getD(o.name,o.code);d.outQty+=o.qty;if(!d.unit&&o.unit)d.unit=o.unit;
+    d.lots.push({src:'out',lot:o.lot,exp:fmtExp(o.exp),ed:_ovExp(o.exp),qty:o.qty,unit:o.unit});
+  });
+  return Object.values(drugs).map(d=>{
+    d.total=d.inQty+d.outQty;
+    d.lotCount=d.lots.filter(l=>l.qty>0).length;
+    const eds=d.lots.filter(l=>l.qty>0&&l.ed).map(l=>l.ed.getTime());
+    d.nearestExp=eds.length?new Date(Math.min(...eds)):null;
+    d.moLeft=d.nearestExp?(d.nearestExp-now)/(1000*60*60*24*30.4):null;
+    const rp=getReorderPoint(d.code,d.name);d.rp=rp;
+    d.status = d.total<=0 ? 'out'
+             : (rp!=null&&d.total<rp) ? 'low'
+             : (d.moLeft!==null&&d.moLeft<=6) ? 'exp'
+             : 'ok';
+    return d;
+  }).sort((a,b)=>a.name.localeCompare(b.name,'th',{numeric:true}));
+}
+function renderOverview(){
+  const cont=document.getElementById('overview-body');if(!cont)return;
+  const all=_ovAggregate();
+  if(!all.length){cont.innerHTML='<div class="empty"><div class="empty-icon">📊</div>ยังไม่มีข้อมูลคลัง<br><span style="font-size:11px;color:var(--text3);">กดรีเฟรช</span></div>';return;}
+  // KPI รวม
+  const kinds=all.length;
+  const totQty=all.reduce((s,d)=>s+d.total,0);
+  const expN=all.filter(d=>d.status==='exp').length;
+  const lowN=all.filter(d=>d.status==='low').length;
+  const outN=all.filter(d=>d.status==='out').length;
+  const inKinds=all.filter(d=>d.inQty>0).length, inQty=all.reduce((s,d)=>s+d.inQty,0);
+  const outKinds=all.filter(d=>d.outQty>0).length, outQty=all.reduce((s,d)=>s+d.outQty,0);
+  // filter + search
+  const q=_ovSearch.toLowerCase().trim();
+  let rows=all.filter(d=>{
+    if(_ovFilter==='in'&&d.inQty<=0)return false;
+    if(_ovFilter==='out'&&d.outQty<=0)return false;
+    if(_ovFilter==='exp'&&d.status!=='exp')return false;
+    if(_ovFilter==='low'&&d.status!=='low')return false;
+    if(_ovFilter==='empty'&&d.status!=='out')return false;
+    if(q&&!(d.name.toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q)))return false;
+    return true;
+  });
+  const stColor={ok:'var(--teal)',exp:'#E56A00',low:'var(--amber)',out:'var(--red)'};
+  const stLabel={ok:'ปกติ',exp:'ใกล้หมดอายุ',low:'ต่ำกว่า Min',out:'หมดคลัง'};
+  const chip=(f,label,n,c)=>`<button onclick="_ovSetFilter('${f}')" style="padding:5px 11px;border-radius:14px;border:1.5px solid ${_ovFilter===f?c:'var(--border2)'};background:${_ovFilter===f?c:'var(--surface)'};color:${_ovFilter===f?'#fff':'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">${label}${n!=null?' '+n:''}</button>`;
+  cont.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px;">
+      ${[['ชนิดยา',kinds,'var(--text1)'],['หน่วยรวม',Math.round(totQty).toLocaleString('th-TH'),'var(--blue)'],['ใกล้หมดอายุ',expN,'#E56A00'],['ต่ำ/หมด',lowN+outN,'var(--red)']].map(k=>`
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:8px 6px;text-align:center;">
+          <div style="font-size:8.5px;color:var(--text3);font-weight:700;margin-bottom:2px;">${k[0]}</div>
+          <div style="font-size:19px;font-weight:800;color:${k[2]};font-family:'IBM Plex Mono',monospace;line-height:1;">${k[1]}</div>
+        </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;">
+      <div style="flex:1;background:var(--blue-l);border-radius:10px;padding:7px 10px;">
+        <div style="font-size:9px;color:var(--blue);font-weight:800;">🏥 คลังใน (PCU)</div>
+        <div style="font-size:12px;color:var(--text1);font-weight:700;margin-top:1px;">${inKinds} ชนิด · ${Math.round(inQty).toLocaleString('th-TH')} หน่วย</div>
+      </div>
+      <div style="flex:1;background:var(--amber-l);border-radius:10px;padding:7px 10px;">
+        <div style="font-size:9px;color:#B45309;font-weight:800;">📦 คลังนอก</div>
+        <div style="font-size:12px;color:var(--text1);font-weight:700;margin-top:1px;">${outKinds} ชนิด · ${Math.round(outQty).toLocaleString('th-TH')} หน่วย</div>
+      </div>
+    </div>
+    <input type="text" placeholder="🔍 ค้นหาชื่อยา/รหัส..." value="${_ovSearch.replace(/"/g,'&quot;')}" oninput="_ovSearch=this.value;_ovRenderRows()"
+      style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--border2);border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;"/>
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px;scrollbar-width:none;">
+      ${chip('all','ทั้งหมด',all.length,'var(--primary)')}
+      ${chip('exp','⏰ ใกล้หมดอายุ',expN,'#E56A00')}
+      ${chip('low','📉 ต่ำกว่า Min',lowN,'var(--amber)')}
+      ${chip('empty','⛔ หมดคลัง',outN,'var(--red)')}
+      ${chip('in','🏥 มีในคลังใน',inKinds,'var(--blue)')}
+      ${chip('out','📦 มีในคลังนอก',outKinds,'#B45309')}
+    </div>
+    <div style="display:flex;font-size:9px;font-weight:800;color:var(--text3);padding:4px 8px;border-bottom:2px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:2;">
+      <div style="flex:1;">ชื่อยา</div>
+      <div style="width:38px;text-align:right;">ใน</div>
+      <div style="width:38px;text-align:right;">นอก</div>
+      <div style="width:42px;text-align:right;">รวม</div>
+      <div style="width:30px;text-align:right;">LOT</div>
+      <div style="width:64px;text-align:right;">Exp ใกล้สุด</div>
+    </div>
+    <div id="ov-rows"></div>`;
+  _ovRenderRows();
+}
+function _ovSetFilter(f){_ovFilter=f;renderOverview();}
+function _ovRenderRows(){
+  const host=document.getElementById('ov-rows');if(!host)return;
+  const all=_ovAggregate();
+  const q=_ovSearch.toLowerCase().trim();
+  const rows=all.filter(d=>{
+    if(_ovFilter==='in'&&d.inQty<=0)return false;
+    if(_ovFilter==='out'&&d.outQty<=0)return false;
+    if(_ovFilter==='exp'&&d.status!=='exp')return false;
+    if(_ovFilter==='low'&&d.status!=='low')return false;
+    if(_ovFilter==='empty'&&d.status!=='out')return false;
+    if(q&&!(d.name.toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q)))return false;
+    return true;
+  });
+  const stColor={ok:'var(--teal)',exp:'#E56A00',low:'var(--amber)',out:'var(--red)'};
+  const stLabel={ok:'✓ ปกติ',exp:'⏰ ใกล้หมดอายุ',low:'📉 ต่ำกว่า Min',out:'⛔ หมดคลัง'};
+  if(!rows.length){host.innerHTML='<div class="empty" style="padding:1.5rem;"><div class="empty-icon">🔍</div>ไม่พบยาที่ตรงกับเงื่อนไข</div>';return;}
+  host.innerHTML=rows.map(d=>{
+    const sn=d.name.replace(/'/g,"\\'");
+    const c=stColor[d.status], exp=d.nearestExp?fmtExp(d.lots.filter(l=>l.ed).sort((a,b)=>a.ed-b.ed)[0].exp):'—';
+    const open=!!_ovExpanded[d.name];
+    const lotsHTML=open?`<div style="padding:2px 8px 8px 8px;background:var(--surface2);">
+      ${d.lots.filter(l=>l.qty>0).sort((a,b)=>(a.ed||9e15)-(b.ed||9e15)).map(l=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px solid var(--border);">
+          <span style="font-size:9px;font-weight:800;padding:1px 6px;border-radius:6px;background:${l.src==='in'?'var(--blue-l)':'var(--amber-l)'};color:${l.src==='in'?'var(--blue)':'#B45309'};">${l.src==='in'?'ใน':'นอก'}</span>
+          <span style="flex:1;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text2);">LOT ${l.lot||'—'}</span>
+          <span style="font-size:10px;color:${(l.ed&&(l.ed-new Date())/(1000*60*60*24*30.4)<=6)?'var(--red)':'var(--text3)'};">EXP ${l.exp}</span>
+          <span style="font-size:11px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:var(--text1);min-width:34px;text-align:right;">${Math.round(l.qty)} ${l.unit}</span>
+        </div>`).join('')}
+    </div>`:'';
+    return `<div style="border-bottom:1px solid var(--border);">
+      <div onclick="_ovToggle('${sn}')" style="display:flex;align-items:center;padding:8px;cursor:pointer;border-left:3px solid ${c};">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${open?'▾ ':'▸ '}${d.name}</div>
+          <div style="font-size:9px;color:${c};font-weight:700;margin-top:1px;">${stLabel[d.status]}${d.rp!=null?' · Min '+d.rp:''}</div>
+        </div>
+        <div style="width:38px;text-align:right;font-size:12px;font-family:'IBM Plex Mono',monospace;color:${d.inQty>0?'var(--blue)':'var(--text4)'};">${Math.round(d.inQty)}</div>
+        <div style="width:38px;text-align:right;font-size:12px;font-family:'IBM Plex Mono',monospace;color:${d.outQty>0?'#B45309':'var(--text4)'};">${Math.round(d.outQty)}</div>
+        <div style="width:42px;text-align:right;font-size:13px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:${c};">${Math.round(d.total)}</div>
+        <div style="width:30px;text-align:right;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);">${d.lotCount}</div>
+        <div style="width:64px;text-align:right;font-size:9.5px;font-family:'IBM Plex Mono',monospace;color:${(d.moLeft!==null&&d.moLeft<=6)?'var(--red)':'var(--text3)'};">${exp}</div>
+      </div>
+      ${lotsHTML}
+    </div>`;
+  }).join('')+`<div style="text-align:center;padding:8px;font-size:10px;color:var(--text4);">แสดง ${rows.length} รายการ · แตะเพื่อดู LOT</div>`;
+}
+function _ovToggle(name){_ovExpanded[name]=!_ovExpanded[name];_ovRenderRows();}
 
 function showAlert(msg,type){
   const b=document.getElementById('alert-box');
