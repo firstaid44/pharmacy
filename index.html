@@ -2045,7 +2045,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.18.12.10</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.19.10.15</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2770,6 +2770,14 @@ const NCD_SHELF_LAYOUT=[
   ['1019001', 'HY251', '5HCT', '1LST2', '5PNL', 'PIO1'],
   ['MNDP', '1000184', '1500016', 'SIM3', '1440105']
 ];
+// ผังเฉพาะแท็บ "ตู้ยานอกNCD" (แยกจากตู้ที่ 2 ในคลังยาใน เพื่อไม่ให้ยาซ้ำ)
+const OUTER_NCD_LAYOUT=[
+  ['1000016', '1530008', 'ATO', 'Carve', '5COL', 'CAP RED'],
+  ['CAR', '1000122', '1460151', '1GABA', '1419041'],
+  ['1019001', 'HY251', '5HCT', '1LST2', '5PNL', 'PIO1'],
+  ['MNDP', '1000184', '1500016', 'SIM3'],
+  ['1440105', '1OME', '1000139', 'ISO', '1VIB']
+];
 
 // ══ ชั้นวางยาคลัง PCU — กำหนดตู้/ชั้นเอง (แก้ได้ที่นี่) ═══════════
 // แต่ละตู้: {title, icon, shelves:[[รหัสยา,...], ...]}  · sub-array = 1 ชั้น เรียงซ้าย→ขวา
@@ -2898,7 +2906,7 @@ function switchTab(tab,el){
   if(!el)el=document.querySelector(`.nav-item[onclick*="'${tab}'"]`);
   if(el)el.classList.add('active');
   if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();setTimeout(_setDispenseDocNum,300);}
-  if(tab==='stock'){if(!_allStockItems.length)loadStock();switchStockSubtab('pcu');}
+  if(tab==='stock'){if(!_allStockItems.length)loadStock();if(!_outerLoaded)loadOuterStock();switchStockSubtab('pcu');}
   if(tab==='extstock')loadExtStock();
   // แสดง sidebar เฉพาะแท็บคลังยา
   const sideWrap=document.getElementById('stk-side-wrap');
@@ -3627,7 +3635,7 @@ function renderNCDCabinet(){
       : {name:nm,code:(d?d[0]:code),qty:0,unit:(d&&d[3])||'',exp:'',inStock:false};
   };
 
-  const shelfArrays=NCD_SHELF_LAYOUT.map(codes=>codes.map(mkItem));
+  const shelfArrays=OUTER_NCD_LAYOUT.map(codes=>codes.map(mkItem));
   const flat=shelfArrays.flat();
   const total=flat.length;
   const inStockCnt=flat.filter(x=>x.inStock&&x.qty>0).length;
@@ -3975,6 +3983,38 @@ function renderExpiringList(){
   </table>`;
 }
 
+// ดึง อัตราใช้/วัน + ใช้ได้อีกกี่วัน จากชีตคลังยานอก (จับด้วยรหัสหรือชื่อ)
+function _outerUsageFor(code,name){
+  if(!outerStockRows||!outerStockRows.length)return null;
+  const ck=_ncdNorm(code||''),nk=_drugKey(name||'');
+  let rate='',days='';
+  for(const r of outerStockRows){
+    const match=(r.code&&ck&&_ncdNorm(r.code)===ck)||_drugKey(r.name)===nk;
+    if(!match)continue;
+    if(rate===''&&r.usageRate!==''&&r.usageRate!=null)rate=r.usageRate;
+    if(days===''&&r.daysLeft!==''&&r.daysLeft!=null)days=r.daysLeft;
+  }
+  if(rate===''&&days==='')return null;
+  return {rate,days};
+}
+function _usageCardHTML(code,name,unit){
+  const u=_outerUsageFor(code,name);if(!u)return '';
+  const dv=(u.days!==''&&!isNaN(Number(u.days)))?Number(u.days):null;
+  const dCol=dv===null?'var(--text2)':dv<=30?'var(--red)':dv<=60?'#C07000':'var(--teal)';
+  const dBg=dv===null?'var(--surface2)':dv<=30?'var(--red-l)':dv<=60?'var(--amber-l)':'var(--green-l)';
+  return `<div style="display:flex;gap:8px;margin-bottom:12px;">
+    <div style="flex:1;background:var(--blue-l);border-radius:12px;padding:10px 8px;text-align:center;">
+      <div style="font-size:9.5px;color:var(--blue);font-weight:800;">📈 อัตราใช้ต่อวัน</div>
+      <div style="font-size:20px;font-weight:800;color:var(--blue);font-family:'IBM Plex Mono',monospace;line-height:1.1;margin-top:2px;">${u.rate!==''?u.rate:'—'}</div>
+      <div style="font-size:9px;color:var(--text4);">${unit||''}/วัน</div>
+    </div>
+    <div style="flex:1;background:${dBg};border-radius:12px;padding:10px 8px;text-align:center;">
+      <div style="font-size:9.5px;color:${dCol};font-weight:800;">⏳ ใช้ได้อีก</div>
+      <div style="font-size:20px;font-weight:800;color:${dCol};font-family:'IBM Plex Mono',monospace;line-height:1.1;margin-top:2px;">${u.days!==''?u.days:'—'}</div>
+      <div style="font-size:9px;color:var(--text4);">วัน</div>
+    </div>
+  </div>`;
+}
 function showDrugDetail(name){
   window._currentDrugDetail=name; // เก็บไว้ใช้ปุ่ม "เพิ่มเข้าใบเบิกยา"
   const modal=document.getElementById('drug-detail-modal'),el=document.getElementById('drug-detail-content');
@@ -3983,7 +4023,12 @@ function showDrugDetail(name){
   const _addBtn=document.getElementById('drug-req-add-btn');
   if(_addBtn){_addBtn.style.display='';_addBtn.textContent='＋ เพิ่มเข้าใบเบิกยา';_addBtn.onclick=()=>addDrugToReqFromDetail();}
   const rLots=receiveRows.filter(r=>r.name===name);
-  if(!rLots.length){el.innerHTML='<div class="empty">ไม่พบข้อมูลยานี้</div>';modal.classList.add('open');return;}
+  if(!rLots.length){
+    const uc=_usageCardHTML('',name,'');
+    el.innerHTML=`<div class="drug-hd-banner"><div class="drug-hd-name">${name}</div><div class="drug-hd-code">ยาในคลังยานอก</div></div>${uc||'<div class="empty">ไม่พบข้อมูลยานี้ในคลังหลัก</div>'}`;
+    const ab=document.getElementById('drug-req-add-btn');if(ab)ab.style.display='none';
+    modal.classList.add('open');return;
+  }
   const totalRec=rLots.reduce((s,r)=>s+(parseFloat(r.qty)||0),0);
   const totalDis=dispenseRows.filter(d=>d.name===name).reduce((s,d)=>s+(parseFloat(d.qty)||0),0);
   const left=Math.max(0,Math.round(totalRec-totalDis));
@@ -4041,6 +4086,7 @@ function showDrugDetail(name){
       </div>
     </div>
   </div>
+  ${_usageCardHTML(code,name,unit)}
   <!-- LOT table -->
   <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">รายละเอียดแต่ละ LOT</div>
   <table class="drug-lot-table">
