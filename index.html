@@ -777,7 +777,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .cab-filtered .cab-slot{transition:opacity .15s;}
 .cab-filtered.f-exp .cab-slot:not(.st-exp),
 .cab-filtered.f-low .cab-slot:not(.st-low),
-.cab-filtered.f-out .cab-slot:not(.st-out){opacity:.15;pointer-events:none;}
+.cab-filtered.f-out .cab-slot:not(.st-out),
+.cab-filtered.f-d30 .cab-slot:not(.st-d30){opacity:.15;pointer-events:none;}
 .cab-filtered .cab-blank{opacity:.08;}
 .cab-slot:active{transform:scale(.96);}
 /* ไฮไลต์แสงบนหัวขวด */
@@ -2047,7 +2048,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.19.10.14</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.19.20.20</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2160,7 +2161,19 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         <div class="form-group"><label class="form-label">หมายเหตุ</label><textarea class="form-input" id="r-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
         <div class="btn-row">
           <button class="btn" onclick="clearReceiveForm()">ล้าง</button>
+          <button class="btn" onclick="addReceiveToBatch()"
+            style="border:1.5px solid rgba(11,158,114,.35);color:var(--teal);background:var(--teal-l);font-weight:700;">＋ เพิ่มเข้ารายการ</button>
           <button class="btn btn-primary" id="save-btn" onclick="receiveStock()">+ บันทึกรับยาเข้า</button>
+        </div>
+        <!-- ── รายการรอบันทึก (รับเข้าหลายตัวยา) ── -->
+        <div id="r-batch-wrap" style="display:none;margin-top:12px;border:1.5px dashed rgba(11,158,114,.45);border-radius:12px;padding:10px;background:var(--teal-l);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:12px;font-weight:800;color:var(--teal);">📝 รายการรอบันทึก (<span id="r-batch-count">0</span> ตัวยา)</span>
+            <button onclick="clearReceiveBatch()" style="border:none;background:transparent;color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 ล้างรายการ</button>
+          </div>
+          <div id="r-batch-list"></div>
+          <button class="btn btn-primary" id="r-batch-save-btn" onclick="saveReceiveBatch()"
+            style="width:100%;margin-top:8px;">💾 บันทึกรับยาเข้าทั้งหมด</button>
         </div>
       </div>
     </div>
@@ -2267,7 +2280,19 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         <div class="form-group"><label class="form-label">หมายเหตุ</label><textarea class="form-input" id="d-note" rows="2" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
         <div class="btn-row">
           <button class="btn" onclick="clearDispenseForm()">ล้าง</button>
+          <button class="btn" onclick="addDispenseToBatch()"
+            style="border:1.5px solid rgba(192,112,0,.35);color:var(--amber);background:var(--amber-l);font-weight:700;">＋ เพิ่มเข้ารายการ</button>
           <button class="btn btn-primary" id="d-save-btn" onclick="dispenseStock()" style="background:linear-gradient(135deg,var(--accent),#e8620f);">เบิกยาออก</button>
+        </div>
+        <!-- ── รายการรอเบิก (เบิกออกหลายตัวยา) ── -->
+        <div id="d-batch-wrap" style="display:none;margin-top:12px;border:1.5px dashed rgba(192,112,0,.45);border-radius:12px;padding:10px;background:var(--amber-l);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:12px;font-weight:800;color:var(--amber);">📝 รายการรอเบิก (<span id="d-batch-count">0</span> ตัวยา)</span>
+            <button onclick="clearDispenseBatch()" style="border:none;background:transparent;color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 ล้างรายการ</button>
+          </div>
+          <div id="d-batch-list"></div>
+          <button class="btn btn-primary" id="d-batch-save-btn" onclick="saveDispenseBatch()"
+            style="width:100%;margin-top:8px;background:linear-gradient(135deg,var(--accent),#e8620f);">💾 เบิกยาออกทั้งหมด</button>
         </div>
       </div>
     </div>
@@ -3487,7 +3512,11 @@ function _buildCabinetHTML(items,opts){
       // สถานะสำหรับโหมดกรอง
       let stExp=false;
       if(it.inStock&&it.qty>0){const _ed=parseExpDate(it.exp);if(_ed){const _mo=(_ed-Date.now())/(1000*60*60*24*30.4);if(_mo<=6)stExp=true;}}
-      const stCls=(stExp?' st-exp':'')+(low&&!isOut?' st-low':'')+(isOut?' st-out':'');
+      // ยาที่ "ใช้ได้อีก" น้อยกว่า 30 วัน (จากอัตราการใช้ในชีตคลังยานอก)
+      let stD30=false;
+      try{const _ud=(typeof _outerUsageFor==='function')?_outerUsageFor(it.code,it.name):null;
+        if(_ud&&_ud.days!==''&&_ud.days!=null&&!isNaN(Number(_ud.days))&&Number(_ud.days)<30)stD30=true;}catch(e){}
+      const stCls=(stExp?' st-exp':'')+(low&&!isOut?' st-low':'')+(isOut?' st-out':'')+(stD30?' st-d30':'');
       return `<div class="cab-slot ${g}${low?' low':''}${stCls}" ${click} title="${it.name.replace(/"/g,'&quot;')}${it.inStock?' · คงเหลือ '+qty+' '+(it.unit||''):' · ไม่มีในคลัง'}${low?' · ⚠️ '+(isOut?'หมดคลัง':'ต่ำกว่าจุดสั่งซื้อ')+' (จุดสั่งซื้อ ≤'+rp+')':''}">
         ${low?'<span class="cab-low-badge" title="'+(isOut?'หมดคลัง':'ใกล้หมด ≤'+rp)+'">!</span>':''}
         <div class="cab-slot-name">${it.name}</div>
@@ -3542,7 +3571,7 @@ function _cabinetSection(title,icon,shelfArrays,key){
 // แถบกรองบนชั้น
 function _cabToolbar(){
   const b=(k,l)=>`<button class="cab-fbtn${_cabFilter===k?' active':''}" data-f="${k}" onclick="setCabFilter('${k}')">${l}</button>`;
-  return `<div class="cab-toolbar">${b('all','ทั้งหมด')}${b('exp','⏰ ใกล้หมดอายุ')}${b('low','📉 ต่ำกว่า Min')}${b('out','⛔ หมดคลัง')}</div>`;
+  return `<div class="cab-toolbar">${b('all','ทั้งหมด')}${b('exp','⏰ ใกล้หมดอายุ')}${b('low','📉 ต่ำกว่า Min')}${b('out','⛔ หมดคลัง')}${b('d30','⏳ ใช้ได้ <30วัน')}</div>`;
 }
 // ครอบตู้ทั้งหมดด้วย scope (ให้ toolbar + collapse ทำงาน)
 function _cabScope(cabsHTML){
@@ -3582,7 +3611,7 @@ function setCabFilter(f){
   _cabFilter=f;
   document.querySelectorAll('.cab-fbtn').forEach(b=>b.classList.toggle('active',b.dataset.f===f));
   document.querySelectorAll('.cab-scope').forEach(sc=>{
-    sc.classList.remove('cab-filtered','f-exp','f-low','f-out');
+    sc.classList.remove('cab-filtered','f-exp','f-low','f-out','f-d30');
     if(f!=='all')sc.classList.add('cab-filtered','f-'+f);
   });
 }
@@ -3987,7 +4016,7 @@ function renderExpiringList(){
 }
 
 // ดึง อัตราใช้/วัน + ใช้ได้อีกกี่วัน จากชีตคลังยานอก (จับด้วยรหัสหรือชื่อ)
-function _fmt3(v){const n=Number(v);return (v===''||v==null||isNaN(n))?(v||'—'):n.toFixed(3);}
+function _fmt3(v){const n=Number(v);return (v===''||v==null||isNaN(n))?(v||'—'):String(Math.round(n));}
 function _outerUsageFor(code,name){
   if(!outerStockRows||!outerStockRows.length)return null;
   const ck=_ncdNorm(code||''),nk=_drugKey(name||'');
@@ -4566,6 +4595,192 @@ function _setDispenseDocNum(){
   const seq=String(count).padStart(2,'0');
   const el=document.getElementById('d-docnum');
   if(el)el.value=`${seq}/${yr}`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BATCH: รับยาเข้า / เบิกยาออก ทีละหลายตัวยา
+// ══════════════════════════════════════════════════════════════
+let _rBatch=[]; // รายการรอบันทึกรับเข้า
+let _dBatch=[]; // รายการรอเบิกออก
+
+// ── รับยาเข้าหลายตัวยา ─────────────────────────────────────────
+function addReceiveToBatch(){
+  const name=document.getElementById('r-name').value.trim();
+  const code=document.getElementById('r-code').value.trim();
+  const lot=document.getElementById('r-lot').value.trim();
+  const expRaw=document.getElementById('r-exp').value;
+  const exp=expRaw?expRaw.split('-').reverse().join('/'):'';
+  const unit=document.getElementById('r-unit').value;
+  const qty=parseInt(document.getElementById('r-qty').value)||0;
+  const note=document.getElementById('r-note').value.trim();
+  const docNum=document.getElementById('r-docnum').value.trim();
+  const srcSel=document.getElementById('r-source').value;
+  const source=srcSel==='อื่นๆ'?(document.getElementById('r-source-other').value.trim()||'อื่นๆ'):srcSel;
+  if(!name){showAlert('กรุณาเลือกชื่อยา','danger');return;}
+  if(!lot){showAlert('กรุณากรอก LOT Number','danger');return;}
+  if(!exp){showAlert('กรุณาระบุวันหมดอายุ','danger');return;}
+  if(qty<=0){showAlert('กรุณาระบุจำนวน','danger');return;}
+  _rBatch.push({name,code,lot,exp,unit,qty,note,docNum,source,action:'receive'});
+  // ล้างเฉพาะช่องข้อมูลยา — คงเลขที่เอกสาร/แหล่งรับไว้สำหรับยาตัวถัดไป
+  ['r-name','r-code','r-lot','r-qty','r-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('r-exp').value='';
+  document.querySelectorAll('.sbox').forEach(b=>b.style.display='none');
+  renderReceiveBatch();
+  showAlert(`＋ เพิ่ม "${name}" เข้ารายการแล้ว (รวม ${_rBatch.length} ตัวยา)`,'success');
+  const nm=document.getElementById('r-name');if(nm)nm.focus();
+}
+function renderReceiveBatch(){
+  const wrap=document.getElementById('r-batch-wrap');
+  const list=document.getElementById('r-batch-list');
+  const cnt=document.getElementById('r-batch-count');
+  if(!wrap||!list)return;
+  if(cnt)cnt.textContent=_rBatch.length;
+  wrap.style.display=_rBatch.length?'block':'none';
+  list.innerHTML=_rBatch.map((b,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid rgba(11,158,114,.18);">
+      <span style="width:20px;height:20px;border-radius:6px;background:var(--teal);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.name}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">LOT: ${b.lot} · EXP: ${b.exp}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <span style="font-size:14px;font-weight:800;color:var(--teal);font-family:'IBM Plex Mono',monospace;">${b.qty}</span>
+        <span style="font-size:10px;color:var(--text3);"> ${b.unit}</span>
+      </div>
+      <button onclick="removeReceiveBatch(${i})" title="ลบออก"
+        style="width:24px;height:24px;border-radius:8px;border:none;background:var(--red-l);color:var(--red);font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;">✕</button>
+    </div>`).join('');
+}
+function removeReceiveBatch(i){_rBatch.splice(i,1);renderReceiveBatch();}
+function clearReceiveBatch(){
+  if(!_rBatch.length)return;
+  if(!confirm('ล้างรายการรอบันทึกทั้งหมด ('+_rBatch.length+' ตัวยา)?'))return;
+  _rBatch=[];renderReceiveBatch();
+}
+async function saveReceiveBatch(){
+  if(!_rBatch.length){showAlert('ยังไม่มีรายการรอบันทึก — กด "＋ เพิ่มเข้ารายการ" ก่อน','warning');return;}
+  const btn=document.getElementById('r-batch-save-btn');
+  const total=_rBatch.length;
+  btn.disabled=true;
+  setSheet('amber','กำลังส่งข้อมูล...');
+  let ok=0,fail=0;
+  const items=[..._rBatch],failed=[];
+  for(let i=0;i<items.length;i++){
+    btn.textContent=`กำลังบันทึก ${i+1}/${total}...`;
+    const entry={...items[i],date:todayTH()};
+    try{
+      await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(entry)});
+      addHistory('in',`รับยาเข้า: ${entry.name}`,`LOT: ${entry.lot} | ${entry.qty} ${entry.unit} | จาก: ${entry.source}${entry.docNum?' | เลขที่: '+entry.docNum:''}`);
+      ok++;
+    }catch(e){fail++;failed.push(items[i]);}
+  }
+  _rBatch=failed; // เก็บเฉพาะรายการที่ส่งไม่สำเร็จไว้ลองใหม่
+  renderReceiveBatch();
+  btn.textContent='💾 บันทึกรับยาเข้าทั้งหมด';btn.disabled=false;
+  if(fail===0){
+    setSheet('green','บันทึกสำเร็จ');
+    showAlert(`✓ บันทึกรับยาเข้า ${ok} ตัวยา เรียบร้อย`,'success');
+  }else{
+    setSheet('red','บันทึกไม่ครบ');
+    showAlert(`บันทึกสำเร็จ ${ok} รายการ · ไม่สำเร็จ ${fail} รายการ`,'danger');
+  }
+  clearReceiveForm();
+  setTimeout(()=>loadReceive(),1500);
+}
+
+// ── เบิกยาออกหลายตัวยา ─────────────────────────────────────────
+function addDispenseToBatch(){
+  const name=document.getElementById('d-name').value.trim();
+  const code=document.getElementById('d-code').value.trim();
+  const lot=document.getElementById('d-lot').value;
+  const exp=document.getElementById('d-exp').value;
+  const unit=document.getElementById('d-unit').value;
+  const qty=parseInt(document.getElementById('d-qty').value)||0;
+  const requester=document.getElementById('d-requester').value||(currentUser?currentUser.name:'');
+  const note=document.getElementById('d-note').value.trim();
+  const docNum=document.getElementById('d-docnum').value.trim();
+  const destSel=document.getElementById('d-dest').value;
+  const dest=destSel==='อื่นๆ'?(document.getElementById('d-dest-other').value.trim()||'อื่นๆ'):destSel;
+  if(!name){showAlert('กรุณาเลือกชื่อยา','danger');return;}
+  if(!lot){showAlert('กรุณาเลือก LOT Number','danger');return;}
+  if(qty<=0){showAlert('กรุณาระบุจำนวน','danger');return;}
+  if(!requester){showAlert('กรุณาระบุชื่อผู้เบิก','danger');return;}
+  // เช็คคงเหลือ หักจำนวนที่อยู่ในรายการรอเบิกแล้ว
+  const queued=_dBatch.filter(b=>b.name===name&&b.lot===lot).reduce((s,b)=>s+b.qty,0);
+  const avail=calcStock(name,lot)-queued;
+  if(qty>avail){showAlert(`คงเหลือไม่พอ — LOT นี้เหลือ ${Math.max(0,avail)} ${unit} (หักรายการที่รอเบิกแล้ว)`,'danger');return;}
+  _dBatch.push({name,code,lot,exp,unit,qty,requester,note,docNum,dest,action:'dispense'});
+  // ล้างเฉพาะส่วนข้อมูลยา — คงผู้เบิก/ปลายทาง/เลขที่เอกสารไว้ (ใบเดียวกัน)
+  document.getElementById('d-name').value='';
+  document.getElementById('d-code').value='';
+  document.getElementById('d-lot').value='';
+  document.getElementById('d-exp').value='';
+  const picker=document.getElementById('d-lot-picker');
+  if(picker)picker.innerHTML='<div style="font-size:13px;color:var(--text3);padding:10px 0;">เลือกชื่อยาก่อน...</div>';
+  document.getElementById('d-qty').innerHTML='<option value="">— เลือก —</option>';
+  const si=document.getElementById('d-stock-info');if(si)si.style.display='none';
+  document.getElementById('sbox-d').style.display='none';
+  renderDispenseBatch();
+  showAlert(`＋ เพิ่ม "${name}" เข้ารายการรอเบิกแล้ว (รวม ${_dBatch.length} ตัวยา)`,'success');
+  const nm=document.getElementById('d-name');if(nm)nm.focus();
+}
+function renderDispenseBatch(){
+  const wrap=document.getElementById('d-batch-wrap');
+  const list=document.getElementById('d-batch-list');
+  const cnt=document.getElementById('d-batch-count');
+  if(!wrap||!list)return;
+  if(cnt)cnt.textContent=_dBatch.length;
+  wrap.style.display=_dBatch.length?'block':'none';
+  list.innerHTML=_dBatch.map((b,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid rgba(192,112,0,.18);">
+      <span style="width:20px;height:20px;border-radius:6px;background:var(--amber);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.name}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">LOT: ${b.lot}${b.exp?' · EXP: '+fmtExp(b.exp):''}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <span style="font-size:14px;font-weight:800;color:var(--amber);font-family:'IBM Plex Mono',monospace;">${b.qty}</span>
+        <span style="font-size:10px;color:var(--text3);"> ${b.unit}</span>
+      </div>
+      <button onclick="removeDispenseBatch(${i})" title="ลบออก"
+        style="width:24px;height:24px;border-radius:8px;border:none;background:var(--red-l);color:var(--red);font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;">✕</button>
+    </div>`).join('');
+}
+function removeDispenseBatch(i){_dBatch.splice(i,1);renderDispenseBatch();}
+function clearDispenseBatch(){
+  if(!_dBatch.length)return;
+  if(!confirm('ล้างรายการรอเบิกทั้งหมด ('+_dBatch.length+' ตัวยา)?'))return;
+  _dBatch=[];renderDispenseBatch();
+}
+async function saveDispenseBatch(){
+  if(!_dBatch.length){showAlert('ยังไม่มีรายการรอเบิก — กด "＋ เพิ่มเข้ารายการ" ก่อน','warning');return;}
+  const btn=document.getElementById('d-batch-save-btn');
+  const total=_dBatch.length;
+  btn.disabled=true;
+  let ok=0,fail=0;
+  const items=[..._dBatch],failed=[];
+  for(let i=0;i<items.length;i++){
+    btn.textContent=`กำลังเบิก ${i+1}/${total}...`;
+    const b=items[i];
+    const entry={...b,date:todayTH()};
+    const stockLeft=calcStock(b.name,b.lot)-b.qty;
+    try{
+      await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(entry)});
+      addHistory('out',`เบิกยาออก: ${b.name}`,`LOT: ${b.lot} | ${b.qty} ${b.unit} | ผู้เบิก: ${b.requester} | เบิกให้: ${b.dest}${b.docNum?' | เลขที่: '+b.docNum:''}`);
+      try{sendLineFlexDispense({name:b.name,code:b.code,lot:b.lot,exp:b.exp,unit:b.unit,qty:b.qty,requester:b.requester,note:b.note,date:todayTH(),stockLeft:Math.max(0,stockLeft)});}catch(e){}
+      ok++;
+    }catch(e){fail++;failed.push(b);}
+  }
+  _dBatch=failed; // เก็บเฉพาะรายการที่ส่งไม่สำเร็จไว้ลองใหม่
+  renderDispenseBatch();
+  btn.textContent='💾 เบิกยาออกทั้งหมด';btn.disabled=false;
+  if(fail===0){
+    showAlert(`✓ เบิกยาออก ${ok} ตัวยา เรียบร้อย`,'success');
+  }else{
+    showAlert(`เบิกสำเร็จ ${ok} รายการ · ไม่สำเร็จ ${fail} รายการ`,'danger');
+  }
+  clearDispenseForm();
+  setTimeout(()=>loadDispense(),1500);
 }
 
 // ══ REQ LOG — บันทึกใบเบิกยา ════════════════════════════════
@@ -5253,6 +5468,16 @@ function _renderRequisitionModal(data){
 
 function closeReqModal(){
   document.getElementById('req-modal').classList.remove('open');
+  // ถ้าใบเบิกนี้สร้างจาก cart — ถามว่าเสร็จสิ้นหรือยัง
+  if(window._reqFromCart){
+    window._reqFromCart=false;
+    if(confirm('สร้างใบเบิกครั้งนี้เสร็จสิ้นแล้วใช่หรือไม่?\n\n• กด "ตกลง" = เสร็จสิ้น ล้างรายการยาในใบเบิก\n• กด "ยกเลิก" = ยังไม่เสร็จ ระบบจะเก็บรายการไว้ต่อ (แม้ปิดระบบ/ออกจากระบบ)')){
+      _cart=[];_saveCart();_renderCartItems();_updateCartFab();
+      showAlert('สร้างใบเบิกเสร็จสิ้น — ล้างรายการใบเบิกแล้ว ✓','success');
+    }else{
+      showAlert('ระบบเก็บรายการใบเบิกไว้ให้แล้ว (ไม่หายแม้ปิดระบบ) 💾','success');
+    }
+  }
 }
 
 function shareRequisition(){
@@ -5833,6 +6058,18 @@ function copyInventoryText(){
 // ══════════════════════════════════════════════════════════════
 let _cart = []; // [{name,code,unit,stockQty,exp,grp,orderQty}]
 
+// ── เก็บใบเบิกถาวรใน localStorage (อยู่ครบแม้ปิดระบบ/ออกจากระบบ) ──
+const _CART_KEY='pcu_req_cart_v1';
+function _saveCart(){
+  try{localStorage.setItem(_CART_KEY,JSON.stringify(_cart));}catch(e){}
+}
+function _loadCart(){
+  try{
+    const s=localStorage.getItem(_CART_KEY);
+    if(s){const arr=JSON.parse(s);if(Array.isArray(arr))_cart=arr;}
+  }catch(e){}
+}
+
 function _updateCartFab(){
   const fab   = document.getElementById('cart-fab');
   const badge = document.getElementById('cart-fab-badge');
@@ -5857,11 +6094,13 @@ function addToCart(name,code,unit,stockQty,exp,grp,orderQty){
       exp:exp||'',grp:grp||'green',orderQty:orderQty||1});
     showAlert('"'+name.substring(0,20)+'..." เพิ่มเข้าใบเบิกแล้ว ✓','success');
   }
+  _saveCart();
   _updateCartFab();
 }
 
 function removeFromCart(idx){
   _cart.splice(idx,1);
+  _saveCart();
   _renderCartItems();
   _updateCartFab();
 }
@@ -5869,7 +6108,7 @@ function removeFromCart(idx){
 function clearCart(){
   if(_cart.length===0){closeCartModal();return;}
   if(!confirm('ล้างรายการยาทั้งหมดในใบเบิก?'))return;
-  _cart=[];_renderCartItems();_updateCartFab();
+  _cart=[];_saveCart();_renderCartItems();_updateCartFab();
 }
 
 function _renderCartItems(){
@@ -5901,8 +6140,8 @@ function _renderCartItems(){
       <div class="cart-item-qty">
         <input type="number" min="1" value="${it.orderQty||1}"
           class="cart-qty-input" title="จำนวนที่ขอเบิก"
-          onchange="_cart[${i}].orderQty=Math.max(1,parseInt(this.value)||1);this.value=_cart[${i}].orderQty;"
-          oninput="_cart[${i}].orderQty=Math.max(1,parseInt(this.value)||1)">
+          onchange="_cart[${i}].orderQty=Math.max(1,parseInt(this.value)||1);this.value=_cart[${i}].orderQty;_saveCart();"
+          oninput="_cart[${i}].orderQty=Math.max(1,parseInt(this.value)||1);_saveCart()">
         <span style="font-size:10px;color:var(--text3);white-space:nowrap;">${it.unit}</span>
         <button class="cart-del-btn" onclick="removeFromCart(${i})" title="ลบออกจากใบเบิก">✕</button>
       </div>
@@ -5917,6 +6156,9 @@ function openCartModal(){
 function closeCartModal(){
   document.getElementById('cart-modal').classList.remove('open');
 }
+// ── restore ใบเบิกที่ค้างไว้ทันทีที่เปิดระบบ (จาก localStorage) ──
+_loadCart();
+_updateCartFab();
 function addMoreToCart(){
   closeCartModal();
   setTimeout(()=>openStockRequisition(),200);
@@ -5925,6 +6167,7 @@ function addMoreToCart(){
 // สร้างใบเบิกจาก cart
 function buildCartReq(){
   if(!_cart.length){showAlert('ไม่มียาในใบเบิก','warning');return;}
+  window._reqFromCart=true; // ธง: ใบเบิกนี้สร้างจาก cart — เมื่อเสร็จสิ้นจะถามล้างรายการ
   closeCartModal();
   const extraCols=_cart.map(it=>({
     name:it.name,code:it.code,unit:it.unit,
