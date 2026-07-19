@@ -742,6 +742,8 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .cab-slot.cab-blank::after{display:none;}
 /* ── ตู้ยา: หัวข้อพับ-กาง + sticky + สรุปสถานะ ── */
 .cab-section{margin-bottom:14px;border-radius:13px;background:var(--surface);border:1px solid var(--border);overflow:hidden;box-shadow:0 1px 4px rgba(90,74,44,.06);}
+.cab-slot-days{font-size:8px;font-weight:800;font-family:'IBM Plex Mono',monospace;text-align:center;line-height:1.1;margin-top:1px;white-space:nowrap;}
+.cab-shelf-grid.horiz .cab-slot-days{order:3;font-size:7px;margin-top:0;}
 /* ── ดูตู้ยาแบบปัดซ้าย-ขวา (carousel) ── */
 .cab-carousel{margin-bottom:8px;}
 .cab-pager-head{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;}
@@ -2045,7 +2047,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.19.10.15</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.19.10.14</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3493,6 +3495,7 @@ function _buildCabinetHTML(items,opts){
           <span class="cab-slot-qty ${g}">${qty}</span>
           <span class="cab-slot-unit">${it.unit||''}</span>
         </div>
+        ${(()=>{const _u=_outerUsageFor(it.code,it.name);if(!_u||(_u.days===''&&_u.rate===''))return '';const dv=(_u.days!==''&&!isNaN(Number(_u.days)))?Number(_u.days):null;const dc=dv===null?'var(--text3)':dv<=30?'var(--red)':dv<=60?'#C07000':'var(--teal)';return `<div class="cab-slot-days" style="color:${dc};" title="ใช้ได้อีก ${_fmt3(_u.days)} วัน · อัตราใช้ ${_fmt3(_u.rate)}/วัน">⏳${_fmt3(_u.days)}ว</div>`;})()}
       </div>`;
     }).join('');
     return `<div class="cab-shelf">
@@ -3984,6 +3987,7 @@ function renderExpiringList(){
 }
 
 // ดึง อัตราใช้/วัน + ใช้ได้อีกกี่วัน จากชีตคลังยานอก (จับด้วยรหัสหรือชื่อ)
+function _fmt3(v){const n=Number(v);return (v===''||v==null||isNaN(n))?(v||'—'):n.toFixed(3);}
 function _outerUsageFor(code,name){
   if(!outerStockRows||!outerStockRows.length)return null;
   const ck=_ncdNorm(code||''),nk=_drugKey(name||'');
@@ -4005,12 +4009,12 @@ function _usageCardHTML(code,name,unit){
   return `<div style="display:flex;gap:8px;margin-bottom:12px;">
     <div style="flex:1;background:var(--blue-l);border-radius:12px;padding:10px 8px;text-align:center;">
       <div style="font-size:9.5px;color:var(--blue);font-weight:800;">📈 อัตราใช้ต่อวัน</div>
-      <div style="font-size:20px;font-weight:800;color:var(--blue);font-family:'IBM Plex Mono',monospace;line-height:1.1;margin-top:2px;">${u.rate!==''?u.rate:'—'}</div>
+      <div style="font-size:19px;font-weight:800;color:var(--blue);font-family:'IBM Plex Mono',monospace;line-height:1.1;margin-top:2px;">${_fmt3(u.rate)}</div>
       <div style="font-size:9px;color:var(--text4);">${unit||''}/วัน</div>
     </div>
     <div style="flex:1;background:${dBg};border-radius:12px;padding:10px 8px;text-align:center;">
       <div style="font-size:9.5px;color:${dCol};font-weight:800;">⏳ ใช้ได้อีก</div>
-      <div style="font-size:20px;font-weight:800;color:${dCol};font-family:'IBM Plex Mono',monospace;line-height:1.1;margin-top:2px;">${u.days!==''?u.days:'—'}</div>
+      <div style="font-size:19px;font-weight:800;color:${dCol};font-family:'IBM Plex Mono',monospace;line-height:1.1;margin-top:2px;">${_fmt3(u.days)}</div>
       <div style="font-size:9px;color:var(--text4);">วัน</div>
     </div>
   </div>`;
