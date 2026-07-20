@@ -1774,6 +1774,9 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       <button onclick="filterStockReqByGroup('low',this)"
         class="_srg" data-grp="low"
         style="padding:4px 12px;border-radius:16px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">📉 ต่ำกว่า Min</button>
+      <button onclick="filterStockReqByGroup('d30',this)"
+        class="_srg" data-grp="d30"
+        style="padding:4px 12px;border-radius:16px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">⏳ ใช้ได้ &lt;30วัน</button>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
       <span id="stock-req-count" style="font-size:11px;color:var(--text3);"></span>
@@ -2048,7 +2051,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.19.20.31</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.20.12.59</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2994,6 +2997,12 @@ function _ovAggregate(){
              : (rp!=null&&d.total<rp) ? 'low'
              : (d.moLeft!==null&&d.moLeft<=6) ? 'exp'
              : 'ok';
+    // ยาที่ "ใช้ได้อีก" น้อยกว่า 30 วัน (จากอัตราการใช้ในชีตคลังยานอก)
+    d.d30=false;
+    try{
+      const _ud=(typeof _outerUsageFor==='function')?_outerUsageFor(d.code,d.name):null;
+      if(_ud&&_ud.days!==''&&_ud.days!=null&&!isNaN(Number(_ud.days))&&Number(_ud.days)<30)d.d30=true;
+    }catch(e){}
     return d;
   }).sort((a,b)=>a.name.localeCompare(b.name,'th',{numeric:true}));
 }
@@ -3017,6 +3026,7 @@ function renderOverview(){
     if(_ovFilter==='exp'&&d.status!=='exp')return false;
     if(_ovFilter==='low'&&d.status!=='low')return false;
     if(_ovFilter==='empty'&&d.status!=='out')return false;
+    if(_ovFilter==='d30'&&!d.d30)return false;
     if(q&&!(d.name.toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q)))return false;
     return true;
   });
@@ -3048,6 +3058,7 @@ function renderOverview(){
       ${chip('exp','⏰ ใกล้หมดอายุ',expN,'#E56A00')}
       ${chip('low','📉 ต่ำกว่า Min',lowN,'var(--amber)')}
       ${chip('empty','⛔ หมดคลัง',outN,'var(--red)')}
+      ${chip('d30','⏳ ใช้ได้ &lt;30วัน',null,'#6D28D9')}
       ${chip('in','🏥 มีในคลังใน',inKinds,'var(--blue)')}
       ${chip('out','📦 มีในคลังนอก',outKinds,'#B45309')}
     </div>
@@ -3073,6 +3084,7 @@ function _ovRenderRows(){
     if(_ovFilter==='exp'&&d.status!=='exp')return false;
     if(_ovFilter==='low'&&d.status!=='low')return false;
     if(_ovFilter==='empty'&&d.status!=='out')return false;
+    if(_ovFilter==='d30'&&!d.d30)return false;
     if(q&&!(d.name.toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q)))return false;
     return true;
   });
@@ -5636,12 +5648,13 @@ function filterStockReqList(q){
   const grp=window._stockReqGrpFilter||'all';
   const qLow=(q||'').toLowerCase().trim();
   let shown=0;
-  _stockReqAllRows.forEach(({el,name,code,grp:itemGrp,out,low})=>{
+  _stockReqAllRows.forEach(({el,name,code,grp:itemGrp,out,low,d30})=>{
     const matchQ=!qLow||name.toLowerCase().includes(qLow)||(code||'').toLowerCase().includes(qLow);
     let matchG;
     if(grp==='all')matchG=true;
     else if(grp==='out')matchG=!!out;
     else if(grp==='low')matchG=!!low;
+    else if(grp==='d30')matchG=!!d30;
     else matchG=itemGrp===grp;
     el.style.display=(matchQ&&matchG)?'':'none';
     if(matchQ&&matchG)shown++;
@@ -5755,6 +5768,10 @@ function filterStockReqByGroup(grp,btn){
       b.style.borderColor=on?'rgba(180,83,9,.4)':'var(--border2)';
       b.style.background=on?'#FEF3C7':'var(--surface2)';
       b.style.color=on?'#B45309':'var(--text2)';
+    } else if(grp==='d30'){
+      b.style.borderColor=on?'rgba(109,40,217,.4)':'var(--border2)';
+      b.style.background=on?'#EDE9FE':'var(--surface2)';
+      b.style.color=on?'#6D28D9':'var(--text2)';
     }
   });
   const q=document.getElementById('stock-req-search')?.value||'';
@@ -6253,6 +6270,12 @@ function openStockRequisition(){
     if(it._out){it._grp='red';}
     let _rp=null; try{_rp=getReorderPoint(it.code,it.name);}catch(e){}
     it._low=!it._out && _rp!=null && it.qty<=_rp;   // เท่ากับหรือน้อยกว่า Minimum
+    // flag: ยาที่ "ใช้ได้อีก" น้อยกว่า 30 วัน (จากอัตราการใช้ในชีตคลังยานอก)
+    it._d30=false;
+    try{
+      const _ud=(typeof _outerUsageFor==='function')?_outerUsageFor(it.code,it.name):null;
+      if(_ud&&_ud.days!==''&&_ud.days!=null&&!isNaN(Number(_ud.days))&&Number(_ud.days)<30)it._d30=true;
+    }catch(e){}
   });
   window._stockReqItems=items;
 
@@ -6264,6 +6287,7 @@ function openStockRequisition(){
     const grpLabel=isOut?'⚫ หมดคลัง':isR?'🔴 ใกล้หมด':isY?'🟡 ระวัง':'🟢 ปกติ';
     const qcTxt=isOut?'var(--red)':isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
     const lowTag=(!isOut&&it._low)?`<span style="background:#FEF3C7;color:#B45309;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;border:1px solid #B4530933;">📉 ต่ำกว่า Min</span>`:'';
+    const d30Tag=it._d30?`<span style="background:#EDE9FE;color:#6D28D9;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;border:1px solid #6D28D933;">⏳ ใช้ได้ &lt;30วัน</span>`:'';
     const nm=it.name.replace(/'/g,"\\'").replace(/"/g,'&quot;');
     return `<div class="stock-req-row" id="srr-${idx}" data-grp="${it._grp}">
       <div style="display:flex;align-items:center;gap:8px;">
@@ -6274,6 +6298,7 @@ function openStockRequisition(){
             <span style="font-size:12px;font-weight:700;color:var(--text1);line-height:1.3;">${it.name}</span>
             <span style="background:${grpBg};color:${grpTxt};padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;border:1px solid ${grpTxt}33;">${grpLabel}</span>
             ${lowTag}
+            ${d30Tag}
           </div>
           <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">
             ${it.code||'—'} · คงเหลือ <span style="color:${qcTxt};font-weight:700;">${Math.round(it.qty)}</span> ${it.unit}
@@ -6306,7 +6331,8 @@ function openStockRequisition(){
     code:it.code||'',
     grp:it._grp||'green',
     out:!!it._out,
-    low:!!it._low
+    low:!!it._low,
+    d30:!!it._d30
   }));
 
   // reset search + group filter + count
