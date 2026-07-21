@@ -1754,6 +1754,42 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
                background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;
                padding:4px;line-height:1;" title="ล้าง">✕</button>
     </div>
+    <!-- ── 🤖 ตัวช่วยแนะนำยาที่ควรเบิก ── -->
+    <div style="border:1.5px dashed rgba(109,40,217,.4);border-radius:12px;padding:10px 10px 9px;margin-bottom:10px;background:#F5F3FF;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <span style="font-size:12px;font-weight:800;color:#6D28D9;">🤖 ตัวช่วยแนะนำยาที่ควรเบิก</span>
+        <button onclick="repeatLastRequisition()" title="คัดลอกรายการยาจากใบเบิกครั้งก่อนหน้าทั้งใบ"
+          style="padding:4px 10px;border-radius:10px;border:1.5px solid rgba(109,40,217,.35);background:#fff;
+                 color:#6D28D9;font-size:10.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">🔁 เบิกซ้ำครั้งก่อน</button>
+      </div>
+      <div id="assist-crit-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+        <button onclick="toggleAssistCriteria('out',this)" data-crit="out"
+          style="display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:14px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">
+          <span class="asc-check" style="opacity:0;font-size:10px;">✓</span>⛔ หมดคลัง</button>
+        <button onclick="toggleAssistCriteria('low',this)" data-crit="low"
+          style="display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:14px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">
+          <span class="asc-check" style="opacity:0;font-size:10px;">✓</span>📉 ต่ำกว่า Min</button>
+        <button onclick="toggleAssistCriteria('exp',this)" data-crit="exp"
+          style="display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:14px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">
+          <span class="asc-check" style="opacity:0;font-size:10px;">✓</span>⏰ ใกล้หมดอายุ</button>
+        <button onclick="toggleAssistCriteria('d30',this)" data-crit="d30"
+          style="display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:14px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">
+          <span class="asc-check" style="opacity:0;font-size:10px;">✓</span>⏳ อัตราใช้สูง</button>
+        <button onclick="toggleAssistCriteria('repeat',this)" data-crit="repeat"
+          style="display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:14px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">
+          <span class="asc-check" style="opacity:0;font-size:10px;">✓</span>🔁 เคยเบิกครั้งก่อน</button>
+        <button onclick="toggleAssistCriteria('freq',this)" data-crit="freq"
+          style="display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:14px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">
+          <span class="asc-check" style="opacity:0;font-size:10px;">✓</span>🔥 ใช้บ่อย (30วัน)</button>
+      </div>
+      <button onclick="runRequisitionAssist()"
+        style="width:100%;padding:9px;border:none;border-radius:10px;font-size:12.5px;font-weight:800;
+               cursor:pointer;font-family:inherit;color:#fff;background:linear-gradient(135deg,#7C3AED,#6D28D9);
+               box-shadow:0 2px 8px rgba(109,40,217,.3);">✨ แนะนำยาให้เลย</button>
+      <div style="font-size:9.5px;color:#7C3AED;margin-top:5px;line-height:1.4;">
+        เลือกเงื่อนไข แล้วกด "แนะนำยาให้เลย" — ระบบจะติ๊กยาที่ตรงเงื่อนไข พร้อมใส่จำนวนแนะนำ และเพิ่มเข้าใบเบิกให้อัตโนมัติ (ปรับจำนวนเองได้ภายหลัง)
+      </div>
+    </div>
     <!-- Filter chips -->
     <div id="stock-req-group-filter" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
       <button onclick="filterStockReqByGroup('all',this)"
@@ -2051,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.20.12.59</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.21.22.12</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -4799,7 +4835,8 @@ async function saveDispenseBatch(){
 function saveReqLog(entry){
   if(reqLog.length&&reqLog[0].docNum===entry.docNum)return;
   reqLog.unshift(entry);
-  try{sessionStorage.setItem('_reqLog',JSON.stringify(reqLog));}catch(e){}
+  if(reqLog.length>60)reqLog.length=60; // จำกัดไม่ให้พื้นที่เก็บข้อมูลบวมเกินไป
+  try{localStorage.setItem('_reqLog',JSON.stringify(reqLog));}catch(e){}
   renderReqLog();
   const badge=document.getElementById('hist-badge');
   if(badge){badge.style.display='block';badge.textContent=reqLog.length;}
@@ -4823,10 +4860,16 @@ function renderReqLog(){
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
           <div class="req-log-date">${fmtDate(r.date)}</div>
-          <button onclick="deleteReqLog(${idx})"
-            style="padding:2px 8px;border-radius:6px;border:1px solid rgba(217,48,37,.2);
-                   background:var(--red-l);color:var(--red);font-size:10px;font-weight:700;
-                   cursor:pointer;font-family:inherit;">✕ ลบ</button>
+          <div style="display:flex;gap:4px;">
+            <button onclick="repeatReqLog(${idx})" title="เบิกซ้ำใบนี้ (คัดลอกเข้าใบเบิกยา)"
+              style="padding:2px 8px;border-radius:6px;border:1px solid rgba(109,40,217,.3);
+                     background:#F5F3FF;color:#6D28D9;font-size:10px;font-weight:700;
+                     cursor:pointer;font-family:inherit;">🔁 เบิกซ้ำ</button>
+            <button onclick="deleteReqLog(${idx})"
+              style="padding:2px 8px;border-radius:6px;border:1px solid rgba(217,48,37,.2);
+                     background:var(--red-l);color:var(--red);font-size:10px;font-weight:700;
+                     cursor:pointer;font-family:inherit;">✕ ลบ</button>
+          </div>
         </div>
       </div>
       <div class="req-log-stats">
@@ -4862,15 +4905,23 @@ function toggleReqLogItems(idx){
 function deleteReqLog(idx){
   if(!confirm('ลบใบเบิก '+reqLog[idx]?.docNum+' ?'))return;
   reqLog.splice(idx,1);
-  try{sessionStorage.setItem('_reqLog',JSON.stringify(reqLog));}catch(e){}
+  try{localStorage.setItem('_reqLog',JSON.stringify(reqLog));}catch(e){}
   renderReqLog();
   const badge=document.getElementById('hist-badge');
   if(badge){badge.style.display=reqLog.length?'block':'none';if(reqLog.length)badge.textContent=reqLog.length;}
 }
 
-// restore จาก sessionStorage
+// restore จาก localStorage (คงอยู่ข้ามเซสชัน/ปิดเบราว์เซอร์) — migrate จาก sessionStorage เดิมถ้ามี
 (function(){
-  try{const s=sessionStorage.getItem('_reqLog');if(s){reqLog=JSON.parse(s)||[];}}catch(e){}
+  try{
+    const s=localStorage.getItem('_reqLog');
+    if(s){reqLog=JSON.parse(s)||[];}
+    else{
+      // migrate ข้อมูลเก่าที่เคยอยู่ sessionStorage (ถ้ามี) มาเก็บถาวรใน localStorage
+      const old=sessionStorage.getItem('_reqLog');
+      if(old){reqLog=JSON.parse(old)||[];localStorage.setItem('_reqLog',old);}
+    }
+  }catch(e){}
   setTimeout(()=>renderReqLog(),200);
 })();
 
@@ -6209,7 +6260,133 @@ function buildCartReq(){
 // ══ STOCK REQUISITION (ใบเบิกยาจากคลัง) ══════════════════════
 let _stockReqCart=[]; // [{code,name,unit,qty,stockQty,exp,orderQty,usageRate}]
 
+// ══ ตัวช่วยแนะนำยาที่ควรเบิก (Requisition Assistant) ══════════
+window._assistCriteria=new Set(['out','low','exp','d30']); // เกณฑ์ที่เลือกไว้ (ค่าเริ่มต้น)
+
+// เคยเบิกครั้งก่อน — ชื่อยาในใบเบิกล่าสุด (จาก reqLog ที่เก็บถาวร)
+function _lastReqQtyFor(name){
+  if(!reqLog.length)return null;
+  const hit=(reqLog[0].items||[]).find(i=>i.name===name);
+  return hit?Math.max(1,Math.round(parseFloat(hit.qty)||0)):null;
+}
+function _lastReqNameSet(){
+  if(!reqLog.length)return new Set();
+  return new Set((reqLog[0].items||[]).map(i=>i.name));
+}
+// ใช้บ่อย — นับจำนวนครั้งที่เบิก/จ่ายยาออกใน 30 วันล่าสุด (จากล็อกเบิกยาออก)
+let _dispFreqCache=null;
+function _dispenseFreqMap(){
+  if(_dispFreqCache)return _dispFreqCache;
+  const cutoff=Date.now()-30*24*60*60*1000;
+  const m={};
+  (dispenseRows||[]).forEach(r=>{
+    if(!r.name)return;
+    const dt=parseExpDate(fmtDate(r.date));
+    if(dt&&dt.getTime()<cutoff)return;
+    if(!m[r.name])m[r.name]={count:0,qty:0};
+    m[r.name].count++;
+    m[r.name].qty+=parseFloat(r.qty)||0;
+  });
+  _dispFreqCache=m;
+  return m;
+}
+// คำนวณจำนวนที่ควรเบิก ต่อ 1 ตัวยา ตามเกณฑ์ที่ตรง
+function _suggestReqQty(it){
+  // ถ้าเคยเบิกครั้งก่อนในชื่อเดียวกัน ใช้จำนวนเดิมเป็นฐาน (ใกล้เคียงความจริงสุด)
+  const lastQty=_lastReqQtyFor(it.name);
+  let rp=null; try{rp=getReorderPoint(it.code,it.name);}catch(e){}
+  let usage=null; try{usage=(typeof _outerUsageFor==='function')?_outerUsageFor(it.code,it.name):null;}catch(e){}
+  const rate=usage&&usage.rate!==''&&usage.rate!=null&&!isNaN(Number(usage.rate))?Number(usage.rate):null;
+  let target;
+  if(rp!=null&&rp>0)target=rp*2;          // เป้าหมาย: สำรองเผื่อ 2 เท่าของ Min
+  else if(rate!=null&&rate>0)target=rate*30; // หรือ 1 เดือนตามอัตราใช้จริง
+  else target=Math.max(10,(it.qty||0)*2);   // ค่าเริ่มต้นเผื่อกรณีไม่มีข้อมูล
+  let suggest=Math.max(1,Math.round(target-(it.qty||0)));
+  if(lastQty!=null)suggest=Math.max(suggest,Math.min(lastQty,Math.round(lastQty*1.2))); // ไม่ให้น้อยกว่าที่เคยเบิกครั้งก่อนมากนัก
+  return suggest;
+}
+// สลับเกณฑ์ (multi-select chip)
+function toggleAssistCriteria(key,btn){
+  if(window._assistCriteria.has(key))window._assistCriteria.delete(key);
+  else window._assistCriteria.add(key);
+  const on=window._assistCriteria.has(key);
+  btn.style.borderColor=on?'rgba(109,40,217,.45)':'var(--border2)';
+  btn.style.background=on?'#EDE9FE':'var(--surface2)';
+  btn.style.color=on?'#6D28D9':'var(--text2)';
+  btn.querySelector('.asc-check').style.opacity=on?'1':'0';
+}
+// รันตัวช่วย — ติ๊กยาที่ตรงเกณฑ์ + ใส่จำนวนแนะนำ + เพิ่มเข้าใบเบิกอัตโนมัติ
+function runRequisitionAssist(){
+  const crit=window._assistCriteria;
+  if(!crit.size){showAlert('กรุณาเลือกอย่างน้อย 1 เงื่อนไขก่อน','warning');return;}
+  const items=window._stockReqItems||[];
+  if(!items.length){showAlert('ไม่มีข้อมูลยาให้แนะนำ','warning');return;}
+  const repeatSet=crit.has('repeat')?_lastReqNameSet():null;
+  const freqMap=crit.has('freq')?_dispenseFreqMap():null;
+  let matched=0;
+  items.forEach((it,idx)=>{
+    let hit=false;
+    if(crit.has('out')&&it._out)hit=true;
+    if(crit.has('low')&&it._low)hit=true;
+    if(crit.has('exp')&&it._grp==='red'&&!it._out)hit=true;
+    if(crit.has('d30')&&it._d30)hit=true;
+    if(!hit&&repeatSet&&repeatSet.has(it.name))hit=true;
+    if(!hit&&freqMap&&freqMap[it.name]&&freqMap[it.name].count>=3)hit=true;
+    if(!hit)return;
+    matched++;
+    const cb=document.getElementById('src-'+idx);
+    const qi=document.getElementById('srqty-'+idx);
+    const suggestQty=_suggestReqQty(it);
+    if(cb)cb.checked=true;
+    if(qi){
+      qi.value=suggestQty;
+      qi.style.background='var(--blue-l)';qi.style.borderColor='var(--blue)';
+    }
+    addToCart(it.name,it.code,it.unit,Math.round(it.qty),it.exp,it._grp||'green',suggestQty);
+    const row=document.getElementById('srr-'+idx);
+    if(row){row.style.borderColor='rgba(26,95,212,.3)';row.style.background='var(--blue-l)';}
+  });
+  _updateReqCount();
+  if(matched===0){showAlert('ไม่พบยาที่ตรงเงื่อนไขที่เลือก','warning');return;}
+  showAlert(`🤖 แนะนำยา ${matched} รายการ เพิ่มเข้าใบเบิกแล้ว — ปรับจำนวนได้ที่ช่องตัวเลข`,'success');
+}
+// คัดลอกใบเบิกครั้งก่อนหน้าทั้งใบเข้าตะกร้าทันที
+function repeatLastRequisition(){
+  if(!reqLog.length){showAlert('ยังไม่มีประวัติใบเบิกก่อนหน้า','warning');return;}
+  repeatReqLog(0);
+}
+// คัดลอกใบเบิกใดๆ ในประวัติ (ระบุ idx) เข้าตะกร้า
+function repeatReqLog(idx){
+  const entry=reqLog[idx];
+  if(!entry){showAlert('ไม่พบใบเบิกนี้','warning');return;}
+  if(!entry.items||!entry.items.length){showAlert('ใบเบิกนี้ไม่มีรายการยา','warning');return;}
+  let added=0;
+  entry.items.forEach(it=>{
+    const stockIt=(window._stockReqItems||[]).find(s=>s.name===it.name);
+    addToCart(it.name,it.code||(stockIt?stockIt.code:''),it.unit||(stockIt?stockIt.unit:''),
+      stockIt?Math.round(stockIt.qty):0,stockIt?stockIt.exp:'',stockIt?stockIt._grp:'green',
+      Math.max(1,Math.round(parseFloat(it.qty)||1)));
+    added++;
+  });
+  showAlert(`🔁 คัดลอกใบเบิก ${entry.docNum} แล้ว (${added} รายการ) — ตรวจสอบในตะกร้าก่อนสร้างใบเบิก`,'success');
+  openCartModal();
+}
+
+// ทำให้ปุ่มเกณฑ์แนะนำแสดงสถานะ "เลือกอยู่" ตรงกับ window._assistCriteria (ค่าเริ่มต้น/ค่าที่ผู้ใช้ตั้งไว้)
+function _syncAssistChips(){
+  document.querySelectorAll('#assist-crit-chips [data-crit]').forEach(btn=>{
+    const k=btn.dataset.crit;
+    const on=window._assistCriteria.has(k);
+    btn.style.borderColor=on?'rgba(109,40,217,.45)':'var(--border2)';
+    btn.style.background=on?'#EDE9FE':'var(--surface2)';
+    btn.style.color=on?'#6D28D9':'var(--text2)';
+    const chk=btn.querySelector('.asc-check');
+    if(chk)chk.style.opacity=on?'1':'0';
+  });
+}
+
 function openStockRequisition(){
+  _dispFreqCache=null; // เคลียร์แคชความถี่การเบิก ให้คำนวณใหม่ทุกครั้งที่เปิด
   if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
   // ไม่ reset cart — ยังคงรายการที่เพิ่มไว้
 
@@ -6350,6 +6527,7 @@ function openStockRequisition(){
   // reset select-all btn
   const saBtn=document.getElementById('stock-req-select-all-btn');
   if(saBtn){saBtn.textContent='☑ เลือกทั้งหมด';saBtn.style.background='var(--surface2)';saBtn.style.borderColor='var(--border2)';saBtn.style.color='var(--text2)';}
+  _syncAssistChips();
 
   modal.classList.add('open');
 }
