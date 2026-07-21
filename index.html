@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.21.23.01</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.21.23.07</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3120,7 +3120,7 @@ function renderOverview(){
     </div>
     <input type="text" placeholder="🔍 ค้นหาชื่อยา/รหัส..." value="${_ovSearch.replace(/"/g,'&quot;')}" oninput="_ovSearch=this.value;_ovRenderRows()"
       style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--border2);border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;"/>
-    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px;scrollbar-width:none;">
+    <div style="display:flex;flex-wrap:wrap;gap:7px 6px;padding-bottom:2px;margin-bottom:8px;">
       ${chip('all','ทั้งหมด',all.length,'var(--primary)')}
       ${chip('exp','⏰ ใกล้หมดอายุ',expN,'#E56A00')}
       ${chip('low','📉 ต่ำกว่า Min',lowN,'var(--amber)')}
@@ -5192,7 +5192,7 @@ function addHistory(type,msg,detail){
   const time=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
   historyLog.unshift({type,msg,detail,time});
   const badge=document.getElementById('hist-badge');
-  badge.style.display='block';badge.textContent=historyLog.length;
+  if(badge){badge.style.display='block';badge.textContent=historyLog.length;}
 }
 function renderHistory(){
   const el=document.getElementById('history-log');
@@ -5200,7 +5200,7 @@ function renderHistory(){
   const icons={in:'<path d="M12 5v14M5 12l7-7 7 7"/>',out:'<path d="M12 19V5M5 12l7 7 7-7"/>',edit:'<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>'};
   el.innerHTML=historyLog.map(h=>`<div class="hist-item"><div class="hist-icon ${h.type}"><svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor">${icons[h.type]||icons.edit}</svg></div><div style="flex:1;"><div class="hist-title">${h.msg}</div><div class="hist-detail">${h.detail}</div><div class="hist-time">${h.time}</div></div></div>`).join('');
 }
-function clearHistory(){historyLog=[];document.getElementById('hist-badge').style.display='none';renderHistory();}
+function clearHistory(){historyLog=[];const badge=document.getElementById('hist-badge');if(badge)badge.style.display='none';renderHistory();}
 
 async function openScanner(targetId){
   scanTarget=targetId;lastScan='';
