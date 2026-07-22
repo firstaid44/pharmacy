@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.21.23.07</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.22.11.25</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2830,19 +2830,18 @@ let summaryPage=1,summarySort='qty',summarySortDir='asc';
 let _expRangeMonths=1,_allStockItems=[];
 // ══ ชั้นวางยา NCD — กำหนดชั้นเอง (แก้ลำดับ/เพิ่ม-ลบยาได้ที่นี่) ═══════════
 // แต่ละ sub-array = 1 ชั้น เรียงซ้าย→ขวา ตามลำดับที่เขียน
+// อัปเดต 22 ก.ค. 69: เรียงใหม่ตามผังจริงหน้าตู้ (ให้ตรงกับ "ตู้ยานอก NCD")
 const NCD_SHELF_LAYOUT=[
-  ['1000016', '1530008', 'ATO', 'Carve', '5COL', 'CAP RED'],
-  ['CAR', '1000122', '1460151', '1GABA', '1419041'],
-  ['1019001', 'HY251', '5HCT', '1LST2', '5PNL', 'PIO1'],
-  ['MNDP', '1000184', '1500016', 'SIM3', '1440105']
+  ['1000016', '1440105', '1530008', 'ATO', 'Carve', 'CAP RED', '5COL'],                 // ชั้น1: Allopurinol,Amlodipine,Aspirin,Atorvastatin,Carvedilol,Clopidogrel,Colchicine
+  ['CAR', '1460151', '1000122', '1000139', '1GABA', '1419041', '1019001'],              // ชั้น2: Doxazosin,Enalapril20,Enalapril5,Furosemide,Gabapentin,Gemfibrozil,Glipizide
+  ['5HCT', 'HY251', 'ISO', '1LST2', '1000184', '1500016', 'MNDP', 'PIO1'],              // ชั้น3: HCTZ,Hydralazine,Isosorbide,Losartan,Metformin,Metoprolol,Manidipine,Pioglitazone
+  ['5PNL', 'SIM3']                                                                        // ชั้น4: Propranolol,Simvastatin
 ];
-// ผังเฉพาะแท็บ "ตู้ยานอกNCD" (แยกจากตู้ที่ 2 ในคลังยาใน เพื่อไม่ให้ยาซ้ำ)
+// ผังเฉพาะแท็บ "ตู้ยานอกNCD" — ใช้ผังเดียวกับชั้นวางยา NCD ทุกประการ (ชั้น1-4)
+// + ชั้นที่ 5 เก็บยาอื่นที่เคยอยู่ในตู้นี้แต่ไม่ใช่กลุ่มยา NCD หลัก (Omeprazole, Vitamin B)
 const OUTER_NCD_LAYOUT=[
-  ['1000016', '1530008', 'ATO', 'Carve', '5COL', 'CAP RED'],
-  ['CAR', '1000122', '1460151', '1GABA', '1419041'],
-  ['1019001', 'HY251', '5HCT', '1LST2', '5PNL', 'PIO1'],
-  ['MNDP', '1000184', '1500016', 'SIM3'],
-  ['1440105', '1OME', '1000139', 'ISO', '1VIB']
+  ...NCD_SHELF_LAYOUT,
+  ['1OME', '1VIB']                                                                       // ชั้น5: ยาอื่นๆ ที่ไม่ใช่ยา NCD หลัก (Omeprazole, Vitamin B Complex)
 ];
 
 // ══ ชั้นวางยาคลัง PCU — กำหนดตู้/ชั้นเอง (แก้ได้ที่นี่) ═══════════
