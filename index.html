@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.07.22.11.38</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.01.16.42</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2817,7 +2817,7 @@ async function loadOuterStock(force){
   try{
     const r=await fetch(SCRIPT_URL+'?action=outerstock&t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
-    if(j.status==='ok'){outerStockRows=j.rows||[];_outerLoaded=true;}
+    if(j.status==='ok'){outerStockRows=_normalizeRowCodes(j.rows||[]);_outerLoaded=true;}
   }catch(e){}
   return outerStockRows;
 }
@@ -2889,6 +2889,18 @@ const _ncdNorm=s=>String(s||'').replace(/\s+/g,'').toLowerCase(); // ตัด�
 // คีย์เทียบชื่อยาแบบทนทาน: ตัดช่องว่าง/วงเล็บ/จุด/ขีด/ทับ + ไม่สนตัวพิมพ์
 // ใช้จับคู่ชื่อยาในชั้นวาง กับชื่อที่บันทึกไว้ในคลัง (อาจพิมพ์ต่างกันเล็กน้อย)
 const _drugKey=s=>String(s||'').toLowerCase().replace(/[\s().,\-/*]+/g,'');
+
+// ══ แก้รหัสยาให้ถูกต้องเสมอ (กันกรณีข้อมูลในชีตมีรหัสผิด/สลับกัน เช่น พิมพ์ 1DCL แต่จริงคือ 3DCL) ═══
+// ยึดตามชื่อยาที่ตรงกับ drugDB เป๊ะๆเป็นหลัก (ชื่อยาคือของจริง รหัสอาจกรอกผิดได้)
+const _codeByName={};
+drugDB.forEach(d=>{ _codeByName[_drugKey(d[1])]=d[0]; });
+function _normalizeRowCodes(rows){
+  (rows||[]).forEach(r=>{
+    const correct=_codeByName[_drugKey(r.name)];
+    if(correct&&r.code!==correct)r.code=correct; // แก้รหัสให้ตรงกับชื่อยาเสมอ
+  });
+  return rows;
+}
 
 // ══ จุดสั่งซื้อ (reorder point) — เตือนเมื่อคงเหลือ ≤ ค่านี้ ═══════════
 // key = รหัสยา, value = จำนวนขั้นต่ำ (หน่วยบรรจุใหญ่ เช่น กล่อง/ลัง)
@@ -3212,7 +3224,7 @@ async function loadReceive(){
     const r=await fetch(SCRIPT_URL+'?t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
     if(j.status==='ok'){
-      receiveRows=j.rows||[];
+      receiveRows=_normalizeRowCodes(j.rows||[]);
       // นับวันนี้จาก rows โดยตรง (format-safe)
       const todayStr=todayTH();
       const todayCount=receiveRows.filter(r=>fmtDate(r.date)===todayStr).length;
@@ -3229,7 +3241,7 @@ async function loadDispense(){
     const r=await fetch(SCRIPT_URL+'?action=dispense&t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
     if(j.status==='ok'){
-      dispenseRows=j.rows||[];
+      dispenseRows=_normalizeRowCodes(j.rows||[]);
       // นับวันนี้จาก rows โดยตรง (format-safe)
       const todayStr=todayTH();
       const dTodayCount=dispenseRows.filter(r=>fmtDate(r.date)===todayStr).length;
@@ -3246,7 +3258,7 @@ async function loadStock(){
       fetch(SCRIPT_URL+'?t='+Date.now(),{redirect:'follow'}).then(r=>r.json()),
       fetch(SCRIPT_URL+'?action=dispense&t='+Date.now(),{redirect:'follow'}).then(r=>r.json())
     ]);
-    receiveRows=rr.rows||[];dispenseRows=dr.rows||[];
+    receiveRows=_normalizeRowCodes(rr.rows||[]);dispenseRows=_normalizeRowCodes(dr.rows||[]);
     const stockMap={};
     receiveRows.forEach(r=>{
       const k=r.name+'|'+r.lot;
