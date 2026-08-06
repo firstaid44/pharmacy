@@ -2171,6 +2171,27 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
       <div style="font-size:22px;color:rgba(255,255,255,.7);flex-shrink:0;line-height:1;">›</div>
     </a>
 
+    <!-- ══ 📸 นำเข้าจาก MedLoggerAI (ยืนยันก่อนรับยาเข้าจริง) ══ -->
+    <div class="card" style="border:1.5px solid rgba(11,158,114,.3);">
+      <div class="card-header" style="cursor:pointer;" onclick="toggleMlPanel()">
+        <div class="card-header-icon chi-blue"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+        <div style="flex:1;"><div class="card-header-title">📸 นำเข้าจาก MedLoggerAI</div>
+          <div class="card-header-sub">ตรวจสอบข้อมูลก่อนรับยาเข้าจริง</div></div>
+        <div id="ml-toggle-arrow" style="font-size:18px;color:var(--text3);transition:transform .2s;">▾</div>
+      </div>
+      <div class="card-body" id="ml-panel-wrap" style="display:none;">
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <button id="ml-tab-drugs" onclick="switchMlTab('drugs')"
+            style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--teal);background:var(--teal);color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">📷 สแกนยาเดี่ยว <span id="ml-count-drugs"></span></button>
+          <button id="ml-tab-invoices" onclick="switchMlTab('invoices')"
+            style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">📋 ใบนำส่งยา <span id="ml-count-invoices"></span></button>
+        </div>
+        <div id="ml-panel-body" style="max-height:520px;overflow-y:auto;">
+          <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">แตะเพื่อโหลดข้อมูล...</div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-header">
         <div class="card-header-icon chi-blue"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg></div>
@@ -4717,6 +4738,267 @@ let _rBatch=[]; // รายการรอบันทึกรับเข้�
 let _dBatch=[]; // รายการรอเบิกออก
 
 // ── รับยาเข้าหลายตัวยา ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+//  📸 นำเข้าจาก MedLoggerAI — ยืนยันข้อมูลก่อนรับยาเข้าจริง
+// ══════════════════════════════════════════════════════════════
+let _mlTab='drugs';                          // แท็บย่อยที่กำลังดู: drugs | invoices
+let _mlLoaded={drugs:false,invoices:false};
+let _mlDrugs=[];                             // รายการสแกนยาเดี่ยว (จัดกลุ่มตาม ชื่อ+LOT+วันหมดอายุ)
+let _mlInvoices=[];                          // รายการใบนำส่งยา (จัดกลุ่มตามเลขที่เบิก)
+
+function toggleMlPanel(){
+  const wrap=document.getElementById('ml-panel-wrap');
+  const arrow=document.getElementById('ml-toggle-arrow');
+  const opening=wrap.style.display==='none';
+  wrap.style.display=opening?'block':'none';
+  arrow.style.transform=opening?'rotate(180deg)':'rotate(0deg)';
+  if(opening&&!_mlLoaded.drugs)loadMedLoggerDrugs();
+}
+function switchMlTab(tab){
+  _mlTab=tab;
+  const bDrugs=document.getElementById('ml-tab-drugs'),bInv=document.getElementById('ml-tab-invoices');
+  const on={background:'var(--teal)',color:'#fff',borderColor:'var(--teal)'};
+  const off={background:'var(--surface2)',color:'var(--text2)',borderColor:'var(--border2)'};
+  const a=tab==='drugs'?on:off, b=tab==='drugs'?off:on;
+  Object.assign(bDrugs.style,{background:a.background,color:a.color,borderColor:a.borderColor});
+  Object.assign(bInv.style,{background:b.background,color:b.color,borderColor:b.borderColor});
+  if(tab==='drugs'&&!_mlLoaded.drugs)loadMedLoggerDrugs();
+  else if(tab==='invoices'&&!_mlLoaded.invoices)loadMedLoggerInvoices();
+  else renderMedLoggerPanel();
+}
+// แปลง "1 x 100" (จำนวนกล่อง x จำนวนต่อกล่อง) → จำนวนรวมหน่วยย่อย
+function _parseMlQty(qtyStr){
+  const s=String(qtyStr||'').trim();
+  const m=s.match(/^(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)$/);
+  if(m)return Math.max(1,Math.round(parseFloat(m[1])*parseFloat(m[2])));
+  const n=parseFloat(s);
+  return isNaN(n)||n<=0?1:Math.round(n);
+}
+async function loadMedLoggerDrugs(force){
+  if(_mlLoaded.drugs&&!force){renderMedLoggerPanel();return;}
+  const body=document.getElementById('ml-panel-body');
+  body.innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลดจาก MedLoggerAI...</div>';
+  try{
+    const r=await fetch(SCRIPT_URL+'?action=medloggerdrugs&t='+Date.now(),{redirect:'follow'});
+    const j=await r.json();
+    if(j.status==='ok'){
+      const groups={};
+      (j.rows||[]).forEach(row=>{
+        const nameKey=(row.activeIngredient||row.tradeName||'').trim();
+        const key=nameKey+'|'+row.lot+'|'+row.expDate;
+        if(!groups[key])groups[key]={
+          displayName:[nameKey,row.strength].filter(x=>x&&x!=='-').join(' ')||nameKey||'(ไม่ทราบชื่อ)',
+          lot:row.lot==='-'?'':row.lot, exp:row.expDate==='-'?'':row.expDate,
+          barcode:row.barcode, regNo:row.regNo, rows:[], added:false
+        };
+        groups[key].rows.push(row);
+      });
+      _mlDrugs=Object.values(groups);
+      _mlDrugs.forEach(g=>{ g.match=_fuzzyMatchDrug(g.displayName); });
+      _mlLoaded.drugs=true;
+    }else{
+      showAlert('โหลดข้อมูล MedLoggerAI ไม่สำเร็จ: '+(j.message||''),'danger');
+    }
+  }catch(e){ showAlert('เชื่อมต่อ MedLoggerAI ไม่สำเร็จ: '+e.message,'danger'); }
+  renderMedLoggerPanel();
+}
+async function loadMedLoggerInvoices(force){
+  if(_mlLoaded.invoices&&!force){renderMedLoggerPanel();return;}
+  const body=document.getElementById('ml-panel-body');
+  body.innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลดจาก MedLoggerAI...</div>';
+  try{
+    const r=await fetch(SCRIPT_URL+'?action=medloggerinvoices&t='+Date.now(),{redirect:'follow'});
+    const j=await r.json();
+    if(j.status==='ok'){
+      const groups={};
+      (j.rows||[]).forEach(row=>{
+        const key=row.docNum||'ไม่ระบุเลขที่';
+        if(!groups[key])groups[key]={docNum:key,unit:row.unit,date:row.deliveryDate,lines:[]};
+        row.match=_fuzzyMatchDrug(row.name);
+        row.added=false;
+        groups[key].lines.push(row);
+      });
+      _mlInvoices=Object.values(groups);
+      _mlLoaded.invoices=true;
+    }else{
+      showAlert('โหลดข้อมูล MedLoggerAI ไม่สำเร็จ: '+(j.message||''),'danger');
+    }
+  }catch(e){ showAlert('เชื่อมต่อ MedLoggerAI ไม่สำเร็จ: '+e.message,'danger'); }
+  renderMedLoggerPanel();
+}
+function renderMedLoggerPanel(){
+  const body=document.getElementById('ml-panel-body');
+  const cD=document.getElementById('ml-count-drugs'),cI=document.getElementById('ml-count-invoices');
+  cD.textContent=_mlLoaded.drugs?`(${_mlDrugs.filter(g=>!g.added).length})`:'';
+  cI.textContent=_mlLoaded.invoices?`(${_mlInvoices.reduce((s,inv)=>s+inv.lines.filter(l=>!l.added).length,0)})`:'';
+
+  if(_mlTab==='drugs'){
+    if(!_mlLoaded.drugs){body.innerHTML='';return;}
+    const pending=_mlDrugs.filter(g=>!g.added);
+    if(!pending.length){body.innerHTML='<div style="text-align:center;padding:24px 10px;color:var(--text3);font-size:12.5px;">✓ ไม่มีรายการค้างนำเข้า — สแกนยาใหม่ได้ที่ปุ่ม "อ่านฉลาก AI" ด้านบน</div>';return;}
+    body.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+        <button onclick="loadMedLoggerDrugs(true)" style="border:none;background:transparent;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🔄 โหลดใหม่</button>
+      </div>`+
+      _mlDrugs.map((g,idx)=>{
+        if(g.added)return '';
+        const matchOpts=drugDB.map(d=>`<option value="${d[0]}" ${g.match&&g.match[0]===d[0]?'selected':''}>${d[1]}</option>`).join('');
+        const matchWarn=g.match?'':'<div style="font-size:10px;color:var(--red);margin-top:2px;">⚠ ไม่พบยาที่ตรงในฐานข้อมูล กรุณาเลือกจากรายการ</div>';
+        return `<div style="border:1.5px solid var(--border2);border-radius:12px;padding:10px;margin-bottom:8px;background:var(--surface);">
+          <div style="font-size:12.5px;font-weight:800;color:var(--text1);">${g.displayName}</div>
+          <div style="font-size:10.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">
+            ${g.lot?'LOT: '+g.lot+' · ':''}${g.exp?'EXP: '+g.exp:'ไม่ระบุวันหมดอายุ'}${g.rows.length>1?' · พบ '+g.rows.length+' รายการซ้ำ':''}
+          </div>
+          <div style="margin-top:7px;">
+            <label style="font-size:10px;color:var(--text3);font-weight:700;">จับคู่ชื่อยาในระบบ:</label>
+            <select id="ml-drug-code-${idx}" style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:inherit;margin-top:2px;">${matchOpts}</select>
+            ${matchWarn}
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-end;margin-top:7px;">
+            <div style="flex:1;">
+              <label style="font-size:10px;color:var(--text3);font-weight:700;">จำนวน</label>
+              <input id="ml-drug-qty-${idx}" type="number" min="1" value="${g.rows.length}"
+                style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:13px;font-family:'IBM Plex Mono',monospace;margin-top:2px;">
+            </div>
+            <button onclick="addMlDrugGroupToBatch(${idx})"
+              style="padding:8px 14px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">➕ เพิ่มเข้ารายการ</button>
+          </div>
+        </div>`;
+      }).join('');
+  }else{
+    if(!_mlLoaded.invoices){body.innerHTML='';return;}
+    const pendingInv=_mlInvoices.filter(inv=>inv.lines.some(l=>!l.added));
+    if(!pendingInv.length){body.innerHTML='<div style="text-align:center;padding:24px 10px;color:var(--text3);font-size:12.5px;">✓ ไม่มีใบนำส่งค้างนำเข้า</div>';return;}
+    body.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+        <button onclick="loadMedLoggerInvoices(true)" style="border:none;background:transparent;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🔄 โหลดใหม่</button>
+      </div>`+
+      _mlInvoices.map((inv,invIdx)=>{
+        const pendingLines=inv.lines.filter(l=>!l.added);
+        if(!pendingLines.length)return '';
+        const isOpen=window['_mlInvOpen_'+invIdx]===true;
+        return `<div style="border:1.5px solid var(--border2);border-radius:12px;margin-bottom:8px;background:var(--surface);overflow:hidden;">
+          <div style="padding:10px;cursor:pointer;" onclick="_toggleMlInvoice(${invIdx})">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:12.5px;font-weight:800;color:var(--text1);">📄 ใบนำส่ง ${inv.docNum}</div>
+                <div style="font-size:10.5px;color:var(--text3);margin-top:2px;">${inv.unit||''}${inv.date?' · '+inv.date:''} · ${pendingLines.length} รายการ</div>
+              </div>
+              <div style="font-size:16px;color:var(--text3);">${isOpen?'▴':'▾'}</div>
+            </div>
+          </div>
+          ${isOpen?`<div style="border-top:1px solid var(--border2);padding:8px 10px;">
+            <button onclick="addMlInvoiceAllToBatch(${invIdx})"
+              style="width:100%;padding:8px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px;">➕ เพิ่มทั้งใบ (${pendingLines.length} รายการ)</button>
+            ${inv.lines.map((line,lineIdx)=>{
+              if(line.added)return '';
+              const matchOpts=drugDB.map(d=>`<option value="${d[0]}" ${line.match&&line.match[0]===d[0]?'selected':''}>${d[1]}</option>`).join('');
+              const matchWarn=line.match?'':'<div style="font-size:10px;color:var(--red);margin-top:2px;">⚠ ไม่พบยาที่ตรง กรุณาเลือกจากรายการ</div>';
+              const calcQty=_parseMlQty(line.qty);
+              return `<div style="border-top:1px dashed var(--border2);padding:8px 0;">
+                <div style="font-size:12px;font-weight:700;color:var(--text1);">${line.seq?line.seq+'. ':''}${line.name}</div>
+                <div style="font-size:10.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">
+                  ${line.lot?'LOT: '+line.lot+' · ':''}${line.exp?'EXP: '+line.exp+' · ':''}จำนวน: ${line.qty} ${line.unitName||''} (=${calcQty})
+                </div>
+                <select id="ml-inv-code-${invIdx}-${lineIdx}" style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:inherit;margin-top:5px;">${matchOpts}</select>
+                ${matchWarn}
+                <div style="display:flex;gap:8px;align-items:flex-end;margin-top:6px;">
+                  <div style="flex:1;">
+                    <input id="ml-inv-qty-${invIdx}-${lineIdx}" type="number" min="1" value="${calcQty}"
+                      style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:'IBM Plex Mono',monospace;">
+                  </div>
+                  <button onclick="addMlInvoiceLineToBatch(${invIdx},${lineIdx})"
+                    style="padding:7px 12px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">➕ เพิ่ม</button>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>`:''}
+        </div>`;
+      }).join('');
+  }
+}
+function _toggleMlInvoice(idx){
+  window['_mlInvOpen_'+idx]=!window['_mlInvOpen_'+idx];
+  renderMedLoggerPanel();
+}
+function addMlDrugGroupToBatch(idx){
+  const g=_mlDrugs[idx]; if(!g||g.added)return;
+  const codeSel=document.getElementById('ml-drug-code-'+idx);
+  const qtyInput=document.getElementById('ml-drug-qty-'+idx);
+  const code=codeSel?codeSel.value:'';
+  const matched=drugDB.find(d=>d[0]===code);
+  if(!matched){showAlert('กรุณาเลือกยาที่ตรงกับรายการนี้ก่อน','warning');return;}
+  const qty=Math.max(1,parseInt(qtyInput.value)||g.rows.length);
+  const expIso=_normalizeScanDate(g.exp)||'';
+  _rBatch.push({
+    name:matched[1],code:matched[0],lot:g.lot||'',
+    exp:expIso?expIso.split('-').reverse().join('/'):g.exp,
+    unit:matched[3]||'หน่วย',qty,note:'นำเข้าจาก MedLoggerAI (สแกนยาเดี่ยว)',
+    docNum:'',source:'MedLoggerAI',action:'receive',
+    _mlSrc:g.rows.map(r=>({sheet:'ดึงยาจากMedLoggerAI',rowIndex:r.rowIndex}))
+  });
+  g.added=true;
+  renderReceiveBatch();
+  renderMedLoggerPanel();
+  showAlert(`＋ เพิ่ม "${matched[1]}" เข้ารายการรอบันทึกแล้ว`,'success');
+}
+function addMlInvoiceLineToBatch(invIdx,lineIdx){
+  const inv=_mlInvoices[invIdx]; if(!inv)return;
+  const line=inv.lines[lineIdx]; if(!line||line.added)return;
+  const codeSel=document.getElementById('ml-inv-code-'+invIdx+'-'+lineIdx);
+  const qtyInput=document.getElementById('ml-inv-qty-'+invIdx+'-'+lineIdx);
+  const code=codeSel?codeSel.value:'';
+  const matched=drugDB.find(d=>d[0]===code);
+  if(!matched){showAlert('กรุณาเลือกยาที่ตรงกับรายการนี้ก่อน','warning');return;}
+  const qty=Math.max(1,parseInt(qtyInput.value)||_parseMlQty(line.qty));
+  const expIso=_normalizeScanDate(line.exp)||'';
+  _rBatch.push({
+    name:matched[1],code:matched[0],lot:line.lot||'',
+    exp:expIso?expIso.split('-').reverse().join('/'):line.exp,
+    unit:matched[3]||line.unitName||'หน่วย',qty,
+    note:'นำเข้าจากใบนำส่ง '+inv.docNum+' (MedLoggerAI)',
+    docNum:inv.docNum,source:'MedLoggerAI',action:'receive',
+    _mlSrc:[{sheet:'ดึงใบนำส่งยาจากMedLoggerAI',rowIndex:line.rowIndex}]
+  });
+  line.added=true;
+  renderReceiveBatch();
+  renderMedLoggerPanel();
+  showAlert(`＋ เพิ่ม "${matched[1]}" เข้ารายการรอบันทึกแล้ว`,'success');
+}
+function addMlInvoiceAllToBatch(invIdx){
+  const inv=_mlInvoices[invIdx]; if(!inv)return;
+  let added=0,skipped=0;
+  inv.lines.forEach((line,lineIdx)=>{
+    if(line.added)return;
+    if(!line.match){skipped++;return;} // ข้ามรายการที่ยังไม่พบยาตรงกัน ให้ผู้ใช้เลือกเองทีละรายการ
+    const matched=line.match;
+    const expIso=_normalizeScanDate(line.exp)||'';
+    _rBatch.push({
+      name:matched[1],code:matched[0],lot:line.lot||'',
+      exp:expIso?expIso.split('-').reverse().join('/'):line.exp,
+      unit:matched[3]||line.unitName||'หน่วย',qty:_parseMlQty(line.qty),
+      note:'นำเข้าจากใบนำส่ง '+inv.docNum+' (MedLoggerAI)',
+      docNum:inv.docNum,source:'MedLoggerAI',action:'receive',
+      _mlSrc:[{sheet:'ดึงใบนำส่งยาจากMedLoggerAI',rowIndex:line.rowIndex}]
+    });
+    line.added=true;added++;
+  });
+  renderReceiveBatch();
+  renderMedLoggerPanel();
+  if(added)showAlert(`＋ เพิ่ม ${added} รายการเข้ารายการรอบันทึกแล้ว`+(skipped?` (ข้าม ${skipped} รายการที่ยังไม่พบยาตรงกัน — เลือกเองด้านล่าง)`:''),'success');
+  else if(skipped)showAlert('ทุกรายการยังไม่พบยาที่ตรงกัน กรุณาเลือกยาเองทีละรายการด้านล่าง','warning');
+}
+// แจ้ง backend ให้ทำเครื่องหมาย "ใช้แล้ว" กันดึงรายการเดิมมาแสดงซ้ำ (เรียกหลังบันทึกรับยาสำเร็จ)
+async function _markMedLoggerUsed(bySheet){
+  const sheets=Object.keys(bySheet);
+  for(const sheetName of sheets){
+    const rowIndexes=[...new Set(bySheet[sheetName])];
+    if(!rowIndexes.length)continue;
+    try{
+      await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({action:'medloggermarkused',sheet:sheetName,rows:rowIndexes})});
+    }catch(e){}
+  }
+}
+
 function addReceiveToBatch(){
   const name=document.getElementById('r-name').value.trim();
   const code=document.getElementById('r-code').value.trim();
@@ -4778,12 +5060,20 @@ async function saveReceiveBatch(){
   setSheet('amber','กำลังส่งข้อมูล...');
   let ok=0,fail=0;
   const items=[..._rBatch],failed=[];
+  const mlUsedBySheet={}; // เก็บ rowIndex ของ MedLoggerAI ที่บันทึกสำเร็จ เพื่อ mark "ใช้แล้ว" ทีหลัง
   for(let i=0;i<items.length;i++){
     btn.textContent=`กำลังบันทึก ${i+1}/${total}...`;
-    const entry={...items[i],date:todayTH()};
+    const {_mlSrc,...rest}=items[i]; // ตัด _mlSrc ออกก่อนส่ง ไม่ให้ปนไปกับข้อมูลที่ backend คาดหวัง
+    const entry={...rest,date:todayTH()};
     try{
       await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(entry)});
       addHistory('in',`รับยาเข้า: ${entry.name}`,`LOT: ${entry.lot} | ${entry.qty} ${entry.unit} | จาก: ${entry.source}${entry.docNum?' | เลขที่: '+entry.docNum:''}`);
+      if(_mlSrc&&_mlSrc.length){
+        _mlSrc.forEach(s=>{
+          if(!mlUsedBySheet[s.sheet])mlUsedBySheet[s.sheet]=[];
+          mlUsedBySheet[s.sheet].push(s.rowIndex);
+        });
+      }
       ok++;
     }catch(e){fail++;failed.push(items[i]);}
   }
@@ -4797,6 +5087,7 @@ async function saveReceiveBatch(){
     setSheet('red','บันทึกไม่ครบ');
     showAlert(`บันทึกสำเร็จ ${ok} รายการ · ไม่สำเร็จ ${fail} รายการ`,'danger');
   }
+  if(Object.keys(mlUsedBySheet).length)_markMedLoggerUsed(mlUsedBySheet); // ทำเครื่องหมาย "ใช้แล้ว" กันดึงซ้ำ
   clearReceiveForm();
   setTimeout(()=>loadReceive(),1500);
 }
@@ -8775,6 +9066,24 @@ function _normalizeScanDate(s){
     return y+'-'+m[1].padStart(2,'0')+'-'+lastDay;
   }
   return'';
+}
+// ── จับคู่ชื่อยาแบบคร่าวๆ กับ drugDB (ใช้ร่วมกันทั้งจุดอ่านฉลาก AI และนำเข้าจาก MedLoggerAI) ──
+function _fuzzyMatchDrug(rawName){
+  const q=String(rawName||'').toLowerCase().trim();
+  if(!q)return null;
+  let match=drugDB.find(d=>d[1].toLowerCase()===q)||
+            drugDB.find(d=>d[1].toLowerCase().includes(q)||q.includes(d[1].toLowerCase()));
+  if(!match){
+    const tokens=q.split(/[\s\/()]+/).filter(t=>t.length>=3);
+    let best=null,bestScore=0;
+    drugDB.forEach(d=>{
+      const nm=d[1].toLowerCase();
+      const score=tokens.reduce((s,t)=>s+(nm.includes(t)?1:0),0);
+      if(score>bestScore){bestScore=score;best=d;}
+    });
+    if(bestScore>=2)match=best;
+  }
+  return match||null; // [code,name,unitPack,unitSub,type,min,packQty,packSize] หรือ null ถ้าไม่พบ
 }
 function _applyMedScanResult(res){
   const readName=(res.name||'').trim();
