@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.06.15.24</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.06.15.43</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -4781,6 +4781,16 @@ async function loadMedLoggerDrugs(force){
   try{
     const r=await fetch(SCRIPT_URL+'?action=medloggerdrugs&t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
+    if(j.status==='ok'&&j.kind!=='medloggerdrugs'){
+      // doGet ยังไม่รู้จัก action นี้ → หลุดไปคืนข้อมูลชีตอื่น (เช่น รับยาเข้า) แทน
+      _mlDrugs=[];_mlLoaded.drugs=true;renderMedLoggerPanel();
+      document.getElementById('ml-panel-body').innerHTML=
+        '<div style="padding:14px;border:1.5px solid rgba(217,48,37,.3);border-radius:10px;background:var(--red-l);color:var(--red);font-size:11.5px;line-height:1.6;">'+
+        '<b>⚠ Apps Script ยังไม่ได้เชื่อม action นี้</b><br>ระบบได้รับข้อมูลจากชีตอื่นแทน (จึงขึ้นจำนวนรายการผิด)<br><br>'+
+        'กรุณาเพิ่มใน <code>doGet(e)</code>:<br><code>else if(action===\'medloggerdrugs\') return getMedLoggerDrugs_(ss);</code><br>'+
+        'แล้ว <b>Deploy → New version</b> อีกครั้ง</div>';
+      return;
+    }
     if(j.status==='ok'){
       const groups={};
       (j.rows||[]).forEach(row=>{
@@ -4809,6 +4819,15 @@ async function loadMedLoggerInvoices(force){
   try{
     const r=await fetch(SCRIPT_URL+'?action=medloggerinvoices&t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
+    if(j.status==='ok'&&j.kind!=='medloggerinvoices'){
+      _mlInvoices=[];_mlLoaded.invoices=true;renderMedLoggerPanel();
+      document.getElementById('ml-panel-body').innerHTML=
+        '<div style="padding:14px;border:1.5px solid rgba(217,48,37,.3);border-radius:10px;background:var(--red-l);color:var(--red);font-size:11.5px;line-height:1.6;">'+
+        '<b>⚠ Apps Script ยังไม่ได้เชื่อม action นี้</b><br>ระบบได้รับข้อมูลจากชีตอื่นแทน (จึงขึ้นจำนวนรายการผิด และรวมเป็น "ไม่ระบุเลขที่" ก้อนเดียว)<br><br>'+
+        'กรุณาเพิ่มใน <code>doGet(e)</code>:<br><code>else if(action===\'medloggerinvoices\') return getMedLoggerInvoices_(ss);</code><br>'+
+        'แล้ว <b>Deploy → New version</b> อีกครั้ง</div>';
+      return;
+    }
     if(j.status==='ok'){
       const groups={};
       (j.rows||[]).forEach(row=>{
