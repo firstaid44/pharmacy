@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.14.40</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.14.49</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -4754,6 +4754,27 @@ function _mlFmtDate(v){
 }
 // รายการหน่วยนับมาตรฐาน (ชุดเดียวกับฟอร์มรับยาเข้า)
 const ML_UNITS=['เม็ด','แคปซูล','ขวด','หลอด','ซอง','กล่อง','แพ็ค','ลัง','อัน','ชิ้น','หน่วย'];
+// แถบข้อมูลสำคัญ 3 ช่อง: LOT · วันหมดอายุ · จำนวน — จัดให้อ่านง่าย เห็นชัดว่าช่องไหนขาด
+function _mlInfoGrid(lot,exp,qtyMain,qtySub){
+  const expIso=_normalizeScanDate(exp);
+  let expTxt=expIso?expIso.split('-').reverse().join('/'):'',expColor='var(--text1)';
+  if(expIso){
+    const mo=(new Date(expIso)-Date.now())/(1000*60*60*24*30.4);
+    if(mo<=0){expColor='var(--red)';expTxt+=' ⚠';}
+    else if(mo<=6){expColor='#C07000';}
+  }
+  const cell=(label,value,color,missing)=>`
+    <div style="flex:1;min-width:0;background:${missing?'var(--red-l)':'var(--surface2)'};border-radius:8px;padding:5px 7px;">
+      <div style="font-size:8.5px;font-weight:800;color:${missing?'var(--red)':'var(--text3)'};letter-spacing:.3px;">${label}</div>
+      <div style="font-size:12px;font-weight:800;color:${missing?'var(--red)':color};font-family:'IBM Plex Mono',monospace;
+                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;">${missing?'ต้องกรอก':value}</div>
+    </div>`;
+  return `<div style="display:flex;gap:6px;margin-top:6px;">
+    ${cell('LOT',lot,'var(--text1)',!lot)}
+    ${cell('หมดอายุ',expTxt,expColor,!expIso)}
+    ${cell('จำนวน',qtyMain,'var(--teal)',false)}
+  </div>${qtySub?`<div style="font-size:9.5px;color:var(--text3);margin-top:3px;">${qtySub}</div>`:''}`;
+}
 // ค่าที่ถือว่า "ไม่มีข้อมูล" — ชีตมักใส่ขีด "-" หรือข้อความแทนช่องว่าง ต้องแปลงเป็นค่าว่างจริง
 // ไม่งั้นระบบจะเข้าใจผิดว่ามีข้อมูลแล้ว และไม่ขึ้นช่องให้กรอก LOT/วันหมดอายุ
 function _mlClean(v){
@@ -4898,10 +4919,8 @@ function renderMedLoggerPanel(){
         const matchWarn=g.match?'':'<div style="font-size:10px;color:var(--red);margin-top:2px;">⚠ ไม่พบยาที่ตรงในฐานข้อมูล กรุณาเลือกจากรายการ</div>';
         const expOk=!!_normalizeScanDate(g.exp);   // วันหมดอายุที่อ่านค่าไม่ได้ ให้ถือว่าไม่มี ต้องกรอกใหม่
         return `<div style="border:1.5px solid var(--border2);border-radius:12px;padding:10px;margin-bottom:8px;background:var(--surface);">
-          <div style="font-size:12.5px;font-weight:800;color:var(--text1);">${g.displayName}</div>
-          <div style="font-size:10.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">
-            ${g.lot?'LOT: '+g.lot+' · ':''}${g.exp?'EXP: '+_mlFmtDate(g.exp):'ไม่ระบุวันหมดอายุ'}${g.rows.length>1?' · พบ '+g.rows.length+' รายการซ้ำ':''}
-          </div>
+          <div style="font-size:12.5px;font-weight:800;color:var(--text1);line-height:1.35;">${g.displayName}</div>
+          ${_mlInfoGrid(g.lot,g.exp,String(g.rows.length),g.rows.length>1?'📷 สแกนซ้ำ '+g.rows.length+' ครั้ง — ปรับจำนวนได้ด้านล่าง':'')}
           <div style="margin-top:7px;">
             <label style="font-size:10px;color:var(--text3);font-weight:700;">จับคู่ชื่อยาในระบบ:</label>
             <select id="ml-drug-code-${idx}" style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:inherit;margin-top:2px;">${matchOpts}</select>
@@ -4968,11 +4987,10 @@ function renderMedLoggerPanel(){
               const calcQty=_parseMlQty(line.qty);
               const lineExpOk=!!_normalizeScanDate(line.exp);
               return `<div style="border-top:1px dashed var(--border2);padding:8px 0;">
-                <div style="font-size:12px;font-weight:700;color:var(--text1);">${line.seq?line.seq+'. ':''}${line.name}</div>
-                <div style="font-size:10.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">
-                  ${line.lot?'LOT: '+line.lot+' · ':''}${line.exp?'EXP: '+_mlFmtDate(line.exp)+' · ':''}จำนวน: ${line.qty} ${line.unitName||''} (=${calcQty})
-                </div>
-                <select id="ml-inv-code-${invIdx}-${lineIdx}" style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:inherit;margin-top:5px;">${matchOpts}</select>
+                <div style="font-size:12.5px;font-weight:800;color:var(--text1);line-height:1.35;">${line.seq?'<span style="color:var(--text3);font-weight:700;">'+line.seq+'.</span> ':''}${line.name}</div>
+                ${_mlInfoGrid(line.lot,line.exp,calcQty+' '+(line.unitName||''),'ตามใบนำส่ง: '+line.qty+' '+(line.unitName||''))}
+                <label style="display:block;font-size:9.5px;color:var(--text3);font-weight:700;margin-top:7px;">จับคู่ชื่อยาในระบบ:</label>
+                <select id="ml-inv-code-${invIdx}-${lineIdx}" style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:inherit;margin-top:2px;">${matchOpts}</select>
                 ${matchWarn}
                 ${(!line.lot||!lineExpOk)?`<div style="margin-top:6px;padding:8px;border:1.5px solid rgba(217,48,37,.35);border-radius:10px;background:var(--red-l);">
                   <div style="font-size:9.5px;font-weight:800;color:var(--red);margin-bottom:5px;">⚠ ข้อมูลไม่ครบ — กรุณากรอกก่อนเพิ่ม</div>
