@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.14.49</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.14.55</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2261,7 +2261,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="card">
       <div style="padding:14px 1rem 6px;">
         <div class="section-hd">
-          <span class="section-title">รายการรับยาเข้าล่าสุด</span>
+          <span class="section-title">รายการรับยาเข้า (ตามวันที่)</span>
           <button class="section-action" onclick="loadReceive()">↻ รีเฟรช</button>
         </div>
         <div class="date-filter-wrap">
@@ -2380,7 +2380,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="card">
       <div style="padding:14px 1rem 6px;">
         <div class="section-hd">
-          <span class="section-title">รายการเบิกล่าสุด</span>
+          <span class="section-title">รายการเบิกยาออก (ตามวันที่)</span>
           <button class="section-action" onclick="loadDispense()">↻ รีเฟรช</button>
           <button class="section-action" onclick="openReqFromLog()" style="background:var(--blue-l);color:var(--blue);border-color:rgba(26,95,212,.2);">📄 สร้างใบเบิก</button>
         </div>
@@ -4286,24 +4286,25 @@ function showDrugDetail(name){
 
 function renderReceiveLog(){
   const el=document.getElementById('receive-log');
-  if(!receiveRows.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ</div>';return;}
-  // กรองวันที่
-  let rows=receiveRows;
-  if(_recvDateFilter){
-    const target=fmtDate(_recvDateFilter.split('-').reverse().join('/'));
-    rows=rows.filter(r=>fmtDate(r.date)===target||r.date===_recvDateFilter);
-    const cnt=document.getElementById('recv-filter-count');
-    if(cnt)cnt.textContent=rows.length?`พบ ${rows.length} รายการ`:'ไม่พบรายการ';
-  }else{
-    const cnt=document.getElementById('recv-filter-count');
+  const cnt=document.getElementById('recv-filter-count');
+  // ── แสดงรายการเฉพาะเมื่อเลือกวันที่เท่านั้น ──
+  if(!_recvDateFilter){
     if(cnt)cnt.textContent='';
+    el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>เลือกวันที่ด้านบนเพื่อดูรายการรับยาเข้า</div>';
+    return;
   }
+  if(!receiveRows.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ</div>';return;}
+  const target=fmtDate(_recvDateFilter.split('-').reverse().join('/'));
+  // เก็บ index เดิมไว้ด้วย เพราะปุ่มแก้ไข/ลบ อ้างอิงตำแหน่งใน receiveRows ตัวเต็ม
+  const rows=receiveRows.map((r,idx)=>({r,idx}))
+    .filter(({r})=>fmtDate(r.date)===target||r.date===_recvDateFilter);
+  if(cnt)cnt.textContent=rows.length?`พบ ${rows.length} รายการ`:'ไม่พบรายการ';
   if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div>ไม่พบรายการในวันที่เลือก</div>';return;}
-  el.innerHTML=rows.slice(0,50).map((e,i)=>`
+  el.innerHTML=rows.slice(0,50).map(({r:e,idx})=>`
     <div class="log-item">
       <div class="log-name">${e.name}</div>
-      <button class="edit-btn" onclick="openEditModal('receive',${i})">แก้ไข</button>
-      <button class="del-btn" onclick="confirmDelete('receive',${i})">ลบ</button>
+      <button class="edit-btn" onclick="openEditModal('receive',${idx})">แก้ไข</button>
+      <button class="del-btn" onclick="confirmDelete('receive',${idx})">ลบ</button>
       <div class="log-pills">
         <span class="pill pill-gray pill-mono">${e.code||'—'}</span>
         <span class="pill pill-blue pill-mono">LOT: ${e.lot}</span>
@@ -4316,24 +4317,25 @@ function renderReceiveLog(){
 }
 function renderDispenseLog(){
   const el=document.getElementById('dispense-log');
-  if(!dispenseRows.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการเบิก</div>';return;}
-  // กรองวันที่
-  let rows=dispenseRows;
-  if(_dispDateFilter){
-    const target=fmtDate(_dispDateFilter.split('-').reverse().join('/'));
-    rows=rows.filter(r=>fmtDate(r.date)===target||r.date===_dispDateFilter);
-    const cnt=document.getElementById('disp-filter-count');
-    if(cnt)cnt.textContent=rows.length?`พบ ${rows.length} รายการ`:'ไม่พบรายการ';
-  }else{
-    const cnt=document.getElementById('disp-filter-count');
+  const cnt=document.getElementById('disp-filter-count');
+  // ── แสดงรายการเฉพาะเมื่อเลือกวันที่เท่านั้น ──
+  if(!_dispDateFilter){
     if(cnt)cnt.textContent='';
+    el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>เลือกวันที่ด้านบนเพื่อดูรายการเบิกยาออก</div>';
+    return;
   }
+  if(!dispenseRows.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการเบิก</div>';return;}
+  const target=fmtDate(_dispDateFilter.split('-').reverse().join('/'));
+  // เก็บ index เดิมไว้ด้วย เพราะปุ่มแก้ไข/ลบ อ้างอิงตำแหน่งใน dispenseRows ตัวเต็ม
+  const rows=dispenseRows.map((r,idx)=>({r,idx}))
+    .filter(({r})=>fmtDate(r.date)===target||r.date===_dispDateFilter);
+  if(cnt)cnt.textContent=rows.length?`พบ ${rows.length} รายการ`:'ไม่พบรายการ';
   if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div>ไม่พบรายการในวันที่เลือก</div>';return;}
-  el.innerHTML=rows.slice(0,50).map((e,i)=>`
+  el.innerHTML=rows.slice(0,50).map(({r:e,idx})=>`
     <div class="log-item">
       <div class="log-name">${e.name}</div>
-      <button class="edit-btn" onclick="openEditModal('dispense',${i})">แก้ไข</button>
-      <button class="del-btn" onclick="confirmDelete('dispense',${i})">ลบ</button>
+      <button class="edit-btn" onclick="openEditModal('dispense',${idx})">แก้ไข</button>
+      <button class="del-btn" onclick="confirmDelete('dispense',${idx})">ลบ</button>
       <div class="log-pills">
         <span class="pill pill-gray pill-mono">${e.code||'—'}</span>
         <span class="pill pill-blue pill-mono">LOT: ${e.lot}</span>
