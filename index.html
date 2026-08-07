@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.09.29</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.14.30</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -4896,6 +4896,21 @@ function renderMedLoggerPanel(){
             <select id="ml-drug-code-${idx}" style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:inherit;margin-top:2px;">${matchOpts}</select>
             ${matchWarn}
           </div>
+          ${(!g.lot||!g.exp)?`<div style="margin-top:7px;padding:8px;border:1.5px solid rgba(217,48,37,.35);border-radius:10px;background:var(--red-l);">
+            <div style="font-size:10px;font-weight:800;color:var(--red);margin-bottom:5px;">⚠ ข้อมูลไม่ครบ — กรุณากรอกก่อนเพิ่มเข้ารายการ</div>
+            <div style="display:flex;gap:8px;">
+              ${!g.lot?`<div style="flex:1;">
+                <label style="font-size:9.5px;color:var(--text3);font-weight:700;">LOT Number *</label>
+                <input id="ml-drug-lot-${idx}" type="text" placeholder="กรอก LOT..."
+                  style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:'IBM Plex Mono',monospace;margin-top:2px;">
+              </div>`:''}
+              ${!g.exp?`<div style="flex:1;">
+                <label style="font-size:9.5px;color:var(--text3);font-weight:700;">วันหมดอายุ *</label>
+                <input id="ml-drug-exp-${idx}" type="date"
+                  style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:inherit;margin-top:2px;">
+              </div>`:''}
+            </div>
+          </div>`:''}
           <div style="display:flex;gap:8px;align-items:flex-end;margin-top:7px;">
             <div style="flex:1;">
               <label style="font-size:10px;color:var(--text3);font-weight:700;">จำนวน</label>
@@ -4947,6 +4962,21 @@ function renderMedLoggerPanel(){
                 </div>
                 <select id="ml-inv-code-${invIdx}-${lineIdx}" style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:inherit;margin-top:5px;">${matchOpts}</select>
                 ${matchWarn}
+                ${(!line.lot||!line.exp)?`<div style="margin-top:6px;padding:8px;border:1.5px solid rgba(217,48,37,.35);border-radius:10px;background:var(--red-l);">
+                  <div style="font-size:9.5px;font-weight:800;color:var(--red);margin-bottom:5px;">⚠ ข้อมูลไม่ครบ — กรุณากรอกก่อนเพิ่ม</div>
+                  <div style="display:flex;gap:8px;">
+                    ${!line.lot?`<div style="flex:1;">
+                      <label style="font-size:9.5px;color:var(--text3);font-weight:700;">LOT Number *</label>
+                      <input id="ml-inv-lot-${invIdx}-${lineIdx}" type="text" placeholder="กรอก LOT..."
+                        style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:'IBM Plex Mono',monospace;margin-top:2px;">
+                    </div>`:''}
+                    ${!line.exp?`<div style="flex:1;">
+                      <label style="font-size:9.5px;color:var(--text3);font-weight:700;">วันหมดอายุ *</label>
+                      <input id="ml-inv-exp-${invIdx}-${lineIdx}" type="date"
+                        style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:inherit;margin-top:2px;">
+                    </div>`:''}
+                  </div>
+                </div>`:''}
                 <div style="display:flex;gap:8px;align-items:flex-end;margin-top:6px;">
                   <div style="flex:1;">
                     <label style="font-size:9.5px;color:var(--text3);font-weight:700;">จำนวน</label>
@@ -4980,10 +5010,16 @@ function addMlDrugGroupToBatch(idx){
   if(!matched){showAlert('กรุณาเลือกยาที่ตรงกับรายการนี้ก่อน','warning');return;}
   const qty=Math.max(1,parseInt(qtyInput.value)||g.rows.length);
   const unitSel=document.getElementById('ml-drug-unit-'+idx);
-  const expIso=_normalizeScanDate(g.exp)||'';
+  // ── LOT และวันหมดอายุห้ามว่าง ── ถ้า MedLoggerAI ไม่มีข้อมูล ต้องกรอกมือในช่องที่ขึ้นให้
+  const lotInput=document.getElementById('ml-drug-lot-'+idx);
+  const lot=(g.lot||(lotInput?lotInput.value.trim():'')).trim();
+  if(!lot){showAlert('กรุณากรอก LOT Number ก่อนเพิ่มเข้ารายการ','danger');if(lotInput)lotInput.focus();return;}
+  const expInput=document.getElementById('ml-drug-exp-'+idx);
+  const expIso=g.exp?(_normalizeScanDate(g.exp)||''):((expInput&&expInput.value)||'');
+  if(!expIso){showAlert('กรุณาระบุวันหมดอายุก่อนเพิ่มเข้ารายการ','danger');if(expInput)expInput.focus();return;}
   _rBatch.push({
-    name:matched[1],code:matched[0],lot:g.lot||'',
-    exp:expIso?expIso.split('-').reverse().join('/'):_mlFmtDate(g.exp),
+    name:matched[1],code:matched[0],lot:lot,
+    exp:expIso.split('-').reverse().join('/'),
     unit:(unitSel&&unitSel.value)||matched[3]||'หน่วย',qty,note:'นำเข้าจาก MedLoggerAI (สแกนยาเดี่ยว)',
     docNum:'',source:'MedLoggerAI',action:'receive',
     _mlSrc:g.rows.map(r=>({sheet:'ดึงยาจากMedLoggerAI',rowIndex:r.rowIndex}))
@@ -5003,10 +5039,16 @@ function addMlInvoiceLineToBatch(invIdx,lineIdx){
   if(!matched){showAlert('กรุณาเลือกยาที่ตรงกับรายการนี้ก่อน','warning');return;}
   const qty=Math.max(1,parseInt(qtyInput.value)||_parseMlQty(line.qty));
   const unitSel=document.getElementById('ml-inv-unit-'+invIdx+'-'+lineIdx);
-  const expIso=_normalizeScanDate(line.exp)||'';
+  // ── LOT และวันหมดอายุห้ามว่าง ──
+  const lotInput=document.getElementById('ml-inv-lot-'+invIdx+'-'+lineIdx);
+  const lot=(line.lot||(lotInput?lotInput.value.trim():'')).trim();
+  if(!lot){showAlert('กรุณากรอก LOT Number ของ "'+line.name+'" ก่อนเพิ่ม','danger');if(lotInput)lotInput.focus();return;}
+  const expInput=document.getElementById('ml-inv-exp-'+invIdx+'-'+lineIdx);
+  const expIso=line.exp?(_normalizeScanDate(line.exp)||''):((expInput&&expInput.value)||'');
+  if(!expIso){showAlert('กรุณาระบุวันหมดอายุของ "'+line.name+'" ก่อนเพิ่ม','danger');if(expInput)expInput.focus();return;}
   _rBatch.push({
-    name:matched[1],code:matched[0],lot:line.lot||'',
-    exp:expIso?expIso.split('-').reverse().join('/'):_mlFmtDate(line.exp),
+    name:matched[1],code:matched[0],lot:lot,
+    exp:expIso.split('-').reverse().join('/'),
     unit:(unitSel&&unitSel.value)||matched[3]||line.unitName||'หน่วย',qty,
     note:'นำเข้าจากใบนำส่ง '+inv.docNum+' (MedLoggerAI)',
     docNum:inv.docNum,source:'MedLoggerAI',action:'receive',
@@ -5019,18 +5061,23 @@ function addMlInvoiceLineToBatch(invIdx,lineIdx){
 }
 function addMlInvoiceAllToBatch(invIdx){
   const inv=_mlInvoices[invIdx]; if(!inv)return;
-  let added=0,skipped=0;
+  let added=0,skipped=0,incomplete=0;
   inv.lines.forEach((line,lineIdx)=>{
     if(line.added)return;
     if(!line.match){skipped++;return;} // ข้ามรายการที่ยังไม่พบยาตรงกัน ให้ผู้ใช้เลือกเองทีละรายการ
     const matched=line.match;
-    const expIso=_normalizeScanDate(line.exp)||'';
+    // ── LOT และวันหมดอายุห้ามว่าง — ถ้าไม่ครบให้ข้ามไว้ ให้ผู้ใช้กรอกมือทีละรายการ ──
+    const lotInput=document.getElementById('ml-inv-lot-'+invIdx+'-'+lineIdx);
+    const lot=(line.lot||(lotInput?lotInput.value.trim():'')).trim();
+    const expInput=document.getElementById('ml-inv-exp-'+invIdx+'-'+lineIdx);
+    const expIso=line.exp?(_normalizeScanDate(line.exp)||''):((expInput&&expInput.value)||'');
+    if(!lot||!expIso){incomplete++;return;}
     // ถ้าการ์ดถูกกางอยู่ ให้ยึดหน่วยที่ผู้ใช้เลือกไว้ ถ้ายังไม่ได้กาง ใช้ค่าที่ระบบเดาให้จากหน่วยในใบนำส่ง
     const unitSel=document.getElementById('ml-inv-unit-'+invIdx+'-'+lineIdx);
     const unitVal=(unitSel&&unitSel.value)||_mlGuessUnit(matched[3],line.unitName);
     _rBatch.push({
-      name:matched[1],code:matched[0],lot:line.lot||'',
-      exp:expIso?expIso.split('-').reverse().join('/'):_mlFmtDate(line.exp),
+      name:matched[1],code:matched[0],lot:lot,
+      exp:expIso.split('-').reverse().join('/'),
       unit:unitVal,qty:_parseMlQty(line.qty),
       note:'นำเข้าจากใบนำส่ง '+inv.docNum+' (MedLoggerAI)',
       docNum:inv.docNum,source:'MedLoggerAI',action:'receive',
@@ -5040,8 +5087,11 @@ function addMlInvoiceAllToBatch(invIdx){
   });
   renderReceiveBatch();
   renderMedLoggerPanel();
-  if(added)showAlert(`＋ เพิ่ม ${added} รายการเข้ารายการรอบันทึกแล้ว`+(skipped?` (ข้าม ${skipped} รายการที่ยังไม่พบยาตรงกัน — เลือกเองด้านล่าง)`:''),'success');
-  else if(skipped)showAlert('ทุกรายการยังไม่พบยาที่ตรงกัน กรุณาเลือกยาเองทีละรายการด้านล่าง','warning');
+  const notes=[];
+  if(skipped)notes.push(`${skipped} รายการยังไม่พบยาตรงกัน`);
+  if(incomplete)notes.push(`${incomplete} รายการขาด LOT/วันหมดอายุ`);
+  if(added)showAlert(`＋ เพิ่ม ${added} รายการเข้ารายการรอบันทึกแล้ว`+(notes.length?` (ข้าม ${notes.join(' และ ')} — กรอกเองด้านล่าง)`:''),'success');
+  else showAlert(`ยังเพิ่มไม่ได้: ${notes.join(' และ ')} กรุณากรอกข้อมูลให้ครบทีละรายการด้านล่าง`,'warning');
 }
 // แจ้ง backend ให้ทำเครื่องหมาย "ใช้แล้ว" กันดึงรายการเดิมมาแสดงซ้ำ (เรียกหลังบันทึกรับยาสำเร็จ)
 async function _markMedLoggerUsed(bySheet){
@@ -5111,6 +5161,12 @@ function clearReceiveBatch(){
 }
 async function saveReceiveBatch(){
   if(!_rBatch.length){showAlert('ยังไม่มีรายการรอบันทึก — กด "＋ เพิ่มเข้ารายการ" ก่อน','warning');return;}
+  // ── กันพลาดชั้นสุดท้าย: LOT และวันหมดอายุห้ามว่างเด็ดขาด ──
+  const bad=_rBatch.filter(b=>!String(b.lot||'').trim()||!String(b.exp||'').trim());
+  if(bad.length){
+    showAlert(`ไม่สามารถบันทึกได้ — มี ${bad.length} รายการที่ไม่มี LOT หรือวันหมดอายุ (${bad.map(b=>b.name.substring(0,18)).join(', ')})`,'danger');
+    return;
+  }
   const btn=document.getElementById('r-batch-save-btn');
   const total=_rBatch.length;
   btn.disabled=true;
