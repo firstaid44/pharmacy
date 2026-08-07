@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.09.17</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.09.29</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -4752,6 +4752,24 @@ function _mlFmtDate(v){
   const iso=_normalizeScanDate(v);
   return iso?iso.split('-').reverse().join('/'):String(v).trim();
 }
+// รายการหน่วยนับมาตรฐาน (ชุดเดียวกับฟอร์มรับยาเข้า)
+const ML_UNITS=['เม็ด','แคปซูล','ขวด','หลอด','ซอง','กล่อง','แพ็ค','ลัง','อัน','ชิ้น','หน่วย'];
+// เดาหน่วยนับที่เหมาะสม: ใช้หน่วยย่อยจาก MedicineDB ก่อน ถ้าไม่ตรงชุดมาตรฐานจึงแปลงจากหน่วยดิบในใบนำส่ง
+function _mlGuessUnit(pref,raw){
+  const MAP={tab:'เม็ด',tabs:'เม็ด',cap:'แคปซูล',caps:'แคปซูล',bot:'ขวด',bottle:'ขวด',
+    tube:'หลอด',amp:'หลอด',vial:'ขวด',sac:'ซอง',sachet:'ซอง',box:'กล่อง',pack:'แพ็ค',set:'ชิ้น'};
+  let sel=String(pref||'').trim();
+  if(!ML_UNITS.includes(sel)){
+    const rawStr=String(raw||'').trim();
+    sel=MAP[rawStr.toLowerCase()]||(ML_UNITS.includes(rawStr)?rawStr:'');
+  }
+  return sel||'หน่วย';
+}
+// สร้าง <option> หน่วยนับ พร้อมเลือกค่าที่เดาได้ไว้ล่วงหน้า
+function _mlUnitOptions(pref,raw){
+  const sel=_mlGuessUnit(pref,raw);
+  return ML_UNITS.map(u=>`<option value="${u}"${u===sel?' selected':''}>${u}</option>`).join('');
+}
 function toggleMlPanel(){
   const wrap=document.getElementById('ml-panel-wrap');
   const arrow=document.getElementById('ml-toggle-arrow');
@@ -4884,6 +4902,10 @@ function renderMedLoggerPanel(){
               <input id="ml-drug-qty-${idx}" type="number" min="1" value="${g.rows.length}"
                 style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:13px;font-family:'IBM Plex Mono',monospace;margin-top:2px;">
             </div>
+            <div style="flex:1;">
+              <label style="font-size:10px;color:var(--text3);font-weight:700;">หน่วยนับ</label>
+              <select id="ml-drug-unit-${idx}" style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:inherit;margin-top:2px;">${_mlUnitOptions(g.match?g.match[3]:'','')}</select>
+            </div>
             <button onclick="addMlDrugGroupToBatch(${idx})"
               style="padding:8px 14px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">➕ เพิ่มเข้ารายการ</button>
           </div>
@@ -4927,8 +4949,13 @@ function renderMedLoggerPanel(){
                 ${matchWarn}
                 <div style="display:flex;gap:8px;align-items:flex-end;margin-top:6px;">
                   <div style="flex:1;">
+                    <label style="font-size:9.5px;color:var(--text3);font-weight:700;">จำนวน</label>
                     <input id="ml-inv-qty-${invIdx}-${lineIdx}" type="number" min="1" value="${calcQty}"
-                      style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:'IBM Plex Mono',monospace;">
+                      style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:'IBM Plex Mono',monospace;margin-top:2px;">
+                  </div>
+                  <div style="flex:1;">
+                    <label style="font-size:9.5px;color:var(--text3);font-weight:700;">หน่วยนับ</label>
+                    <select id="ml-inv-unit-${invIdx}-${lineIdx}" style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:inherit;margin-top:2px;">${_mlUnitOptions(line.match?line.match[3]:'',line.unitName)}</select>
                   </div>
                   <button onclick="addMlInvoiceLineToBatch(${invIdx},${lineIdx})"
                     style="padding:7px 12px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">➕ เพิ่ม</button>
@@ -4952,11 +4979,12 @@ function addMlDrugGroupToBatch(idx){
   const matched=drugDB.find(d=>d[0]===code);
   if(!matched){showAlert('กรุณาเลือกยาที่ตรงกับรายการนี้ก่อน','warning');return;}
   const qty=Math.max(1,parseInt(qtyInput.value)||g.rows.length);
+  const unitSel=document.getElementById('ml-drug-unit-'+idx);
   const expIso=_normalizeScanDate(g.exp)||'';
   _rBatch.push({
     name:matched[1],code:matched[0],lot:g.lot||'',
     exp:expIso?expIso.split('-').reverse().join('/'):_mlFmtDate(g.exp),
-    unit:matched[3]||'หน่วย',qty,note:'นำเข้าจาก MedLoggerAI (สแกนยาเดี่ยว)',
+    unit:(unitSel&&unitSel.value)||matched[3]||'หน่วย',qty,note:'นำเข้าจาก MedLoggerAI (สแกนยาเดี่ยว)',
     docNum:'',source:'MedLoggerAI',action:'receive',
     _mlSrc:g.rows.map(r=>({sheet:'ดึงยาจากMedLoggerAI',rowIndex:r.rowIndex}))
   });
@@ -4974,11 +5002,12 @@ function addMlInvoiceLineToBatch(invIdx,lineIdx){
   const matched=drugDB.find(d=>d[0]===code);
   if(!matched){showAlert('กรุณาเลือกยาที่ตรงกับรายการนี้ก่อน','warning');return;}
   const qty=Math.max(1,parseInt(qtyInput.value)||_parseMlQty(line.qty));
+  const unitSel=document.getElementById('ml-inv-unit-'+invIdx+'-'+lineIdx);
   const expIso=_normalizeScanDate(line.exp)||'';
   _rBatch.push({
     name:matched[1],code:matched[0],lot:line.lot||'',
     exp:expIso?expIso.split('-').reverse().join('/'):_mlFmtDate(line.exp),
-    unit:matched[3]||line.unitName||'หน่วย',qty,
+    unit:(unitSel&&unitSel.value)||matched[3]||line.unitName||'หน่วย',qty,
     note:'นำเข้าจากใบนำส่ง '+inv.docNum+' (MedLoggerAI)',
     docNum:inv.docNum,source:'MedLoggerAI',action:'receive',
     _mlSrc:[{sheet:'ดึงใบนำส่งยาจากMedLoggerAI',rowIndex:line.rowIndex}]
@@ -4996,10 +5025,13 @@ function addMlInvoiceAllToBatch(invIdx){
     if(!line.match){skipped++;return;} // ข้ามรายการที่ยังไม่พบยาตรงกัน ให้ผู้ใช้เลือกเองทีละรายการ
     const matched=line.match;
     const expIso=_normalizeScanDate(line.exp)||'';
+    // ถ้าการ์ดถูกกางอยู่ ให้ยึดหน่วยที่ผู้ใช้เลือกไว้ ถ้ายังไม่ได้กาง ใช้ค่าที่ระบบเดาให้จากหน่วยในใบนำส่ง
+    const unitSel=document.getElementById('ml-inv-unit-'+invIdx+'-'+lineIdx);
+    const unitVal=(unitSel&&unitSel.value)||_mlGuessUnit(matched[3],line.unitName);
     _rBatch.push({
       name:matched[1],code:matched[0],lot:line.lot||'',
       exp:expIso?expIso.split('-').reverse().join('/'):_mlFmtDate(line.exp),
-      unit:matched[3]||line.unitName||'หน่วย',qty:_parseMlQty(line.qty),
+      unit:unitVal,qty:_parseMlQty(line.qty),
       note:'นำเข้าจากใบนำส่ง '+inv.docNum+' (MedLoggerAI)',
       docNum:inv.docNum,source:'MedLoggerAI',action:'receive',
       _mlSrc:[{sheet:'ดึงใบนำส่งยาจากMedLoggerAI',rowIndex:line.rowIndex}]
