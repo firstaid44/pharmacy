@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.14.30</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.14.40</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -4754,6 +4754,14 @@ function _mlFmtDate(v){
 }
 // รายการหน่วยนับมาตรฐาน (ชุดเดียวกับฟอร์มรับยาเข้า)
 const ML_UNITS=['เม็ด','แคปซูล','ขวด','หลอด','ซอง','กล่อง','แพ็ค','ลัง','อัน','ชิ้น','หน่วย'];
+// ค่าที่ถือว่า "ไม่มีข้อมูล" — ชีตมักใส่ขีด "-" หรือข้อความแทนช่องว่าง ต้องแปลงเป็นค่าว่างจริง
+// ไม่งั้นระบบจะเข้าใจผิดว่ามีข้อมูลแล้ว และไม่ขึ้นช่องให้กรอก LOT/วันหมดอายุ
+function _mlClean(v){
+  const s=String(v==null?'':v).trim();
+  if(!s)return '';
+  const blanks=['-','--','.','n/a','na','none','null','undefined','ไม่ระบุ','ไม่มี','ไม่ทราบ'];
+  return blanks.includes(s.toLowerCase())?'':s;
+}
 // เดาหน่วยนับที่เหมาะสม: ใช้หน่วยย่อยจาก MedicineDB ก่อน ถ้าไม่ตรงชุดมาตรฐานจึงแปลงจากหน่วยดิบในใบนำส่ง
 function _mlGuessUnit(pref,raw){
   const MAP={tab:'เม็ด',tabs:'เม็ด',cap:'แคปซูล',caps:'แคปซูล',bot:'ขวด',bottle:'ขวด',
@@ -4822,7 +4830,7 @@ async function loadMedLoggerDrugs(force){
         const key=nameKey+'|'+row.lot+'|'+row.expDate;
         if(!groups[key])groups[key]={
           displayName:[nameKey,row.strength].filter(x=>x&&x!=='-').join(' ')||nameKey||'(ไม่ทราบชื่อ)',
-          lot:row.lot==='-'?'':row.lot, exp:row.expDate==='-'?'':row.expDate,
+          lot:_mlClean(row.lot), exp:_mlClean(row.expDate),
           barcode:row.barcode, regNo:row.regNo, rows:[], added:false
         };
         groups[key].rows.push(row);
@@ -4857,6 +4865,8 @@ async function loadMedLoggerInvoices(force){
       (j.rows||[]).forEach(row=>{
         const key=row.docNum||'ไม่ระบุเลขที่';
         if(!groups[key])groups[key]={docNum:key,unit:row.unit,date:row.deliveryDate,lines:[]};
+        row.lot=_mlClean(row.lot);   // "-" ในชีต = ไม่มีข้อมูล ต้องขึ้นช่องให้กรอกเอง
+        row.exp=_mlClean(row.exp);
         row.match=_fuzzyMatchDrug(row.name);
         row.added=false;
         groups[key].lines.push(row);
@@ -4884,8 +4894,9 @@ function renderMedLoggerPanel(){
       </div>`+
       _mlDrugs.map((g,idx)=>{
         if(g.added)return '';
-        const matchOpts=drugDB.map(d=>`<option value="${d[0]}" ${g.match&&g.match[0]===d[0]?'selected':''}>${d[1]}</option>`).join('');
+        const matchOpts=(g.match?'':'<option value="" selected>— กรุณาเลือกยา —</option>')+drugDB.map(d=>`<option value="${d[0]}" ${g.match&&g.match[0]===d[0]?'selected':''}>${d[1]}</option>`).join('');
         const matchWarn=g.match?'':'<div style="font-size:10px;color:var(--red);margin-top:2px;">⚠ ไม่พบยาที่ตรงในฐานข้อมูล กรุณาเลือกจากรายการ</div>';
+        const expOk=!!_normalizeScanDate(g.exp);   // วันหมดอายุที่อ่านค่าไม่ได้ ให้ถือว่าไม่มี ต้องกรอกใหม่
         return `<div style="border:1.5px solid var(--border2);border-radius:12px;padding:10px;margin-bottom:8px;background:var(--surface);">
           <div style="font-size:12.5px;font-weight:800;color:var(--text1);">${g.displayName}</div>
           <div style="font-size:10.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;">
@@ -4896,7 +4907,7 @@ function renderMedLoggerPanel(){
             <select id="ml-drug-code-${idx}" style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:inherit;margin-top:2px;">${matchOpts}</select>
             ${matchWarn}
           </div>
-          ${(!g.lot||!g.exp)?`<div style="margin-top:7px;padding:8px;border:1.5px solid rgba(217,48,37,.35);border-radius:10px;background:var(--red-l);">
+          ${(!g.lot||!expOk)?`<div style="margin-top:7px;padding:8px;border:1.5px solid rgba(217,48,37,.35);border-radius:10px;background:var(--red-l);">
             <div style="font-size:10px;font-weight:800;color:var(--red);margin-bottom:5px;">⚠ ข้อมูลไม่ครบ — กรุณากรอกก่อนเพิ่มเข้ารายการ</div>
             <div style="display:flex;gap:8px;">
               ${!g.lot?`<div style="flex:1;">
@@ -4904,7 +4915,7 @@ function renderMedLoggerPanel(){
                 <input id="ml-drug-lot-${idx}" type="text" placeholder="กรอก LOT..."
                   style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:'IBM Plex Mono',monospace;margin-top:2px;">
               </div>`:''}
-              ${!g.exp?`<div style="flex:1;">
+              ${!expOk?`<div style="flex:1;">
                 <label style="font-size:9.5px;color:var(--text3);font-weight:700;">วันหมดอายุ *</label>
                 <input id="ml-drug-exp-${idx}" type="date"
                   style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:inherit;margin-top:2px;">
@@ -4952,9 +4963,10 @@ function renderMedLoggerPanel(){
               style="width:100%;padding:8px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px;">➕ เพิ่มทั้งใบ (${pendingLines.length} รายการ)</button>
             ${inv.lines.map((line,lineIdx)=>{
               if(line.added)return '';
-              const matchOpts=drugDB.map(d=>`<option value="${d[0]}" ${line.match&&line.match[0]===d[0]?'selected':''}>${d[1]}</option>`).join('');
+              const matchOpts=(line.match?'':'<option value="" selected>— กรุณาเลือกยา —</option>')+drugDB.map(d=>`<option value="${d[0]}" ${line.match&&line.match[0]===d[0]?'selected':''}>${d[1]}</option>`).join('');
               const matchWarn=line.match?'':'<div style="font-size:10px;color:var(--red);margin-top:2px;">⚠ ไม่พบยาที่ตรง กรุณาเลือกจากรายการ</div>';
               const calcQty=_parseMlQty(line.qty);
+              const lineExpOk=!!_normalizeScanDate(line.exp);
               return `<div style="border-top:1px dashed var(--border2);padding:8px 0;">
                 <div style="font-size:12px;font-weight:700;color:var(--text1);">${line.seq?line.seq+'. ':''}${line.name}</div>
                 <div style="font-size:10.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;">
@@ -4962,7 +4974,7 @@ function renderMedLoggerPanel(){
                 </div>
                 <select id="ml-inv-code-${invIdx}-${lineIdx}" style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:inherit;margin-top:5px;">${matchOpts}</select>
                 ${matchWarn}
-                ${(!line.lot||!line.exp)?`<div style="margin-top:6px;padding:8px;border:1.5px solid rgba(217,48,37,.35);border-radius:10px;background:var(--red-l);">
+                ${(!line.lot||!lineExpOk)?`<div style="margin-top:6px;padding:8px;border:1.5px solid rgba(217,48,37,.35);border-radius:10px;background:var(--red-l);">
                   <div style="font-size:9.5px;font-weight:800;color:var(--red);margin-bottom:5px;">⚠ ข้อมูลไม่ครบ — กรุณากรอกก่อนเพิ่ม</div>
                   <div style="display:flex;gap:8px;">
                     ${!line.lot?`<div style="flex:1;">
@@ -4970,7 +4982,7 @@ function renderMedLoggerPanel(){
                       <input id="ml-inv-lot-${invIdx}-${lineIdx}" type="text" placeholder="กรอก LOT..."
                         style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:'IBM Plex Mono',monospace;margin-top:2px;">
                     </div>`:''}
-                    ${!line.exp?`<div style="flex:1;">
+                    ${!lineExpOk?`<div style="flex:1;">
                       <label style="font-size:9.5px;color:var(--text3);font-weight:700;">วันหมดอายุ *</label>
                       <input id="ml-inv-exp-${invIdx}-${lineIdx}" type="date"
                         style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:inherit;margin-top:2px;">
@@ -5015,7 +5027,7 @@ function addMlDrugGroupToBatch(idx){
   const lot=(g.lot||(lotInput?lotInput.value.trim():'')).trim();
   if(!lot){showAlert('กรุณากรอก LOT Number ก่อนเพิ่มเข้ารายการ','danger');if(lotInput)lotInput.focus();return;}
   const expInput=document.getElementById('ml-drug-exp-'+idx);
-  const expIso=g.exp?(_normalizeScanDate(g.exp)||''):((expInput&&expInput.value)||'');
+  const expIso=_normalizeScanDate(g.exp)||((expInput&&expInput.value)||'');
   if(!expIso){showAlert('กรุณาระบุวันหมดอายุก่อนเพิ่มเข้ารายการ','danger');if(expInput)expInput.focus();return;}
   _rBatch.push({
     name:matched[1],code:matched[0],lot:lot,
@@ -5044,7 +5056,7 @@ function addMlInvoiceLineToBatch(invIdx,lineIdx){
   const lot=(line.lot||(lotInput?lotInput.value.trim():'')).trim();
   if(!lot){showAlert('กรุณากรอก LOT Number ของ "'+line.name+'" ก่อนเพิ่ม','danger');if(lotInput)lotInput.focus();return;}
   const expInput=document.getElementById('ml-inv-exp-'+invIdx+'-'+lineIdx);
-  const expIso=line.exp?(_normalizeScanDate(line.exp)||''):((expInput&&expInput.value)||'');
+  const expIso=_normalizeScanDate(line.exp)||((expInput&&expInput.value)||'');
   if(!expIso){showAlert('กรุณาระบุวันหมดอายุของ "'+line.name+'" ก่อนเพิ่ม','danger');if(expInput)expInput.focus();return;}
   _rBatch.push({
     name:matched[1],code:matched[0],lot:lot,
@@ -5070,7 +5082,7 @@ function addMlInvoiceAllToBatch(invIdx){
     const lotInput=document.getElementById('ml-inv-lot-'+invIdx+'-'+lineIdx);
     const lot=(line.lot||(lotInput?lotInput.value.trim():'')).trim();
     const expInput=document.getElementById('ml-inv-exp-'+invIdx+'-'+lineIdx);
-    const expIso=line.exp?(_normalizeScanDate(line.exp)||''):((expInput&&expInput.value)||'');
+    const expIso=_normalizeScanDate(line.exp)||((expInput&&expInput.value)||'');
     if(!lot||!expIso){incomplete++;return;}
     // ถ้าการ์ดถูกกางอยู่ ให้ยึดหน่วยที่ผู้ใช้เลือกไว้ ถ้ายังไม่ได้กาง ใช้ค่าที่ระบบเดาให้จากหน่วยในใบนำส่ง
     const unitSel=document.getElementById('ml-inv-unit-'+invIdx+'-'+lineIdx);
