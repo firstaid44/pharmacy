@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.07.14.55</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.11.11.12</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2737,6 +2737,25 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
           <button class="btn" onclick="testLineMessage()">🔔 ทดสอบส่ง</button>
           <button class="btn btn-primary" onclick="saveLineSettings()" style="background:linear-gradient(135deg,#06C755,#059646);">บันทึก</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ══ ⚠️ แจ้งเตือนสถานะคลังยา ══ -->
+    <div class="section-hd"><span class="section-title">แจ้งเตือนสถานะคลังยา</span></div>
+    <div class="card">
+      <div class="card-body">
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px;">
+          ตรวจสอบและส่งสรุปยา<b>ใกล้หมดอายุ (≤6 เดือน)</b> และ<b>ยาต่ำกว่าค่า Minimum</b> จากทั้ง 3 แหล่ง:
+          คลังยาใน (PCU) · คลังยานอก · ตู้ยานอก NCD
+        </div>
+        <div style="padding:9px 11px;border-radius:10px;background:var(--blue-l);font-size:11px;color:var(--blue);line-height:1.5;margin-bottom:10px;">
+          💡 กด "ตรวจสอบ" เพื่อดูรายการก่อน แล้วจึงกด "ส่งแจ้งเตือน" — ต้องเปิดหน้า "คลังยา" อย่างน้อย 1 ครั้งเพื่อโหลดข้อมูลก่อนใช้งาน
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="previewStockAlert()">🔍 ตรวจสอบ</button>
+          <button class="btn btn-primary" onclick="sendStockAlertLine()" style="background:linear-gradient(135deg,#F59E0B,#C07000);">📤 ส่งแจ้งเตือน</button>
+        </div>
+        <div id="alert-preview-box" style="display:none;margin-top:12px;padding:10px;border:1.5px solid var(--border2);border-radius:12px;background:var(--surface2);max-height:340px;overflow-y:auto;"></div>
       </div>
     </div>
 
@@ -5841,6 +5860,260 @@ function buildFlexMessage(d){
     footer:{type:'box',layout:'horizontal',paddingAll:'10px',contents:[{type:'text',text:'ระบบบริหารจัดการคลังยา PCU สะบ้าย้อย',size:'xxs',color:'#94A3B8',align:'center',flex:1,wrap:true}]}
   }};
 }
+// ══════════════════════════════════════════════════════════════
+//  🔔 แจ้งเตือน LINE: ยาใกล้หมดอายุ / ต่ำกว่า Minimum
+//  ครอบคลุม 3 แหล่ง: คลังยาใน (PCU) · คลังยานอก · ชั้นวางยานอก NCD
+// ══════════════════════════════════════════════════════════════
+const ALERT_EXP_MONTHS=6;   // เกณฑ์ "ใกล้หมดอายุ" (เดือน)
+
+// ── หาตำแหน่งตู้/ชั้นวางของยา จากผังตู้ที่กำหนดไว้ ──
+// คืนค่าเช่น "ตู้1/ชั้น2" · "NCD/ชั้น3" · "นอก NCD/ชั้น1" · "—" ถ้าไม่อยู่ในผังใด
+let _posMapCache=null;
+function _buildPosMap(){
+  if(_posMapCache)return _posMapCache;
+  const map={};
+  const put=(code,label)=>{
+    const k=_ncdNorm(code);
+    if(!k)return;
+    if(!map[k])map[k]=label;            // ตู้แรกที่เจอชนะ (ยาตัวเดียวอาจอยู่หลายผัง)
+    const d=drugDB.find(x=>_ncdNorm(x[0])===k);
+    if(d){const nk='N:'+_drugKey(d[1]);if(!map[nk])map[nk]=label;}
+  };
+  (PCU_CABINETS||[]).forEach((cab,ci)=>{
+    const short=cab.title.includes('NCD')?'NCD':'ตู้'+(ci+1);
+    (cab.shelves||[]).forEach((shelf,si)=>shelf.forEach(c=>put(c,short+'/ชั้น'+(si+1))));
+  });
+  (OUTER_NCD_LAYOUT||[]).forEach((shelf,si)=>shelf.forEach(c=>{
+    const k=_ncdNorm(c);
+    if(!map[k])put(c,'นอกNCD/ชั้น'+(si+1));
+  }));
+  _posMapCache=map;
+  return map;
+}
+function getShelfPos(code,name){
+  const map=_buildPosMap();
+  return map[_ncdNorm(code)]||map['N:'+_drugKey(name)]||'—';
+}
+
+// รวมยอดคงเหลือรายชื่อยาของคลังยานอก (หลาย LOT รวมกัน) + EXP ที่ใกล้ที่สุด
+function _outerMergedByName(){
+  const merged={};
+  (outerStockRows||[]).forEach(d=>{
+    const nameKey=d.name;
+    if(!nameKey)return;
+    if(!merged[nameKey])merged[nameKey]={name:d.name,code:d.code||'',unit:d.unit||'',qty:0,exp:fmtExp(d.exp)||''};
+    const m=merged[nameKey];
+    m.qty+=parseFloat(d.qty)||0;
+    const cur=parseExpDate(m.exp),nw=parseExpDate(fmtExp(d.exp));
+    if(nw&&(!cur||nw<cur))m.exp=fmtExp(d.exp);
+    if(!m.code&&d.code)m.code=d.code;
+  });
+  return Object.values(merged);
+}
+// สแกนหายาที่เข้าเกณฑ์เตือน — จัดกลุ่มตามแหล่งเก็บ (คลังยาใน / คลังยานอก)
+// ยาในตู้ยานอก NCD ถือเป็นส่วนหนึ่งของคลังยานอก โดยดูตำแหน่งชั้นได้จากคอลัมน์ "ตำแหน่ง"
+function scanStockAlerts(){
+  const now=new Date();now.setHours(0,0,0,0);
+  const rows=[];
+  const pushExp=(area,it,expStr)=>{
+    const ed=parseExpDate(expStr);
+    if(!ed)return;
+    const mo=(ed-now)/(1000*60*60*24*30.4);
+    if(mo<=ALERT_EXP_MONTHS)rows.push({kind:'exp',area,pos:getShelfPos(it.code,it.name),
+      name:it.name,code:it.code||'',lot:it.lot||'',exp:expStr,
+      unit:it.unit||'',qty:Math.round(it.qty||0),months:Math.round(mo)});
+  };
+  const pushLow=(area,it)=>{
+    const rp=getReorderPoint(it.code,it.name);
+    if(rp==null)return;
+    const q=Math.round(it.qty||0);
+    if(q<=rp)rows.push({kind:'low',area,pos:getShelfPos(it.code,it.name),
+      name:it.name,code:it.code||'',unit:it.unit||'',qty:q,min:rp});
+  };
+
+  // 1) คลังยาใน (PCU) — วันหมดอายุดูรายล็อต, Minimum ดูยอดรวมทุกล็อต
+  (_allStockItems||[]).forEach(i=>pushExp('คลังยาใน',i,i.exp));
+  const innerByName={};
+  (_allStockItems||[]).forEach(i=>{
+    if(!innerByName[i.name])innerByName[i.name]={name:i.name,code:i.code,unit:i.unit,qty:0};
+    innerByName[i.name].qty+=i.qty;
+  });
+  Object.values(innerByName).forEach(i=>pushLow('คลังยาใน',i));
+
+  // 2) คลังยานอก (รวมตู้ยานอก NCD — ตำแหน่งชั้นระบุอยู่ในคอลัมน์ "ตำแหน่ง" แล้ว)
+  _outerMergedByName().forEach(i=>{pushExp('คลังยานอก',i,i.exp);pushLow('คลังยานอก',i);});
+
+  // ตัดรายการซ้ำ แล้วเรียงตามความเร่งด่วน (หมดอายุ/หมดคลัง ขึ้นก่อน)
+  const seen=new Set();
+  const uniq=rows.filter(x=>{
+    const k=x.kind+'|'+x.area+'|'+x.name+'|'+(x.lot||'')+'|'+(x.exp||'');
+    if(seen.has(k))return false;seen.add(k);return true;
+  });
+  const sev=x=>x.kind==='exp'?x.months:(x.qty-x.min);
+  const byArea={};
+  ['คลังยาใน','คลังยานอก'].forEach(a=>{
+    byArea[a]=uniq.filter(x=>x.area===a).sort((a2,b2)=>{
+      if(a2.kind!==b2.kind)return a2.kind==='exp'?-1:1;  // ใกล้หมดอายุขึ้นก่อนต่ำกว่า Min
+      return sev(a2)-sev(b2);
+    });
+  });
+  return {
+    byArea,
+    exp:uniq.filter(x=>x.kind==='exp'),
+    low:uniq.filter(x=>x.kind==='low'),
+    total:uniq.length
+  };
+}
+
+// สร้าง Flex Message — หมวดใหญ่ = แหล่งเก็บ (คลังยาใน / คลังยานอก)
+// ในแต่ละหมวดเป็นตาราง: ชื่อยา · ตำแหน่งชั้นวาง · สถานะ · คงเหลือ
+function buildAlertFlex(res){
+  const expN=res.exp.length,lowN=res.low.length;
+  const F=[40,20,24,16];   // สัดส่วนคอลัมน์
+  const sep={type:'separator',color:'#E2E8F0'};
+  const head=()=>({type:'box',layout:'horizontal',paddingBottom:'6px',contents:[
+    {type:'text',text:'ชื่อยา',flex:F[0],size:'xxs',color:'#94A3B8',weight:'bold'},
+    {type:'text',text:'ตำแหน่ง',flex:F[1],size:'xxs',color:'#94A3B8',weight:'bold'},
+    {type:'text',text:'สถานะ',flex:F[2],size:'xxs',color:'#94A3B8',weight:'bold',align:'end'},
+    {type:'text',text:'คงเหลือ',flex:F[3],size:'xxs',color:'#94A3B8',weight:'bold',align:'end'}]});
+  // สถานะ + สี ตามชนิดการเตือน
+  const statusOf=it=>it.kind==='exp'
+    ? {txt:(it.months<=0?'⏰ หมดอายุแล้ว':'⏰ '+it.months+' เดือน'),color:it.months<=0?'#D93025':'#C07000',
+       qty:String(it.qty),qtyColor:'#475569'}
+    : {txt:(it.qty<=0?'📉 หมดคลัง':'📉 ต่ำกว่า Min'),color:it.qty<=0?'#D93025':'#B45309',
+       qty:it.qty+'/'+it.min,qtyColor:it.qty<=0?'#D93025':'#B45309'};
+  const dataRow=it=>{
+    const st=statusOf(it);
+    return {type:'box',layout:'horizontal',paddingTop:'6px',paddingBottom:'6px',contents:[
+      {type:'text',text:it.name,flex:F[0],size:'xxs',color:'#1E293B',weight:'bold',wrap:true,maxLines:2},
+      {type:'text',text:it.pos||'—',flex:F[1],size:'xxs',color:'#64748B',wrap:false},
+      {type:'text',text:st.txt,flex:F[2],size:'xxs',color:st.color,align:'end',weight:'bold',wrap:false},
+      {type:'text',text:st.qty,flex:F[3],size:'xxs',color:st.qtyColor,align:'end',weight:'bold',wrap:false}]};
+  };
+  // หมวดใหญ่ = แหล่งเก็บ
+  const areaSection=(area,emoji,color,items)=>{
+    if(!items.length)return [];
+    const nExp=items.filter(x=>x.kind==='exp').length,nLow=items.filter(x=>x.kind==='low').length;
+    const shown=items.slice(0,12);
+    const rows=[];
+    shown.forEach((it,i)=>{if(i)rows.push(sep);rows.push(dataRow(it));});
+    return [
+      {type:'box',layout:'vertical',margin:'lg',paddingAll:'9px',backgroundColor:color.bg,cornerRadius:'8px',contents:[
+        {type:'box',layout:'horizontal',contents:[
+          {type:'text',text:emoji+' '+area,size:'sm',weight:'bold',color:color.fg,flex:1},
+          {type:'text',text:String(items.length)+' รายการ',size:'xxs',weight:'bold',color:color.fg,align:'end',gravity:'center'}]},
+        {type:'text',text:'⏰ ใกล้หมดอายุ '+nExp+'  ·  📉 ต่ำกว่า Min '+nLow,size:'xxs',color:color.fg,margin:'xs'}]},
+      {type:'box',layout:'vertical',margin:'sm',paddingAll:'10px',backgroundColor:'#F8FAFC',cornerRadius:'9px',
+        contents:[head(),sep].concat(rows).concat(
+          items.length>12?[sep,{type:'text',text:'…และอีก '+(items.length-12)+' รายการ',size:'xxs',color:'#94A3B8',margin:'sm',align:'center'}]:[])}
+    ];
+  };
+  const inner=areaSection('คลังยาใน (PCU)','🏥',{bg:'#E8F1FF',fg:'#1A5FD4'},res.byArea['คลังยาใน']||[]);
+  const outer=areaSection('คลังยานอก','📦',{bg:'#FFF3DC',fg:'#B45309'},res.byArea['คลังยานอก']||[]);
+  return {type:'flex',altText:`⚠️ แจ้งเตือนคลังยา: ใกล้หมดอายุ ${expN} · ต่ำกว่า Min ${lowN} รายการ`,
+    contents:{type:'bubble',size:'giga',
+      header:{type:'box',layout:'horizontal',backgroundColor:'#C07000',paddingAll:'14px',spacing:'md',contents:[
+        {type:'box',layout:'vertical',width:'36px',height:'36px',backgroundColor:'#D68A1E',cornerRadius:'9px',
+          contents:[{type:'text',text:'⚠️',size:'lg',align:'center',gravity:'center'}]},
+        {type:'box',layout:'vertical',flex:1,paddingStart:'4px',contents:[
+          {type:'text',text:'แจ้งเตือนสถานะคลังยา',color:'#FFFFFF',size:'sm',weight:'bold'},
+          {type:'text',text:'PCU สะบ้าย้อย · '+todayTH(),color:'#FFE8C4',size:'xxs',margin:'xs'}]}]},
+      body:{type:'box',layout:'vertical',paddingAll:'14px',spacing:'none',contents:[
+        {type:'box',layout:'horizontal',spacing:'sm',contents:[
+          {type:'box',layout:'vertical',flex:1,backgroundColor:'#FFF3DC',cornerRadius:'9px',paddingAll:'11px',contents:[
+            {type:'text',text:'⏰ ใกล้หมดอายุ',size:'xxs',color:'#94A3B8',weight:'bold'},
+            {type:'text',text:String(expN),size:'xxl',weight:'bold',color:'#C07000',margin:'sm'}]},
+          {type:'box',layout:'vertical',flex:1,backgroundColor:'#FEE9E9',cornerRadius:'9px',paddingAll:'11px',contents:[
+            {type:'text',text:'📉 ต่ำกว่า Min',size:'xxs',color:'#94A3B8',weight:'bold'},
+            {type:'text',text:String(lowN),size:'xxl',weight:'bold',color:'#D93025',margin:'sm'}]}]},
+        ...inner,...outer]},
+      footer:{type:'box',layout:'vertical',paddingAll:'12px',contents:[
+        {type:'text',text:'ตำแหน่ง: ตู้1-3 = คลังยาใน · NCD = ชั้นวางยา NCD · นอกNCD = ตู้ยานอก NCD',size:'xxs',color:'#94A3B8',align:'center',wrap:true},
+        {type:'text',text:'ตรวจสอบรายละเอียดในระบบคลังยา PCU สะบ้าย้อย',size:'xxs',color:'#CBD5E1',align:'center',wrap:true,margin:'sm'}]}}};
+}
+
+// ส่งแจ้งเตือนไป LINE (เรียกจากปุ่มในหน้าตั้งค่า LINE)
+async function sendStockAlertLine(silent){
+  const token=(localStorage.getItem('line_token')||'').trim();
+  const to=(localStorage.getItem('line_to')||'').trim();
+  const enabled=localStorage.getItem('line_enabled')==='true';
+  if(!enabled||!token||!to){
+    if(!silent)showAlert('กรุณาตั้งค่าและเปิดใช้งาน LINE ก่อน','warning');
+    return;
+  }
+  if(!(_allStockItems||[]).length&&!(outerStockRows||[]).length){
+    if(!silent)showAlert('ยังไม่มีข้อมูลคลังยา — กรุณาเปิดหน้า "คลังยา" เพื่อโหลดข้อมูลก่อน','warning');
+    return;
+  }
+  const res=scanStockAlerts();
+  if(!res.total){
+    if(!silent)showAlert('✓ ไม่พบยาใกล้หมดอายุหรือต่ำกว่า Minimum','success');
+    return;
+  }
+  const payload={action:'send_line',line_token:token,line_to:to,flex:JSON.stringify(buildAlertFlex(res))};
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    addLineLog('ok','แจ้งเตือนคลังยา',res.exp.length+res.low.length,'รายการ','ระบบ',
+      `ใกล้หมดอายุ ${res.exp.length} · ต่ำกว่า Min ${res.low.length} — ส่งแล้ว ✓`);
+    if(!silent)showAlert(`📱 ส่งแจ้งเตือนแล้ว — ใกล้หมดอายุ ${res.exp.length} · ต่ำกว่า Min ${res.low.length} รายการ`,'success');
+  }catch(e){
+    addLineLog('err','แจ้งเตือนคลังยา',0,'','ระบบ','ส่งไม่สำเร็จ: '+e.message);
+    if(!silent)showAlert('ส่งแจ้งเตือนไม่สำเร็จ: '+e.message,'danger');
+  }
+}
+// แสดงผลสแกนบนหน้าจอก่อนส่ง (ให้ตรวจสอบก่อนว่าจะส่งอะไรไปบ้าง)
+function previewStockAlert(){
+  const box=document.getElementById('alert-preview-box');
+  if(!box)return;
+  if(!(_allStockItems||[]).length&&!(outerStockRows||[]).length){
+    box.style.display='block';
+    box.innerHTML='<div style="padding:12px;color:var(--text3);font-size:12px;text-align:center;">ยังไม่มีข้อมูลคลังยา — เปิดหน้า "คลังยา" เพื่อโหลดข้อมูลก่อน</div>';
+    return;
+  }
+  const res=scanStockAlerts();
+  box.style.display='block';
+  if(!res.total){
+    box.innerHTML='<div style="padding:14px;text-align:center;color:var(--teal);font-size:12.5px;font-weight:700;">✓ ไม่พบยาใกล้หมดอายุหรือต่ำกว่า Minimum</div>';
+    return;
+  }
+  const statusOf=it=>it.kind==='exp'
+    ? {txt:(it.months<=0?'⏰ หมดอายุแล้ว':'⏰ '+it.months+' เดือน'),color:it.months<=0?'var(--red)':'#C07000',
+       qty:String(it.qty),qtyColor:'var(--text2)'}
+    : {txt:(it.qty<=0?'📉 หมดคลัง':'📉 ต่ำกว่า Min'),color:it.qty<=0?'var(--red)':'#B45309',
+       qty:it.qty+'/'+it.min,qtyColor:it.qty<=0?'var(--red)':'#B45309'};
+  const areaBlock=(area,emoji,bg,fg,items)=>{
+    if(!items.length)return '';
+    const nExp=items.filter(x=>x.kind==='exp').length,nLow=items.filter(x=>x.kind==='low').length;
+    return `<div style="margin-bottom:14px;">
+      <div style="padding:8px 10px;border-radius:8px;background:${bg};margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12.5px;font-weight:800;color:${fg};">${emoji} ${area}</span>
+          <span style="font-size:10px;font-weight:800;color:${fg};">${items.length} รายการ</span>
+        </div>
+        <div style="font-size:9.5px;color:${fg};opacity:.85;margin-top:2px;">⏰ ใกล้หมดอายุ ${nExp} · 📉 ต่ำกว่า Min ${nLow}</div>
+      </div>
+      <div style="display:flex;gap:6px;padding:5px 2px;border-bottom:1.5px solid var(--border2);font-size:9px;font-weight:800;color:var(--text3);">
+        <div style="flex:40;min-width:0;">ชื่อยา</div>
+        <div style="flex:20;min-width:0;">ตำแหน่ง</div>
+        <div style="flex:24;min-width:0;text-align:right;">สถานะ</div>
+        <div style="flex:16;min-width:0;text-align:right;">คงเหลือ</div>
+      </div>
+      ${items.slice(0,15).map(it=>{const st=statusOf(it);return `
+        <div style="display:flex;gap:6px;padding:6px 2px;border-bottom:1px solid var(--border);align-items:flex-start;">
+          <div style="flex:40;min-width:0;font-size:10.5px;font-weight:700;color:var(--text1);line-height:1.35;">${it.name}</div>
+          <div style="flex:20;min-width:0;font-size:9.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">${it.pos||'—'}</div>
+          <div style="flex:24;min-width:0;font-size:9.5px;font-weight:800;color:${st.color};text-align:right;">${st.txt}</div>
+          <div style="flex:16;min-width:0;font-size:10px;font-weight:800;color:${st.qtyColor};text-align:right;font-family:'IBM Plex Mono',monospace;">${st.qty}</div>
+        </div>`;}).join('')}
+      ${items.length>15?`<div style="font-size:10px;color:var(--text3);text-align:center;padding-top:6px;">…และอีก ${items.length-15} รายการ</div>`:''}
+    </div>`;
+  };
+  box.innerHTML=
+    areaBlock('คลังยาใน (PCU)','🏥','var(--blue-l)','var(--blue)',res.byArea['คลังยาใน']||[])+
+    areaBlock('คลังยานอก','📦','#FFF3DC','#B45309',res.byArea['คลังยานอก']||[])+
+    `<div style="font-size:9px;color:var(--text4);margin-top:4px;line-height:1.5;">ตำแหน่ง: ตู้1-3 = คลังยาใน · NCD = ชั้นวางยา NCD · นอกNCD = ตู้ยานอก NCD</div>`;
+}
+
 async function sendLineFlexDispense(data){
   const token=(localStorage.getItem('line_token')||'').trim();
   const to=(localStorage.getItem('line_to')||'').trim();
