@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.11.11.12</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.08.07.54</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2418,6 +2418,9 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
         💊 ตู้ยานอกNCD
       </button>
     </div>
+
+    <!-- ══ 📊 Dashboard สรุปสถานะคลังยา ══ -->
+    <div id="stock-dashboard" style="margin-bottom:12px;"></div>
 
     <!-- ปุ่มไปหน้าสรุปรับ-เบิก -->
     <button onclick="switchTab('summary')"
@@ -2879,6 +2882,7 @@ async function loadOuterStock(force){
     const r=await fetch(SCRIPT_URL+'?action=outerstock&t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
     if(j.status==='ok'){outerStockRows=_normalizeRowCodes(j.rows||[]);_outerLoaded=true;}
+    if(document.getElementById('stock-dashboard'))renderStockDashboard();
   }catch(e){}
   return outerStockRows;
 }
@@ -3077,7 +3081,7 @@ function switchTab(tab,el){
   if(!el)el=document.querySelector(`.nav-item[onclick*="'${tab}'"]`);
   if(el)el.classList.add('active');
   if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();setTimeout(_setDispenseDocNum,300);}
-  if(tab==='stock'){if(!_allStockItems.length)loadStock();if(!_outerLoaded)loadOuterStock();switchStockSubtab('pcu');}
+  if(tab==='stock'){if(!_allStockItems.length)loadStock();if(!_outerLoaded)loadOuterStock();switchStockSubtab('pcu');renderStockDashboard();}
   if(tab==='extstock')loadExtStock();
   // แสดง sidebar เฉพาะแท็บคลังยา
   const sideWrap=document.getElementById('stk-side-wrap');
@@ -3330,6 +3334,7 @@ async function loadStock(){
     });
     dispenseRows.forEach(d=>{const k=d.name+'|'+d.lot;if(stockMap[k])stockMap[k].qty-=parseFloat(d.qty)||0;});
     _allStockItems=Object.values(stockMap).filter(i=>i.qty>0);
+    if(document.getElementById('stock-dashboard'))renderStockDashboard();
     const now=new Date();now.setHours(0,0,0,0);
     const red=[],yellow=[],green=[];
     _allStockItems.forEach(i=>{
@@ -3775,6 +3780,170 @@ function toggleNCDFilter(){window._sumFilterNCD=!window._sumFilterNCD;summaryPag
 const NCD_SHELVES=4;
 function openNCDCabinet(){ switchStockSubtab('ncd'); }
 function closeNCDCabinet(){ switchStockSubtab('pcu'); }
+// ══════════════════════════════════════════════════════════════
+//  📊 Dashboard สรุปสถานะคลังยา (แสดงบนสุดของแท็บคลังยา)
+//  3 ตัวชี้วัด: หมดคลัง · ใกล้หมดอายุใน 1 เดือน · ต่ำกว่า Minimum
+// ══════════════════════════════════════════════════════════════
+const DASH_EXP_DAYS=30;     // เกณฑ์ "ใกล้หมดอายุ" ของ dashboard (วัน)
+let _dashFilter=null;       // การ์ดที่กำลังกางดูรายละเอียด: out | exp | low | null
+
+// รวบรวมตัวเลขสรุปจากทั้งคลังยาใน + คลังยานอก
+function computeDashStats(){
+  const now=new Date();now.setHours(0,0,0,0);
+  const limit=new Date(now);limit.setDate(limit.getDate()+DASH_EXP_DAYS);
+  const out=[],exp=[],low=[];
+
+  // ── รวมยอดรายชื่อยา: คลังยาใน ──
+  const innerByName={};
+  (_allStockItems||[]).forEach(i=>{
+    const k=_drugKey(i.name);
+    if(!innerByName[k])innerByName[k]={name:i.name,code:i.code||'',unit:i.unit||'',qty:0};
+    innerByName[k].qty+=i.qty;
+    if(!innerByName[k].code&&i.code)innerByName[k].code=i.code;
+  });
+  // ── รวมยอดรายชื่อยา: คลังยานอก ──
+  const outerByName={};
+  (outerStockRows||[]).forEach(r=>{
+    const nm=String(r.name||'').trim();if(!nm)return;
+    const k=_drugKey(nm);
+    if(!outerByName[k])outerByName[k]={name:nm,code:r.code||'',unit:r.unit||'',qty:0};
+    outerByName[k].qty+=parseFloat(r.qty)||0;
+    if(!outerByName[k].code&&r.code)outerByName[k].code=r.code;
+  });
+
+  // 1) หมดคลัง + 3) ต่ำกว่า Minimum — ดูยอดรวมทุกล็อต
+  const checkQty=(area,list)=>Object.values(list).forEach(i=>{
+    const q=Math.round(i.qty||0);
+    const rp=getReorderPoint(i.code,i.name);
+    if(q<=0){out.push({area,name:i.name,code:i.code,unit:i.unit,qty:0,min:rp});return;}
+    if(rp!=null&&q<=rp)low.push({area,name:i.name,code:i.code,unit:i.unit,qty:q,min:rp});
+  });
+  checkQty('คลังยาใน',innerByName);
+  checkQty('คลังยานอก',outerByName);
+
+  // 2) ใกล้หมดอายุใน 1 เดือน — ดูรายล็อต (ล็อตเก่าใกล้หมดอายุต้องไม่ถูกกลบด้วยล็อตใหม่)
+  const checkExp=(area,it,expStr,qty)=>{
+    if(qty<=0)return;
+    const ed=parseExpDate(expStr);if(!ed)return;
+    if(ed.getTime()>limit.getTime())return;
+    const days=Math.round((ed-now)/86400000);
+    exp.push({area,name:it.name,code:it.code||'',lot:it.lot||'',unit:it.unit||'',
+      qty:Math.round(qty),exp:expStr,days});
+  };
+  (_allStockItems||[]).forEach(i=>checkExp('คลังยาใน',i,i.exp,i.qty));
+  (outerStockRows||[]).forEach(r=>{
+    if(!String(r.name||'').trim())return;
+    checkExp('คลังยานอก',{name:r.name,code:r.code,lot:r.lot,unit:r.unit},fmtExp(r.exp),parseFloat(r.qty)||0);
+  });
+
+  const bySeverity=(a,b)=>a.days-b.days;
+  return {
+    out:out.sort((a,b)=>a.name.localeCompare(b.name,'th')),
+    exp:exp.sort(bySeverity),
+    low:low.sort((a,b)=>(a.qty-a.min)-(b.qty-b.min)),
+    totalDrugs:Object.keys(innerByName).length+Object.keys(outerByName).length
+  };
+}
+
+function renderStockDashboard(){
+  const el=document.getElementById('stock-dashboard');
+  if(!el)return;
+  // ยังโหลดข้อมูลไม่เสร็จ
+  if(!(_allStockItems||[]).length&&!(outerStockRows||[]).length){
+    el.innerHTML=`<div style="padding:16px;text-align:center;background:var(--surface);border:1px solid var(--border);
+      border-radius:14px;color:var(--text3);font-size:12px;">
+      <div class="spin" style="margin:0 auto 8px;"></div>กำลังโหลดข้อมูลคลังยา...</div>`;
+    return;
+  }
+  const s=computeDashStats();
+  const card=(key,icon,label,n,color,bg)=>{
+    const active=_dashFilter===key;
+    return `<button onclick="toggleDashCard('${key}')"
+      style="flex:1;min-width:0;border:1.5px solid ${active?color:'transparent'};background:${bg};
+             border-radius:12px;padding:11px 8px;cursor:pointer;font-family:inherit;text-align:center;
+             transition:all .15s;${active?'box-shadow:0 2px 10px '+color+'33;':''}">
+      <div style="font-size:17px;line-height:1;">${icon}</div>
+      <div style="font-size:25px;font-weight:800;color:${color};font-family:'IBM Plex Mono',monospace;
+                  line-height:1.1;margin-top:5px;">${n}</div>
+      <div style="font-size:9.5px;color:var(--text3);font-weight:700;margin-top:3px;line-height:1.3;">${label}</div>
+    </button>`;
+  };
+  const allClear=!s.out.length&&!s.exp.length&&!s.low.length;
+
+  el.innerHTML=`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;
+                padding:12px;box-shadow:var(--sh-xs);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:13px;font-weight:800;color:var(--text1);">📊 สรุปสถานะคลังยา</span>
+        <button onclick="refreshDashboard()" style="border:none;background:transparent;color:var(--blue);
+          font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">↻ รีเฟรช</button>
+      </div>
+      <div style="display:flex;gap:7px;">
+        ${card('out','⛔','หมดคลัง',s.out.length,'var(--red)','var(--red-l)')}
+        ${card('exp','⏰','ใกล้หมดอายุ<br>ใน 30 วัน',s.exp.length,'#C07000','#FFF3DC')}
+        ${card('low','📉','ต่ำกว่า Min',s.low.length,'#B45309','#FEF3C7')}
+      </div>
+      ${allClear?`<div style="margin-top:10px;padding:10px;border-radius:10px;background:var(--teal-l);
+        text-align:center;font-size:11.5px;font-weight:700;color:var(--teal);">
+        ✓ คลังยาปกติ — ไม่มีรายการที่ต้องจัดการเร่งด่วน</div>`:
+        `<div style="margin-top:8px;font-size:9.5px;color:var(--text3);text-align:center;">
+        แตะการ์ดเพื่อดูรายชื่อยา</div>`}
+      <div id="dash-detail"></div>
+    </div>`;
+  renderDashDetail(s);
+}
+
+function toggleDashCard(key){
+  _dashFilter=(_dashFilter===key)?null:key;
+  renderStockDashboard();
+}
+function refreshDashboard(){
+  loadStock(true);
+  loadOuterStock(true).then(()=>renderStockDashboard());
+}
+
+function renderDashDetail(s){
+  const box=document.getElementById('dash-detail');
+  if(!box)return;
+  if(!_dashFilter){box.innerHTML='';return;}
+  const cfg={
+    out:{items:s.out,color:'var(--red)',title:'⛔ ยาที่หมดคลัง',
+         right:it=>`<span style="color:var(--red);font-weight:800;">0 ${it.unit||''}</span>`},
+    exp:{items:s.exp,color:'#C07000',title:`⏰ ยาที่หมดอายุภายใน ${DASH_EXP_DAYS} วัน`,
+         right:it=>`<span style="color:${it.days<0?'var(--red)':'#C07000'};font-weight:800;">${
+           it.days<0?'หมดอายุแล้ว':'อีก '+it.days+' วัน'}</span>
+           <div style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">${fmtExp(it.exp)}</div>`},
+    low:{items:s.low,color:'#B45309',title:'📉 ยาที่ต่ำกว่าค่า Minimum',
+         right:it=>`<span style="color:#B45309;font-weight:800;font-family:'IBM Plex Mono',monospace;">${it.qty}/${it.min}</span>
+           <div style="font-size:9px;color:var(--text3);">${it.unit||''}</div>`}
+  }[_dashFilter];
+  if(!cfg.items.length){
+    box.innerHTML=`<div style="margin-top:10px;padding:14px;border-radius:10px;background:var(--teal-l);
+      text-align:center;font-size:12px;font-weight:700;color:var(--teal);">✓ ไม่มีรายการในหมวดนี้</div>`;
+    return;
+  }
+  const MAX=30;
+  box.innerHTML=`
+    <div style="margin-top:10px;border-top:1.5px solid var(--border2);padding-top:9px;">
+      <div style="font-size:11.5px;font-weight:800;color:${cfg.color};margin-bottom:6px;">
+        ${cfg.title} (${cfg.items.length})</div>
+      <div style="max-height:300px;overflow-y:auto;">
+        ${cfg.items.slice(0,MAX).map(it=>`
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;
+                      padding:7px 2px;border-bottom:1px solid var(--border);">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:11.5px;font-weight:700;color:var(--text1);line-height:1.35;">${it.name}</div>
+              <div style="font-size:9.5px;color:var(--text3);margin-top:1px;">
+                ${it.area}${it.lot?' · LOT: '+it.lot:''}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;font-size:11px;">${cfg.right(it)}</div>
+          </div>`).join('')}
+        ${cfg.items.length>MAX?`<div style="font-size:10px;color:var(--text3);text-align:center;padding-top:7px;">
+          …และอีก ${cfg.items.length-MAX} รายการ</div>`:''}
+      </div>
+    </div>`;
+}
+
 function renderNCDCabinet(){
   const body=document.getElementById('ncd-cab-body-inline');
   if(!body)return;
