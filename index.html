@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.14.13.51</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.20.09.56</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2336,7 +2336,22 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
 
         <div class="form-row">
           <div class="form-group"><label class="form-label">จำนวนเบิก <span class="req">*</span></label>
-            <select class="form-input" id="d-qty" style="font-family:'IBM Plex Mono',monospace;"><option value="">— เลือก —</option></select>
+            <!-- ช่องกรอกตัวเลข + ปุ่ม −/+ (แทน dropdown ที่เคยมีตัวเลือกยาว 999 บรรทัด) -->
+            <div style="display:flex;gap:6px;align-items:stretch;">
+              <button type="button" onclick="stepQty(-1)" aria-label="ลดจำนวน"
+                style="width:38px;flex-shrink:0;border:1.5px solid var(--border2);background:var(--surface2);
+                       border-radius:10px;font-size:19px;font-weight:700;color:var(--text2);cursor:pointer;
+                       font-family:inherit;line-height:1;">−</button>
+              <input class="form-input" id="d-qty" type="number" inputmode="numeric" min="1" placeholder="0"
+                oninput="onQtyInput()" onfocus="this.select()"
+                style="flex:1;min-width:0;text-align:center;font-family:'IBM Plex Mono',monospace;
+                       font-size:17px;font-weight:700;">
+              <button type="button" onclick="stepQty(1)" aria-label="เพิ่มจำนวน"
+                style="width:38px;flex-shrink:0;border:1.5px solid var(--border2);background:var(--surface2);
+                       border-radius:10px;font-size:19px;font-weight:700;color:var(--text2);cursor:pointer;
+                       font-family:inherit;line-height:1;">+</button>
+            </div>
+            <div id="d-qty-quick" style="display:none;flex-wrap:wrap;gap:5px;margin-top:6px;"></div>
             <div id="d-stock-info" class="d-stock-info"></div>
           </div>
           <div class="form-group"><label class="form-label">หน่วยนับ</label>
@@ -4699,19 +4714,92 @@ function calcStock(name,lot){
   const disp=dispenseRows.filter(d=>d.name===name&&d.lot===lot).reduce((s,d)=>s+(parseFloat(d.qty)||0),0);
   return Math.max(0,Math.round(recv-disp));
 }
+let _dQtyMax=0;   // คงเหลือของ LOT ที่เลือก — ใช้กันเบิกเกินสต็อก
+
+function _resetDQty(){
+  const inp=document.getElementById('d-qty'),quick=document.getElementById('d-qty-quick');
+  if(inp){inp.value='';inp.disabled=false;inp.placeholder='0';inp.max='';}
+  if(quick){quick.innerHTML='';quick.style.display='none';}
+  _dQtyMax=0;
+}
+
 function populateQtyOptions(stock){
-  const sel=document.getElementById('d-qty'),info=document.getElementById('d-stock-info');
-  sel.innerHTML='<option value="">— เลือกจำนวน —</option>';
-  if(stock<=0){
-    sel.innerHTML='<option value="">ยาหมดคลัง</option>';
+  const inp=document.getElementById('d-qty'),info=document.getElementById('d-stock-info');
+  const quick=document.getElementById('d-qty-quick');
+  _dQtyMax=Math.max(0,Math.round(stock||0));
+  inp.value='';
+  inp.max=_dQtyMax;
+  if(_dQtyMax<=0){
+    inp.disabled=true;inp.placeholder='ยาหมดคลัง';
+    if(quick){quick.style.display='none';quick.innerHTML='';}
     info.textContent='คงเหลือ 0 — ไม่สามารถเบิกได้';
     info.style.background='var(--red-l)';info.style.color='var(--red)';info.style.display='block';
     return;
   }
-  const max=Math.min(stock,999);
-  for(let i=1;i<=max;i++) sel.innerHTML+=`<option value="${i}">${i}</option>`;
-  info.textContent=`คงเหลือในคลัง: ${stock}`;
+  inp.disabled=false;inp.placeholder='0';
+  // ปุ่มลัดจำนวนที่ใช้บ่อย — ตัดค่าที่เกินคงเหลือออก และเพิ่มปุ่ม "ทั้งหมด"
+  const presets=[1,5,10,20,30,50,100].filter(n=>n<=_dQtyMax);
+  if(!presets.includes(_dQtyMax))presets.push(_dQtyMax);
+  if(quick){
+    quick.innerHTML=presets.map(n=>`
+      <button type="button" onclick="setQty(${n})"
+        style="padding:5px 12px;border-radius:14px;border:1.5px solid var(--border2);background:var(--surface2);
+               color:var(--text2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;
+               font-variant-numeric:tabular-nums;">${n===_dQtyMax?'ทั้งหมด ('+n+')':n}</button>`).join('');
+    quick.style.display='flex';
+  }
+  info.textContent=`คงเหลือในคลัง: ${_dQtyMax}`;
   info.style.background='var(--blue-l)';info.style.color='var(--blue)';info.style.display='block';
+}
+
+// กำหนดจำนวนจากปุ่มลัด
+function setQty(n){
+  const inp=document.getElementById('d-qty');
+  if(!inp||inp.disabled)return;
+  inp.value=Math.min(n,_dQtyMax);
+  onQtyInput();
+}
+// ปุ่ม − / +
+function stepQty(delta){
+  const inp=document.getElementById('d-qty');
+  if(!inp||inp.disabled)return;
+  const cur=parseInt(inp.value)||0;
+  inp.value=Math.max(1,Math.min(cur+delta,_dQtyMax||Infinity));
+  onQtyInput();
+}
+// ตรวจค่าที่พิมพ์ — กันเบิกเกินคงเหลือและกันค่าติดลบ
+function onQtyInput(){
+  const inp=document.getElementById('d-qty'),info=document.getElementById('d-stock-info');
+  if(!inp)return;
+  let v=parseInt(inp.value);
+  if(isNaN(v)||inp.value===''){
+    if(info&&_dQtyMax>0){info.textContent=`คงเหลือในคลัง: ${_dQtyMax}`;
+      info.style.background='var(--blue-l)';info.style.color='var(--blue)';}
+    _syncQuickActive();return;
+  }
+  if(v<1){v=1;inp.value=1;}
+  if(_dQtyMax>0&&v>_dQtyMax){
+    v=_dQtyMax;inp.value=_dQtyMax;
+    if(info){info.textContent=`เบิกได้สูงสุด ${_dQtyMax} (คงเหลือทั้งหมด)`;
+      info.style.background='var(--amber-l)';info.style.color='var(--amber)';}
+  }else if(info&&_dQtyMax>0){
+    info.textContent=`คงเหลือในคลัง: ${_dQtyMax} · เบิก ${v} เหลือ ${_dQtyMax-v}`;
+    info.style.background='var(--blue-l)';info.style.color='var(--blue)';
+  }
+  _syncQuickActive();
+}
+// ไฮไลต์ปุ่มลัดที่ตรงกับค่าปัจจุบัน
+function _syncQuickActive(){
+  const inp=document.getElementById('d-qty'),quick=document.getElementById('d-qty-quick');
+  if(!inp||!quick)return;
+  const v=parseInt(inp.value)||0;
+  quick.querySelectorAll('button').forEach(b=>{
+    const n=parseInt(b.textContent.replace(/[^0-9]/g,''))||0;
+    const on=(n===v&&v>0);
+    b.style.background=on?'var(--blue)':'var(--surface2)';
+    b.style.color=on?'#fff':'var(--text2)';
+    b.style.borderColor=on?'var(--blue)':'var(--border2)';
+  });
 }
 
 function populateLotOptions(name){
@@ -4724,7 +4812,7 @@ function populateLotOptions(name){
   // reset hidden fields
   document.getElementById('d-lot').value='';
   document.getElementById('d-exp').value='';
-  document.getElementById('d-qty').innerHTML='<option value="">— เลือกจำนวน —</option>';
+  _resetDQty();
   document.getElementById('d-stock-info').style.display='none';
 
   if(!lots.length){
@@ -4901,7 +4989,7 @@ function clearDispenseForm(){
   // reset LOT picker
   const picker=document.getElementById('d-lot-picker');
   if(picker)picker.innerHTML='<div style="font-size:13px;color:var(--text3);padding:10px 0;">เลือกชื่อยาก่อน...</div>';
-  document.getElementById('d-qty').innerHTML='<option value="">— เลือก —</option>';
+  _resetDQty();
   document.getElementById('d-stock-info').style.display='none';
   document.getElementById('sbox-d').style.display='none';
   // รันเลขที่เอกสารใหม่
@@ -5454,7 +5542,7 @@ function addDispenseToBatch(){
   document.getElementById('d-exp').value='';
   const picker=document.getElementById('d-lot-picker');
   if(picker)picker.innerHTML='<div style="font-size:13px;color:var(--text3);padding:10px 0;">เลือกชื่อยาก่อน...</div>';
-  document.getElementById('d-qty').innerHTML='<option value="">— เลือก —</option>';
+  _resetDQty();
   const si=document.getElementById('d-stock-info');if(si)si.style.display='none';
   document.getElementById('sbox-d').style.display='none';
   renderDispenseBatch();
