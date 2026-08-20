@@ -2087,7 +2087,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.20.09.56</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.20.10.27</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2334,7 +2334,18 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
           </div>
         </div>
 
-        <div class="form-row">
+        <!-- ข้อความแทนที่ช่องจำนวน ตอนที่ยังไม่ได้เลือก LOT -->
+        <div id="d-qty-locked" style="display:flex;align-items:center;gap:9px;padding:13px;margin-bottom:14px;
+             border:1.5px dashed var(--border2);border-radius:12px;background:var(--surface2);">
+          <span style="font-size:17px;flex-shrink:0;">🔒</span>
+          <div>
+            <div style="font-size:12.5px;font-weight:700;color:var(--text2);">กรุณาเลือก LOT ก่อน</div>
+            <div style="font-size:10.5px;color:var(--text3);margin-top:2px;">
+              เลือก LOT ที่จะเบิกด้านบน แล้วช่องกรอกจำนวนจะแสดงขึ้นมา</div>
+          </div>
+        </div>
+
+        <div class="form-row" id="d-qty-row" style="display:none;">
           <div class="form-group"><label class="form-label">จำนวนเบิก <span class="req">*</span></label>
             <!-- ช่องกรอกตัวเลข + ปุ่ม −/+ (แทน dropdown ที่เคยมีตัวเลือกยาว 999 บรรทัด) -->
             <div style="display:flex;gap:6px;align-items:stretch;">
@@ -4716,11 +4727,22 @@ function calcStock(name,lot){
 }
 let _dQtyMax=0;   // คงเหลือของ LOT ที่เลือก — ใช้กันเบิกเกินสต็อก
 
+// ซ่อน/แสดงช่องจำนวนเบิก — บังคับให้เลือก LOT ก่อนเสมอ
+// กันกรอกจำนวนลอยๆ โดยยังไม่รู้ว่าเบิกจาก LOT ไหน (คงเหลือแต่ละ LOT ไม่เท่ากัน)
+function _setQtyVisible(show){
+  const row=document.getElementById('d-qty-row');
+  const locked=document.getElementById('d-qty-locked');
+  if(row)row.style.display=show?'':'none';
+  if(locked)locked.style.display=show?'none':'flex';
+}
 function _resetDQty(){
   const inp=document.getElementById('d-qty'),quick=document.getElementById('d-qty-quick');
   if(inp){inp.value='';inp.disabled=false;inp.placeholder='0';inp.max='';}
   if(quick){quick.innerHTML='';quick.style.display='none';}
+  const info=document.getElementById('d-stock-info');
+  if(info)info.style.display='none';
   _dQtyMax=0;
+  _setQtyVisible(false);   // กลับไปสถานะล็อกจนกว่าจะเลือก LOT ใหม่
 }
 
 function populateQtyOptions(stock){
@@ -4729,6 +4751,7 @@ function populateQtyOptions(stock){
   _dQtyMax=Math.max(0,Math.round(stock||0));
   inp.value='';
   inp.max=_dQtyMax;
+  _setQtyVisible(true);    // เลือก LOT แล้ว — ปลดล็อกช่องจำนวน
   if(_dQtyMax<=0){
     inp.disabled=true;inp.placeholder='ยาหมดคลัง';
     if(quick){quick.style.display='none';quick.innerHTML='';}
