@@ -3115,7 +3115,11 @@ function switchTab(tab,el){
   // แท็บวิเคราะห์: iframe (analytics.html) โหลดข้อมูลเองอัตโนมัติ ไม่ต้องเรียกที่นี่
   if(tab==='history')renderHistory();
   if(tab==='line')loadLineSettings();
-  if(tab==='summary')renderSummaryDrugPage(1);
+  if(tab==='summary'){
+    if(!receiveRows.length||!dispenseRows.length){
+      Promise.all([receiveRows.length?Promise.resolve():loadReceive(),dispenseRows.length?Promise.resolve():loadDispense()]).then(()=>renderSummaryDrugPage(1));
+    } else {renderSummaryDrugPage(1);}
+  }
   if(tab==='overview')loadOverview();
 }
 
@@ -4415,7 +4419,8 @@ function showDrugDetail(name){
   const left=Math.max(0,Math.round(totalRec-totalDis));
   const lotMap={};
   rLots.forEach(r=>{
-    if(!lotMap[r.lot])lotMap[r.lot]={lot:r.lot,exp:r.exp,group:r.group||'',received:0,dispensed:0,unit:r.unit,recvDate:''};
+    const expNorm=fmtExp(r.exp); // normalize ก่อนเก็บ ป้องกัน raw Date-toString ทำให้ parseExpDate คืน null
+    if(!lotMap[r.lot])lotMap[r.lot]={lot:r.lot,exp:expNorm,group:r.group||'',received:0,dispensed:0,unit:r.unit,recvDate:''};
     lotMap[r.lot].received+=parseFloat(r.qty)||0;
     const rd=parseExpDate(fmtDate(r.date)),cur=parseExpDate(fmtDate(lotMap[r.lot].recvDate));
     if(rd&&(!cur||rd>cur))lotMap[r.lot].recvDate=r.date;
@@ -4430,21 +4435,21 @@ function showDrugDetail(name){
     const ed=parseExpDate(fmtExp(l.exp));
     if(ed&&(!earliestExp||ed<earliestExp))earliestExp=ed;
   });
-  let isR=false,isY=false;
+  let isExp=false,isR=false,isY=false;
   if(earliestExp){
     const mo=(earliestExp-now)/(1000*60*60*24*30.4);
-    isR=mo<=6; isY=!isR&&mo<=12;
+    isExp=mo<=0; isR=!isExp&&mo<=6; isY=!isExp&&!isR&&mo<=12;
   }
-  // fallback: ถ้ามี group ใน dispenseRows ให้ใช้
+  // fallback: ถ้ามี group ใน dispenseRows ให้ใช้ (เฉพาะเมื่อไม่มีวันหมดอายุ)
   const dGroup=dispenseRows.filter(d=>d.name===name).map(d=>d.group||'').find(g=>g);
   if(dGroup&&!earliestExp){
     const g2=dGroup.trim();
     isR=g2==='สีแดง'||g2==='แดง';
     isY=g2==='สีเหลือง'||g2==='เหลือง';
   }
-  const sc=isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
-  const statusLabel=isR?'หมดอายุ < 6 เดือน':isY?'หมดอายุ 6–12 เดือน':'หมดอายุ > 12 เดือน';
-  const statusDot=isR?'#D93025':isY?'#C07000':'#1E8A4A';
+  const sc=isExp?'#B91C1C':isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
+  const statusLabel=!earliestExp?'ไม่ระบุวันหมดอายุ':isExp?'หมดอายุแล้ว':isR?'หมดอายุ < 6 เดือน':isY?'หมดอายุ 6–12 เดือน':'หมดอายุ > 12 เดือน';
+  const statusDot=isExp?'#B91C1C':isR?'#D93025':isY?'#C07000':'#1E8A4A';
 
   el.innerHTML=`
   <!-- Banner header -->
@@ -4481,10 +4486,10 @@ function showDrugDetail(name){
       const ll=Math.max(0,Math.round(l.received-l.dispensed));
       // คำนวณสีจาก EXP โดยตรง (ถูกต้องกว่า group field)
       const led=parseExpDate(fmtExp(l.exp));
-      let lR=false,lY=false;
-      if(led){const lmo=(led-now)/(1000*60*60*24*30.4);lR=lmo<=6;lY=!lR&&lmo<=12;}
-      const lc=lR?'var(--red)':lY?'var(--amber)':'var(--teal)';
-      const lcl=lR?'exp-warn':lY?'exp-caution':'';
+      let lExp=false,lR=false,lY=false;
+      if(led){const lmo=(led-now)/(1000*60*60*24*30.4);lExp=lmo<=0;lR=!lExp&&lmo<=6;lY=!lExp&&!lR&&lmo<=12;}
+      const lc=lExp?'#B91C1C':lR?'var(--red)':lY?'var(--amber)':'var(--teal)';
+      const lcl=lExp?'exp-warn':lR?'exp-warn':lY?'exp-caution':'';
       return `<tr class="${lcl}">
         <td style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text2);">${l.lot}</td>
         <td style="font-size:11px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;color:var(--text3);">${l.recvDate?fmtDate(l.recvDate):'—'}</td>
