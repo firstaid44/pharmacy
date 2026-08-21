@@ -346,6 +346,16 @@ textarea.form-input{resize:none;line-height:1.6;font-size:14px;}
 .sum-unit{font-size:10px;color:var(--text3);text-align:right;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:1px;}
 .exp-warn{background:rgba(217,48,37,.04);border-left:3px solid var(--red);}
 .exp-caution{background:rgba(192,112,0,.04);border-left:3px solid #E29000;}
+/* ── ML-COMBO (typeahead จับคู่ยาใน MedLoggerAI) ── */
+.ml-combo{position:relative;}
+.ml-combo-list{position:absolute;left:0;right:0;top:calc(100% + 2px);z-index:9999;
+  background:var(--surface);border:1.5px solid var(--blue);border-radius:10px;
+  max-height:190px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none;}
+.ml-combo-item{padding:8px 10px;font-size:12px;cursor:pointer;
+  border-bottom:1px solid var(--border);color:var(--text1);line-height:1.3;}
+.ml-combo-item:last-child{border-bottom:none;}
+.ml-combo-item:hover,.ml-combo-item.ml-active{background:rgba(59,130,246,.1);color:var(--blue);}
+.ml-combo-empty{padding:10px;font-size:11.5px;color:var(--text3);text-align:center;}
 
 /* ── EXP BTNS ── */
 .exp-range-btn{
@@ -5221,15 +5231,25 @@ function renderMedLoggerPanel(){
       </div>`+
       _mlDrugs.map((g,idx)=>{
         if(g.added)return '';
-        const matchOpts=(g.match?'':'<option value="" selected>— กรุณาเลือกยา —</option>')+drugDB.map(d=>`<option value="${d[0]}" ${g.match&&g.match[0]===d[0]?'selected':''}>${d[1]}</option>`).join('');
-        const matchWarn=g.match?'':'<div style="font-size:10px;color:var(--red);margin-top:2px;">⚠ ไม่พบยาที่ตรงในฐานข้อมูล กรุณาเลือกจากรายการ</div>';
+        const mlDrugInitVal=g.match?g.match[1]:'';
+        const mlDrugInitCode=g.match?g.match[0]:'';
+        const matchWarn=g.match?'':'<div style="font-size:10px;color:var(--red);margin-top:2px;">⚠ ไม่พบยาอัตโนมัติ — พิมพ์ชื่อยาเพื่อเลือก</div>';
         const expOk=!!_normalizeScanDate(g.exp);   // วันหมดอายุที่อ่านค่าไม่ได้ ให้ถือว่าไม่มี ต้องกรอกใหม่
         return `<div style="border:1.5px solid var(--border2);border-radius:12px;padding:10px;margin-bottom:8px;background:var(--surface);">
           <div style="font-size:12.5px;font-weight:800;color:var(--text1);line-height:1.35;">${g.displayName}</div>
           ${_mlInfoGrid(g.lot,g.exp,String(g.rows.length),g.rows.length>1?'📷 สแกนซ้ำ '+g.rows.length+' ครั้ง — ปรับจำนวนได้ด้านล่าง':'')}
           <div style="margin-top:7px;">
             <label style="font-size:10px;color:var(--text3);font-weight:700;">จับคู่ชื่อยาในระบบ:</label>
-            <select id="ml-drug-code-${idx}" style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:inherit;margin-top:2px;">${matchOpts}</select>
+            <div class="ml-combo" style="margin-top:2px;">
+              <input type="text" id="ml-drug-txt-${idx}" value="${mlDrugInitVal}"
+                placeholder="พิมพ์ชื่อยา..." autocomplete="off"
+                oninput="_mlComboFilter('ml-drug-code-${idx}','ml-drug-txt-${idx}',this.value)"
+                onfocus="_mlComboFilter('ml-drug-code-${idx}','ml-drug-txt-${idx}',this.value)"
+                onblur="_mlComboHide('ml-drug-list-${idx}')"
+                style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid ${mlDrugInitCode?'var(--border2)':'var(--red)'};font-size:12px;font-family:inherit;box-sizing:border-box;">
+              <input type="hidden" id="ml-drug-code-${idx}" value="${mlDrugInitCode}">
+              <div id="ml-drug-list-${idx}" class="ml-combo-list"></div>
+            </div>
             ${matchWarn}
           </div>
           ${(!g.lot||!expOk)?`<div style="margin-top:7px;padding:8px;border:1.5px solid rgba(217,48,37,.35);border-radius:10px;background:var(--red-l);">
@@ -5288,15 +5308,25 @@ function renderMedLoggerPanel(){
               style="width:100%;padding:8px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px;">➕ เพิ่มทั้งใบ (${pendingLines.length} รายการ)</button>
             ${inv.lines.map((line,lineIdx)=>{
               if(line.added)return '';
-              const matchOpts=(line.match?'':'<option value="" selected>— กรุณาเลือกยา —</option>')+drugDB.map(d=>`<option value="${d[0]}" ${line.match&&line.match[0]===d[0]?'selected':''}>${d[1]}</option>`).join('');
-              const matchWarn=line.match?'':'<div style="font-size:10px;color:var(--red);margin-top:2px;">⚠ ไม่พบยาที่ตรง กรุณาเลือกจากรายการ</div>';
+              const mlInvInitVal=line.match?line.match[1]:'';
+              const mlInvInitCode=line.match?line.match[0]:'';
+              const matchWarn=line.match?'':'<div style="font-size:10px;color:var(--red);margin-top:2px;">⚠ ไม่พบยาอัตโนมัติ — พิมพ์ชื่อยาเพื่อเลือก</div>';
               const calcQty=_parseMlQty(line.qty);
               const lineExpOk=!!_normalizeScanDate(line.exp);
               return `<div style="border-top:1px dashed var(--border2);padding:8px 0;">
                 <div style="font-size:12.5px;font-weight:800;color:var(--text1);line-height:1.35;">${line.seq?'<span style="color:var(--text3);font-weight:700;">'+line.seq+'.</span> ':''}${line.name}</div>
                 ${_mlInfoGrid(line.lot,line.exp,calcQty+' '+(line.unitName||''),'ตามใบนำส่ง: '+line.qty+' '+(line.unitName||''))}
                 <label style="display:block;font-size:9.5px;color:var(--text3);font-weight:700;margin-top:7px;">จับคู่ชื่อยาในระบบ:</label>
-                <select id="ml-inv-code-${invIdx}-${lineIdx}" style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:11.5px;font-family:inherit;margin-top:2px;">${matchOpts}</select>
+                <div class="ml-combo" style="margin-top:2px;">
+                  <input type="text" id="ml-inv-txt-${invIdx}-${lineIdx}" value="${mlInvInitVal}"
+                    placeholder="พิมพ์ชื่อยา..." autocomplete="off"
+                    oninput="_mlComboFilter('ml-inv-code-${invIdx}-${lineIdx}','ml-inv-txt-${invIdx}-${lineIdx}',this.value)"
+                    onfocus="_mlComboFilter('ml-inv-code-${invIdx}-${lineIdx}','ml-inv-txt-${invIdx}-${lineIdx}',this.value)"
+                    onblur="_mlComboHide('ml-inv-list-${invIdx}-${lineIdx}')"
+                    style="width:100%;padding:6px 8px;border-radius:8px;border:1.5px solid ${mlInvInitCode?'var(--border2)':'var(--red)'};font-size:11.5px;font-family:inherit;box-sizing:border-box;">
+                  <input type="hidden" id="ml-inv-code-${invIdx}-${lineIdx}" value="${mlInvInitCode}">
+                  <div id="ml-inv-list-${invIdx}-${lineIdx}" class="ml-combo-list"></div>
+                </div>
                 ${matchWarn}
                 ${(!line.lot||!lineExpOk)?`<div style="margin-top:6px;padding:8px;border:1.5px solid rgba(217,48,37,.35);border-radius:10px;background:var(--red-l);">
                   <div style="font-size:9.5px;font-weight:800;color:var(--red);margin-bottom:5px;">⚠ ข้อมูลไม่ครบ — กรุณากรอกก่อนเพิ่ม</div>
@@ -5337,6 +5367,44 @@ function _toggleMlInvoice(idx){
   window['_mlInvOpen_'+idx]=!window['_mlInvOpen_'+idx];
   renderMedLoggerPanel();
 }
+// ── Typeahead combobox สำหรับ "จับคู่ยาในระบบ" ──────────────────────────────
+function _mlComboFilter(codeId,txtId,q){
+  const listId=codeId.replace(/-code-/,'-list-');
+  const listEl=document.getElementById(listId);
+  const txtEl=document.getElementById(txtId);
+  if(!listEl||!txtEl)return;
+  const qn=(q||'').toLowerCase().trim();
+  const filtered=qn
+    ?drugDB.filter(d=>d[1].toLowerCase().includes(qn)||d[0].toLowerCase().includes(qn)).slice(0,25)
+    :drugDB.slice(0,25);
+  if(!filtered.length){
+    listEl.innerHTML='<div class="ml-combo-empty">ไม่พบยาที่ตรง</div>';
+    listEl.style.display='block';return;
+  }
+  listEl.innerHTML=filtered.map(d=>`<div class="ml-combo-item"
+    onmousedown="event.preventDefault();_mlComboSelect('${codeId}','${txtId}','${d[0].replace(/'/g,"\\'")}','${d[1].replace(/'/g,"\\'")}')"
+    >${d[1]}<span style="font-size:10px;color:var(--text3);margin-left:6px;">${d[0]}</span></div>`).join('');
+  listEl.style.display='block';
+}
+function _mlComboSelect(codeId,txtId,code,name){
+  const codeEl=document.getElementById(codeId);
+  const txtEl=document.getElementById(txtId);
+  const listId=codeId.replace(/-code-/,'-list-');
+  const listEl=document.getElementById(listId);
+  if(codeEl)codeEl.value=code;
+  if(txtEl)txtEl.value=name;
+  if(listEl)listEl.style.display='none';
+  // อัพเดทหน่วยนับให้สอดคล้องกับยาที่เลือก
+  const matched=drugDB.find(d=>d[0]===code);
+  if(matched){
+    const idxM=codeId.match(/ml-drug-code-(\d+)/);
+    if(idxM){const u=document.getElementById('ml-drug-unit-'+idxM[1]);if(u)u.innerHTML=_mlUnitOptions(matched[3],'');}
+    const invM=codeId.match(/ml-inv-code-(\d+)-(\d+)/);
+    if(invM){const u=document.getElementById('ml-inv-unit-'+invM[1]+'-'+invM[2]);if(u)u.innerHTML=_mlUnitOptions(matched[3],'');}
+  }
+}
+function _mlComboHide(listId){setTimeout(()=>{const e=document.getElementById(listId);if(e)e.style.display='none';},180);}
+// ─────────────────────────────────────────────────────────────────────────────
 function addMlDrugGroupToBatch(idx){
   const g=_mlDrugs[idx]; if(!g||g.added)return;
   const codeSel=document.getElementById('ml-drug-code-'+idx);
