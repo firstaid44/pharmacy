@@ -2453,6 +2453,11 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
                background:transparent;color:var(--text3);">
         💊 ตู้ยานอกNCD
       </button>
+      <button id="subtab-emerg" onclick="switchStockSubtab('emerg')"
+        style="flex:1;padding:9px 6px;border-radius:10px;border:none;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;
+               background:transparent;color:var(--text3);">
+        🚨 กล่องยาฉุกเฉิน
+      </button>
     </div>
 
     <!-- ══ 📊 Dashboard สรุปสถานะคลังยา ══ -->
@@ -2470,6 +2475,11 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <!-- ══ View C: ชั้นวางยา NCD ══ -->
     <div id="stock-view-ncd" style="display:none;">
       <div id="ncd-cab-body-inline"></div>
+    </div>
+
+    <!-- ══ View D: กล่องยาฉุกเฉิน ══ -->
+    <div id="stock-view-emerg" style="display:none;">
+      <div id="emerg-box-body"></div>
     </div>
 
     <!-- ══ View A: คลังยา PCU ══ -->
@@ -5800,22 +5810,8 @@ function deleteReqLog(idx){
 
 // ══════════════════════════════════════════════════════════════
 // ══ คลังยานอก sub-tab ═══════════════════════════════════════
-function switchStockSubtab(tab){
-  const isPCU = tab==='pcu';
-  document.getElementById('stock-view-pcu').style.display = isPCU ? '' : 'none';
-  document.getElementById('stock-view-out').style.display  = isPCU ? 'none' : '';
-  const btnPCU = document.getElementById('subtab-pcu');
-  const btnOut = document.getElementById('subtab-out');
-  const base = 'flex:1;padding:9px 8px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;';
-  if(isPCU){
-    btnPCU.style.cssText = base+'background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(28,107,69,.3);';
-    btnOut.style.cssText  = base+'background:transparent;color:var(--text3);';
-  } else {
-    btnOut.style.cssText  = base+'background:var(--amber);color:#fff;box-shadow:0 2px 8px rgba(226,144,0,.3);';
-    btnPCU.style.cssText  = base+'background:transparent;color:var(--text3);';
-    renderOuterStock(); // อ่านจากชีตคลังยานอก (โหลดอัตโนมัติในฟังก์ชัน)
-  }
-}
+// switchStockSubtab (เวอร์ชันนี้อยู่ใต้ renderOuterStock — ถูก override โดยเวอร์ชันล่างที่สมบูรณ์กว่า)
+// ดูเวอร์ชันจริงที่ด้านล่างของไฟล์
 
 let _outExpRangeMonths=1;
 function setOutExpRange(btn,months){
@@ -8527,22 +8523,100 @@ function renderExtStock(){
     </div>`).join(''):'<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ</div>';
 }
 // ══ คลังยานอก END ══════════════════════════════════════════
+// ══ กล่องยาฉุกเฉิน — รายการยาและข้อมูล LOT/EXP คงที่ ══════════════════════
+const EMERG_BOX=[
+  {name:'Adrenaline inj. 1 mg./ml',   code:'100388000000531310181634', lot:'',       exp:'',            unit:'แอมป์'},
+  {name:'DEXTROSE 50% 50 ML.inj.',     code:'DEX50',                   lot:'L251119', exp:'02/12/2027',  unit:'ขวด'},
+  {name:'ISOSORBIDE DINITRATE 10 MG/TAB กส.', code:'ISO',              lot:'',       exp:'',            unit:'เม็ด'},
+  {name:'Dexamethasone inj. 4mg./1ml.',code:'4DEXA',                   lot:'',       exp:'',            unit:'แอมป์'},
+  {name:'CHLORPHENIRAMINE INJ.',        code:'CPM INJ',                 lot:'',       exp:'',            unit:'แอมป์'},
+];
+
+function renderEmergBox(){
+  const el=document.getElementById('emerg-box-body');
+  if(!el)return;
+  const now=new Date();now.setHours(0,0,0,0);
+
+  // สรุปยาคงเหลือจาก PCU stock (ตาม code แล้วค่อย fallback ชื่อ)
+  const stockByCode={};
+  _allStockItems.forEach(i=>{
+    const k=(i.code||'').trim();
+    if(k){stockByCode[k]=(stockByCode[k]||0)+i.qty;}
+  });
+  const stockByName={};
+  _allStockItems.forEach(i=>{
+    const k=(i.name||'').trim();
+    if(k){stockByName[k]=(stockByName[k]||0)+i.qty;}
+  });
+
+  const rows=EMERG_BOX.map((d,idx)=>{
+    // คำนวณสถานะ EXP
+    let expLabel='—', expColor='var(--text3)', expStatus='';
+    if(d.exp){
+      const ed=parseExpDate(fmtExp(d.exp));
+      if(ed){
+        const mo=(ed-now)/(1000*60*60*24*30.4);
+        if(mo<=0){expColor='#B91C1C';expStatus='หมดอายุแล้ว';}
+        else if(mo<=6){expColor='var(--red)';expStatus='< 6 เดือน';}
+        else if(mo<=12){expColor='var(--amber)';expStatus='6–12 เดือน';}
+        else{expColor='var(--teal)';expStatus='> 12 เดือน';}
+      }
+      expLabel=fmtExp(d.exp);
+    }
+    // คงเหลือใน PCU
+    const pcuQty=stockByCode[d.code]??stockByName[d.name]??null;
+    const qtyBadge=pcuQty!==null
+      ?`<span style="background:${pcuQty>0?'rgba(30,138,74,.12)':'rgba(217,48,37,.1)'};color:${pcuQty>0?'var(--teal)':'var(--red)'};font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;">PCU ${Math.round(pcuQty)} ${d.unit}</span>`
+      :'';
+
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border);background:var(--surface);">
+      <div style="min-width:26px;height:26px;border-radius:50%;background:#B91C1C;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${idx+1}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:800;color:var(--text1);line-height:1.35;">${d.name}</div>
+        <div style="font-size:10.5px;color:var(--text3);margin-top:2px;">รหัส: ${d.code||'—'} · หน่วย: ${d.unit}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;align-items:center;">
+          ${d.lot?`<span style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:6px;">LOT ${d.lot}</span>`:''}
+          ${d.exp?`<span style="color:${expColor};font-size:10.5px;font-weight:700;">EXP ${expLabel}${expStatus?' · '+expStatus:''}</span>`:''}
+          ${qtyBadge}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#B91C1C,#DC2626);color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;">
+      <div style="font-size:15px;font-weight:800;letter-spacing:-.2px;">🚨 กล่องยาฉุกเฉิน</div>
+      <div style="font-size:11px;opacity:.85;margin-top:3px;">รายการยาในกล่องฉุกเฉิน · ${EMERG_BOX.length} รายการ</div>
+    </div>
+    <div style="border:1.5px solid var(--border2);border-radius:12px;overflow:hidden;background:var(--surface);">
+      <div style="padding:9px 12px;background:var(--surface2);border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);">รายการยา</span>
+        <span style="font-size:10px;color:var(--text3);">ตัวเลข PCU = คงเหลือในคลังหลัก</span>
+      </div>
+      ${rows}
+    </div>`;
+}
+
 function switchStockSubtab(tab){
-  const isPcu=tab==='pcu', isOut=tab==='out', isNcd=tab==='ncd';
+  const isPcu=tab==='pcu', isOut=tab==='out', isNcd=tab==='ncd', isEmerg=tab==='emerg';
   // toggle views
   document.getElementById('stock-view-pcu').style.display=isPcu?'':'none';
   document.getElementById('stock-view-out').style.display=isOut?'':'none';
   const ncdView=document.getElementById('stock-view-ncd');
   if(ncdView)ncdView.style.display=isNcd?'':'none';
+  const emergView=document.getElementById('stock-view-emerg');
+  if(emergView)emergView.style.display=isEmerg?'':'none';
   // toggle buttons
   const btnPcu=document.getElementById('subtab-pcu');
   const btnOut=document.getElementById('subtab-out');
   const btnNcd=document.getElementById('subtab-ncd');
+  const btnEmerg=document.getElementById('subtab-emerg');
   const off=b=>{if(!b)return;b.style.background='transparent';b.style.color='var(--text3)';b.style.boxShadow='none';};
-  off(btnPcu);off(btnOut);off(btnNcd);
+  off(btnPcu);off(btnOut);off(btnNcd);off(btnEmerg);
   if(isPcu){btnPcu.style.background='var(--blue)';btnPcu.style.color='#fff';btnPcu.style.boxShadow='0 2px 8px rgba(26,95,212,.3)';}
   else if(isOut){btnOut.style.background='var(--accent)';btnOut.style.color='#fff';btnOut.style.boxShadow='0 2px 8px rgba(249,115,22,.3)';renderOuterStock();}
   else if(isNcd){btnNcd.style.background='#6B3FC4';btnNcd.style.color='#fff';btnNcd.style.boxShadow='0 2px 8px rgba(107,63,196,.3)';renderNCDCabinet();}
+  else if(isEmerg){btnEmerg.style.background='#B91C1C';btnEmerg.style.color='#fff';btnEmerg.style.boxShadow='0 2px 8px rgba(185,28,28,.3)';renderEmergBox();}
 }
 
 function renderOuterStock(){
