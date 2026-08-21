@@ -4061,7 +4061,8 @@ const OUTER_CABINETS=[
     ['PNSL', '1VIB', '', '6033', ''],
     ['410000000239140020182750', '1AMY', 'HERB2', '', 'HERB1'],
     ['ชาสมุนไพรชุมเห็ดเทศ', 'เจลว่านหางจระเข้', '', 'ยาระบายมะขามแขก(senna7.5)', 'ยาจันทน์ลีลา'],
-    ['สมุนไพรขิง', 'ยาเหลืองปิดสมุทร', '', '', '']
+    ['สมุนไพรขิง', 'ยาเหลืองปิดสมุทร', '', '', ''],
+    ['1CAL']
   ]},
   { title:'ตู้ยาน้ำและยาใช้ภายนอก', icon:'🧴', shelves:[
     ['3ALB', '3ALM', '3AOM', '3AMI', 'BROM2'],
@@ -6236,6 +6237,14 @@ function _buildPosMap(){
     const k=_ncdNorm(c);
     if(!map[k])put(c,'นอกNCD/ชั้น'+(si+1));
   }));
+  // ผังตู้ยาคลังนอก (OUTER_CABINETS)
+  let _outerShelfIdx=0;
+  (OUTER_CABINETS||[]).forEach(cab=>{
+    (cab.shelves||[]).forEach((shelf,si)=>{
+      shelf.forEach(c=>{if(c)put(c,'คลังนอก/ชั้น'+(_outerShelfIdx+1));});
+      _outerShelfIdx++;
+    });
+  });
   _posMapCache=map;
   return map;
 }
