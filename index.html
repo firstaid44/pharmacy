@@ -6322,10 +6322,12 @@ function scanStockAlerts(){
 
 // สร้าง Flex Message แจ้งเตือนคลังยา — Carousel 2 Bubble (คลังยาใน / คลังยานอก)
 // แต่ละ Bubble โฟกัส 1 แหล่งเก็บ แต่ละรายการ = 2 บรรทัด: [ชื่อยา+สถานะ] / [ตำแหน่ง+จำนวน]
-function buildAlertFlex(res){
-  const expN=res.exp.length,lowN=res.low.length;
+// สร้าง Flex Message 1 ใบ สำหรับ 1 แหล่งเก็บยา (ไม่มี summary tiles ด้านบน)
+function _buildAreaFlex(area,emoji,hdrBg,hdrSub,items){
+  if(!items.length)return null;
+  const nExp=items.filter(x=>x.kind==='exp').length;
+  const nLow=items.filter(x=>x.kind==='low').length;
   const sep={type:'separator',color:'#E2E8F0',margin:'sm'};
-
   const itemRow=it=>{
     const isExp=it.kind==='exp';
     const urgent=isExp?(it.months<=0):(it.qty<=0);
@@ -6340,52 +6342,32 @@ function buildAlertFlex(res){
         {type:'text',text:it.pos||'—',size:'xxs',color:'#94A3B8',flex:1},
         {type:'text',text:qtyTxt,size:'xxs',color:'#64748B',flex:0,align:'end'}]}]};
   };
-
-  // สร้าง Bubble สำหรับ 1 แหล่งเก็บ
-  const buildBubble=(area,emoji,hdrBg,hdrSub,tileBg1,tileBg2,tileFg1,tileFg2,items)=>{
-    if(!items.length)return null;
-    const nExp=items.filter(x=>x.kind==='exp').length;
-    const nLow=items.filter(x=>x.kind==='low').length;
-    const shown=items.slice(0,12);
-    const rows=[];
-    shown.forEach((it,i)=>{if(i)rows.push(sep);rows.push(itemRow(it));});
-    const moreRow=items.length>12?[sep,{type:'text',text:'…และอีก '+(items.length-12)+' รายการ',size:'xxs',color:'#94A3B8',margin:'sm',align:'center'}]:[];
-    return {type:'bubble',size:'giga',
+  const shown=items.slice(0,15);
+  const rows=[];
+  shown.forEach((it,i)=>{if(i)rows.push(sep);rows.push(itemRow(it));});
+  const moreRow=items.length>15?[sep,{type:'text',text:'…และอีก '+(items.length-15)+' รายการ',size:'xxs',color:'#94A3B8',margin:'sm',align:'center'}]:[];
+  return {type:'flex',
+    altText:`⚠️ ${area}: ใกล้หมดอายุ ${nExp} · ต่ำกว่า Min ${nLow} รายการ`,
+    contents:{type:'bubble',size:'giga',
       header:{type:'box',layout:'horizontal',backgroundColor:hdrBg,paddingAll:'13px',contents:[
         {type:'text',text:emoji,size:'lg',flex:0,gravity:'center'},
         {type:'box',layout:'vertical',flex:1,paddingStart:'8px',contents:[
           {type:'text',text:area,color:'#FFFFFF',size:'sm',weight:'bold'},
           {type:'text',text:'PCU สะบ้าย้อย · '+todayTH(),color:hdrSub,size:'xxs',margin:'xs'}]}]},
       body:{type:'box',layout:'vertical',paddingAll:'12px',spacing:'none',contents:[
-        {type:'box',layout:'horizontal',spacing:'sm',contents:[
-          {type:'box',layout:'vertical',flex:1,backgroundColor:tileBg1,cornerRadius:'8px',paddingAll:'10px',contents:[
-            {type:'text',text:'⏰ ใกล้หมดอายุ',size:'xxs',color:tileFg1,weight:'bold'},
-            {type:'text',text:String(nExp)+' รายการ',size:'lg',weight:'bold',color:'#C07000',margin:'xs'}]},
-          {type:'box',layout:'vertical',flex:1,backgroundColor:tileBg2,cornerRadius:'8px',paddingAll:'10px',contents:[
-            {type:'text',text:'📉 ต่ำกว่า Min',size:'xxs',color:tileFg2,weight:'bold'},
-            {type:'text',text:String(nLow)+' รายการ',size:'lg',weight:'bold',color:'#D93025',margin:'xs'}]}]},
-        {type:'separator',margin:'md'},
-        ...rows,...moreRow]}};
-  };
-
-  const b1=buildBubble('คลังยาใน (PCU)','🏥','#1D4ED8','#BFDBFE',
-    '#FEF3C7','#FEE2E2','#92400E','#991B1B',
-    res.byArea['คลังยาใน']||[]);
-  const b2=buildBubble('คลังยานอก','📦','#B45309','#FDE68A',
-    '#FEF3C7','#FEE2E2','#92400E','#991B1B',
-    res.byArea['คลังยานอก']||[]);
-
-  const bubbles=[b1,b2].filter(Boolean);
-  if(!bubbles.length)return null;
-
-  // 1 แหล่ง → ส่งเป็น bubble เดียว, 2 แหล่ง → carousel
-  const contents=bubbles.length===1?bubbles[0]:{type:'carousel',contents:bubbles};
-  return {type:'flex',
-    altText:`⚠️ แจ้งเตือนคลังยา PCU: ใกล้หมดอายุ ${expN} · ต่ำกว่า Min ${lowN} รายการ`,
-    contents};
+        ...rows,...moreRow]}}};
+}
+// สร้าง array ของ Flex Messages แยกรายแหล่ง (ส่งทีละข้อความ ไม่ carousel)
+function buildAlertFlex(res){
+  const msgs=[];
+  const f1=_buildAreaFlex('คลังยาใน (PCU)','🏥','#1D4ED8','#BFDBFE',res.byArea['คลังยาใน']||[]);
+  const f2=_buildAreaFlex('คลังยานอก','📦','#B45309','#FDE68A',res.byArea['คลังยานอก']||[]);
+  if(f1)msgs.push(f1);
+  if(f2)msgs.push(f2);
+  return msgs;
 }
 
-// ส่งแจ้งเตือนไป LINE (เรียกจากปุ่มในหน้าตั้งค่า LINE)
+// ส่งแจ้งเตือนไป LINE — คลังยาใน และ คลังยานอก เป็นคนละข้อความ
 async function sendStockAlertLine(silent){
   const token=(localStorage.getItem('line_token')||'').trim();
   const to=(localStorage.getItem('line_to')||'').trim();
@@ -6403,12 +6385,15 @@ async function sendStockAlertLine(silent){
     if(!silent)showAlert('✓ ไม่พบยาใกล้หมดอายุหรือต่ำกว่า Minimum','success');
     return;
   }
-  const payload={action:'send_line',line_token:token,line_to:to,flex:JSON.stringify(buildAlertFlex(res))};
+  const flexMsgs=buildAlertFlex(res);
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    for(const flex of flexMsgs){
+      await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({action:'send_line',line_token:token,line_to:to,flex:JSON.stringify(flex)})});
+    }
     addLineLog('ok','แจ้งเตือนคลังยา',res.exp.length+res.low.length,'รายการ','ระบบ',
-      `ใกล้หมดอายุ ${res.exp.length} · ต่ำกว่า Min ${res.low.length} — ส่งแล้ว ✓`);
-    if(!silent)showAlert(`📱 ส่งแจ้งเตือนแล้ว — ใกล้หมดอายุ ${res.exp.length} · ต่ำกว่า Min ${res.low.length} รายการ`,'success');
+      `ใกล้หมดอายุ ${res.exp.length} · ต่ำกว่า Min ${res.low.length} — ส่ง ${flexMsgs.length} ข้อความ ✓`);
+    if(!silent)showAlert(`📱 ส่งแจ้งเตือนแล้ว ${flexMsgs.length} ข้อความ — ใกล้หมดอายุ ${res.exp.length} · ต่ำกว่า Min ${res.low.length} รายการ`,'success');
   }catch(e){
     addLineLog('err','แจ้งเตือนคลังยา',0,'','ระบบ','ส่งไม่สำเร็จ: '+e.message);
     if(!silent)showAlert('ส่งแจ้งเตือนไม่สำเร็จ: '+e.message,'danger');
