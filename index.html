@@ -3126,7 +3126,7 @@ function switchTab(tab,el){
   document.getElementById('page-'+tab).classList.add('active');
   if(!el)el=document.querySelector(`.nav-item[onclick*="'${tab}'"]`);
   if(el)el.classList.add('active');
-  if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();setTimeout(_setDispenseDocNum,300);}
+  if(tab==='dispense'){if(!receiveRows.length)loadReceive();loadDispense();if(!_allStockItems.length)loadStock();setTimeout(_setDispenseDocNum,300);}
   if(tab==='stock'){if(!_allStockItems.length)loadStock();if(!_outerLoaded)loadOuterStock();switchStockSubtab('pcu');renderStockDashboard();}
   if(tab==='extstock')loadExtStock();
   // แสดง sidebar เฉพาะแท็บคลังยา
