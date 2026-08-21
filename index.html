@@ -6320,8 +6320,8 @@ function scanStockAlerts(){
   };
 }
 
-// สร้าง Flex Message แจ้งเตือนคลังยา — เรียบง่าย อ่านง่าย
-// แต่ละรายการยา = 2 บรรทัด: [ชื่อยา + สถานะ] / [ตำแหน่ง + จำนวน]
+// สร้าง Flex Message แจ้งเตือนคลังยา — Carousel 2 Bubble (คลังยาใน / คลังยานอก)
+// แต่ละ Bubble โฟกัส 1 แหล่งเก็บ แต่ละรายการ = 2 บรรทัด: [ชื่อยา+สถานะ] / [ตำแหน่ง+จำนวน]
 function buildAlertFlex(res){
   const expN=res.exp.length,lowN=res.low.length;
   const sep={type:'separator',color:'#E2E8F0',margin:'sm'};
@@ -6341,41 +6341,48 @@ function buildAlertFlex(res){
         {type:'text',text:qtyTxt,size:'xxs',color:'#64748B',flex:0,align:'end'}]}]};
   };
 
-  const areaSection=(area,emoji,color,items)=>{
-    if(!items.length)return[];
-    const nExp=items.filter(x=>x.kind==='exp').length,nLow=items.filter(x=>x.kind==='low').length;
-    const shown=items.slice(0,10);
+  // สร้าง Bubble สำหรับ 1 แหล่งเก็บ
+  const buildBubble=(area,emoji,hdrBg,hdrSub,tileBg1,tileBg2,tileFg1,tileFg2,items)=>{
+    if(!items.length)return null;
+    const nExp=items.filter(x=>x.kind==='exp').length;
+    const nLow=items.filter(x=>x.kind==='low').length;
+    const shown=items.slice(0,12);
     const rows=[];
     shown.forEach((it,i)=>{if(i)rows.push(sep);rows.push(itemRow(it));});
-    const moreRow=items.length>10?[sep,{type:'text',text:'…และอีก '+(items.length-10)+' รายการ',size:'xxs',color:'#94A3B8',margin:'sm',align:'center'}]:[];
-    return [{type:'box',layout:'vertical',margin:'md',backgroundColor:color.bg,cornerRadius:'10px',paddingAll:'12px',contents:[
-      {type:'box',layout:'horizontal',contents:[
-        {type:'text',text:emoji+' '+area,size:'xs',weight:'bold',color:color.fg,flex:1},
-        {type:'text',text:String(items.length)+' รายการ',size:'xxs',color:color.fg,weight:'bold',align:'end',gravity:'center'}]},
-      {type:'text',text:'⏰ '+nExp+'  ·  📉 '+nLow,size:'xxs',color:color.sub,margin:'xs'},
-      {type:'separator',color:color.sep,margin:'sm'},
-      ...rows,...moreRow]}];
-  };
-
-  const inner=areaSection('คลังยาใน (PCU)','🏥',{bg:'#EFF6FF',fg:'#1D4ED8',sub:'#3B82F6',sep:'rgba(59,130,246,.25)'},res.byArea['คลังยาใน']||[]);
-  const outer=areaSection('คลังยานอก','📦',{bg:'#FFFBEB',fg:'#B45309',sub:'#D97706',sep:'rgba(217,119,6,.25)'},res.byArea['คลังยานอก']||[]);
-
-  return {type:'flex',altText:`⚠️ แจ้งเตือนคลังยา PCU: ใกล้หมดอายุ ${expN} · ต่ำกว่า Min ${lowN} รายการ`,
-    contents:{type:'bubble',size:'giga',
-      header:{type:'box',layout:'horizontal',backgroundColor:'#B45309',paddingAll:'13px',contents:[
-        {type:'text',text:'⚠️',size:'lg',flex:0,gravity:'center'},
+    const moreRow=items.length>12?[sep,{type:'text',text:'…และอีก '+(items.length-12)+' รายการ',size:'xxs',color:'#94A3B8',margin:'sm',align:'center'}]:[];
+    return {type:'bubble',size:'giga',
+      header:{type:'box',layout:'horizontal',backgroundColor:hdrBg,paddingAll:'13px',contents:[
+        {type:'text',text:emoji,size:'lg',flex:0,gravity:'center'},
         {type:'box',layout:'vertical',flex:1,paddingStart:'8px',contents:[
-          {type:'text',text:'แจ้งเตือนคลังยา',color:'#FFFFFF',size:'sm',weight:'bold'},
-          {type:'text',text:'PCU สะบ้าย้อย · '+todayTH(),color:'#FDE68A',size:'xxs',margin:'xs'}]}]},
+          {type:'text',text:area,color:'#FFFFFF',size:'sm',weight:'bold'},
+          {type:'text',text:'PCU สะบ้าย้อย · '+todayTH(),color:hdrSub,size:'xxs',margin:'xs'}]}]},
       body:{type:'box',layout:'vertical',paddingAll:'12px',spacing:'none',contents:[
         {type:'box',layout:'horizontal',spacing:'sm',contents:[
-          {type:'box',layout:'vertical',flex:1,backgroundColor:'#FEF3C7',cornerRadius:'8px',paddingAll:'10px',contents:[
-            {type:'text',text:'⏰ ใกล้หมดอายุ',size:'xxs',color:'#92400E',weight:'bold'},
-            {type:'text',text:String(expN)+' รายการ',size:'lg',weight:'bold',color:'#C07000',margin:'xs'}]},
-          {type:'box',layout:'vertical',flex:1,backgroundColor:'#FEE2E2',cornerRadius:'8px',paddingAll:'10px',contents:[
-            {type:'text',text:'📉 ต่ำกว่า Min',size:'xxs',color:'#991B1B',weight:'bold'},
-            {type:'text',text:String(lowN)+' รายการ',size:'lg',weight:'bold',color:'#D93025',margin:'xs'}]}]},
-        ...inner,...outer]}}};
+          {type:'box',layout:'vertical',flex:1,backgroundColor:tileBg1,cornerRadius:'8px',paddingAll:'10px',contents:[
+            {type:'text',text:'⏰ ใกล้หมดอายุ',size:'xxs',color:tileFg1,weight:'bold'},
+            {type:'text',text:String(nExp)+' รายการ',size:'lg',weight:'bold',color:'#C07000',margin:'xs'}]},
+          {type:'box',layout:'vertical',flex:1,backgroundColor:tileBg2,cornerRadius:'8px',paddingAll:'10px',contents:[
+            {type:'text',text:'📉 ต่ำกว่า Min',size:'xxs',color:tileFg2,weight:'bold'},
+            {type:'text',text:String(nLow)+' รายการ',size:'lg',weight:'bold',color:'#D93025',margin:'xs'}]}]},
+        {type:'separator',margin:'md'},
+        ...rows,...moreRow]}};
+  };
+
+  const b1=buildBubble('คลังยาใน (PCU)','🏥','#1D4ED8','#BFDBFE',
+    '#FEF3C7','#FEE2E2','#92400E','#991B1B',
+    res.byArea['คลังยาใน']||[]);
+  const b2=buildBubble('คลังยานอก','📦','#B45309','#FDE68A',
+    '#FEF3C7','#FEE2E2','#92400E','#991B1B',
+    res.byArea['คลังยานอก']||[]);
+
+  const bubbles=[b1,b2].filter(Boolean);
+  if(!bubbles.length)return null;
+
+  // 1 แหล่ง → ส่งเป็น bubble เดียว, 2 แหล่ง → carousel
+  const contents=bubbles.length===1?bubbles[0]:{type:'carousel',contents:bubbles};
+  return {type:'flex',
+    altText:`⚠️ แจ้งเตือนคลังยา PCU: ใกล้หมดอายุ ${expN} · ต่ำกว่า Min ${lowN} รายการ`,
+    contents};
 }
 
 // ส่งแจ้งเตือนไป LINE (เรียกจากปุ่มในหน้าตั้งค่า LINE)
