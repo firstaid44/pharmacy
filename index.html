@@ -6360,8 +6360,11 @@ function _buildAreaFlex(area,emoji,hdrBg,hdrSub,items){
 // สร้าง array ของ Flex Messages แยกรายแหล่ง (ส่งทีละข้อความ ไม่ carousel)
 function buildAlertFlex(res){
   const msgs=[];
+  // คลังยาใน: แจ้งทุกประเภท (ใกล้หมดอายุ ≤6 เดือน + ต่ำกว่า Min)
   const f1=_buildAreaFlex('คลังยาใน (PCU)','🏥','#1D4ED8','#BFDBFE',res.byArea['คลังยาใน']||[]);
-  const f2=_buildAreaFlex('คลังยานอก','📦','#B45309','#FDE68A',res.byArea['คลังยานอก']||[]);
+  // คลังยานอก: แจ้งเฉพาะหมดอายุแล้ว หรือ ใกล้หมดอายุภายใน 1 เดือน เท่านั้น
+  const outerItems=(res.byArea['คลังยานอก']||[]).filter(it=>it.kind==='exp'&&it.months<=1);
+  const f2=_buildAreaFlex('คลังยานอก','📦','#B45309','#FDE68A',outerItems);
   if(f1)msgs.push(f1);
   if(f2)msgs.push(f2);
   return msgs;
