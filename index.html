@@ -5229,7 +5229,7 @@ function renderMedLoggerPanel(){
     body.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
         <button onclick="loadMedLoggerDrugs(true)" style="border:none;background:transparent;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🔄 โหลดใหม่</button>
       </div>`+
-      _mlDrugs.map((g,idx)=>{
+      _mlDrugs.map((g,idx)=>({g,idx})).slice().reverse().map(({g,idx})=>{
         if(g.added)return '';
         const mlDrugInitVal=g.match?g.match[1]:'';
         const mlDrugInitCode=g.match?g.match[0]:'';
