@@ -8524,60 +8524,95 @@ function renderExtStock(){
 }
 // ══ คลังยานอก END ══════════════════════════════════════════
 // ══ กล่องยาฉุกเฉิน — รายการยาและข้อมูล LOT/EXP คงที่ ══════════════════════
+// ══ กล่องยาฉุกเฉิน — รายการยาคงที่ (กรอกข้อมูลเองทั้งหมด) ══════════════════
 const EMERG_BOX=[
-  {name:'Adrenaline inj. 1 mg./ml',   code:'100388000000531310181634', lot:'',       exp:'',            unit:'แอมป์'},
-  {name:'DEXTROSE 50% 50 ML.inj.',     code:'DEX50',                   lot:'L251119', exp:'02/12/2027',  unit:'ขวด'},
-  {name:'ISOSORBIDE DINITRATE 10 MG/TAB กส.', code:'ISO',              lot:'',       exp:'',            unit:'เม็ด'},
-  {name:'Dexamethasone inj. 4mg./1ml.',code:'4DEXA',                   lot:'',       exp:'',            unit:'แอมป์'},
-  {name:'CHLORPHENIRAMINE INJ.',        code:'CPM INJ',                 lot:'',       exp:'',            unit:'แอมป์'},
+  {name:'Adrenaline inj. 1 mg./ml',              code:'100388000000531310181634', unit:'แอมป์'},
+  {name:'DEXTROSE 50% 50 ML.inj.',               code:'DEX50',                   unit:'ขวด'},
+  {name:'ISOSORBIDE DINITRATE 10 MG/TAB กส.',    code:'ISO',                     unit:'เม็ด'},
+  {name:'Dexamethasone inj. 4mg./1ml.',           code:'4DEXA',                   unit:'แอมป์'},
+  {name:'CHLORPHENIRAMINE INJ.',                  code:'CPM INJ',                 unit:'แอมป์'},
 ];
+const EMERG_LS_KEY='emerg_box_data'; // localStorage key
+
+function _loadEmergData(){
+  try{
+    const s=localStorage.getItem(EMERG_LS_KEY);
+    return s?JSON.parse(s):[];
+  }catch(e){return [];}
+}
+function _saveEmergData(){
+  try{
+    const data=EMERG_BOX.map((_,i)=>({
+      lot:(document.getElementById('eb-lot-'+i)||{}).value||'',
+      exp:(document.getElementById('eb-exp-'+i)||{}).value||'',
+      qty:(document.getElementById('eb-qty-'+i)||{}).value||'',
+    }));
+    localStorage.setItem(EMERG_LS_KEY,JSON.stringify(data));
+    // แสดง badge สถานะ EXP แบบ real-time หลังบันทึก
+    _refreshEmergStatus();
+    showAlert('บันทึกข้อมูลกล่องยาฉุกเฉินแล้ว','success');
+  }catch(e){showAlert('บันทึกไม่สำเร็จ: '+e.message,'danger');}
+}
+function _refreshEmergStatus(){
+  const now=new Date();now.setHours(0,0,0,0);
+  EMERG_BOX.forEach((_,i)=>{
+    const expVal=(document.getElementById('eb-exp-'+i)||{}).value||'';
+    const badge=document.getElementById('eb-status-'+i);
+    if(!badge)return;
+    if(!expVal){badge.textContent='ไม่ระบุ EXP';badge.style.background='rgba(0,0,0,.06)';badge.style.color='var(--text3)';return;}
+    // แปลง yyyy-MM-dd → Date
+    const ed=new Date(expVal);
+    if(isNaN(ed)){badge.textContent='วันที่ไม่ถูกต้อง';badge.style.color='var(--red)';return;}
+    const mo=(ed-now)/(1000*60*60*24*30.4);
+    if(mo<=0){badge.textContent='หมดอายุแล้ว';badge.style.background='rgba(185,28,28,.12)';badge.style.color='#B91C1C';}
+    else if(mo<=6){badge.textContent='< 6 เดือน';badge.style.background='rgba(217,48,37,.1)';badge.style.color='var(--red)';}
+    else if(mo<=12){badge.textContent='6–12 เดือน';badge.style.background='rgba(192,112,0,.1)';badge.style.color='var(--amber)';}
+    else{badge.textContent='> 12 เดือน';badge.style.background='rgba(30,138,74,.1)';badge.style.color='var(--teal)';}
+  });
+}
 
 function renderEmergBox(){
   const el=document.getElementById('emerg-box-body');
   if(!el)return;
-  const now=new Date();now.setHours(0,0,0,0);
+  const saved=_loadEmergData();
 
-  // สรุปยาคงเหลือจาก PCU stock (ตาม code แล้วค่อย fallback ชื่อ)
-  const stockByCode={};
-  _allStockItems.forEach(i=>{
-    const k=(i.code||'').trim();
-    if(k){stockByCode[k]=(stockByCode[k]||0)+i.qty;}
-  });
-  const stockByName={};
-  _allStockItems.forEach(i=>{
-    const k=(i.name||'').trim();
-    if(k){stockByName[k]=(stockByName[k]||0)+i.qty;}
-  });
-
-  const rows=EMERG_BOX.map((d,idx)=>{
-    // คำนวณสถานะ EXP
-    let expLabel='—', expColor='var(--text3)', expStatus='';
-    if(d.exp){
-      const ed=parseExpDate(fmtExp(d.exp));
-      if(ed){
-        const mo=(ed-now)/(1000*60*60*24*30.4);
-        if(mo<=0){expColor='#B91C1C';expStatus='หมดอายุแล้ว';}
-        else if(mo<=6){expColor='var(--red)';expStatus='< 6 เดือน';}
-        else if(mo<=12){expColor='var(--amber)';expStatus='6–12 เดือน';}
-        else{expColor='var(--teal)';expStatus='> 12 เดือน';}
-      }
-      expLabel=fmtExp(d.exp);
+  const rows=EMERG_BOX.map((d,i)=>{
+    const sv=saved[i]||{};
+    // แปลง exp dd/MM/yyyy → yyyy-MM-dd สำหรับ input[type=date]
+    let expIso='';
+    if(sv.exp){
+      const p=sv.exp.split('/');
+      expIso=p.length===3?p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'):sv.exp;
     }
-    // คงเหลือใน PCU
-    const pcuQty=stockByCode[d.code]??stockByName[d.name]??null;
-    const qtyBadge=pcuQty!==null
-      ?`<span style="background:${pcuQty>0?'rgba(30,138,74,.12)':'rgba(217,48,37,.1)'};color:${pcuQty>0?'var(--teal)':'var(--red)'};font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;">PCU ${Math.round(pcuQty)} ${d.unit}</span>`
-      :'';
-
-    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border);background:var(--surface);">
-      <div style="min-width:26px;height:26px;border-radius:50%;background:#B91C1C;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${idx+1}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:800;color:var(--text1);line-height:1.35;">${d.name}</div>
-        <div style="font-size:10.5px;color:var(--text3);margin-top:2px;">รหัส: ${d.code||'—'} · หน่วย: ${d.unit}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;align-items:center;">
-          ${d.lot?`<span style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:6px;">LOT ${d.lot}</span>`:''}
-          ${d.exp?`<span style="color:${expColor};font-size:10.5px;font-weight:700;">EXP ${expLabel}${expStatus?' · '+expStatus:''}</span>`:''}
-          ${qtyBadge}
+    return `<div style="border-bottom:1px solid var(--border);padding:12px;">
+      <!-- ชื่อยา + ลำดับ -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
+        <div style="min-width:24px;height:24px;border-radius:50%;background:#B91C1C;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--text1);line-height:1.3;">${d.name}</div>
+          <div style="font-size:10px;color:var(--text3);">หน่วย: ${d.unit}</div>
+        </div>
+      </div>
+      <!-- ฟิลด์กรอก -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <label style="font-size:9.5px;color:var(--text3);font-weight:700;display:block;margin-bottom:3px;">LOT Number</label>
+          <input id="eb-lot-${i}" type="text" value="${sv.lot||''}" placeholder="ระบุ LOT..."
+            style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:'IBM Plex Mono',monospace;box-sizing:border-box;background:var(--surface);">
+        </div>
+        <div>
+          <label style="font-size:9.5px;color:var(--text3);font-weight:700;display:block;margin-bottom:3px;">วันหมดอายุ (EXP)</label>
+          <input id="eb-exp-${i}" type="date" value="${expIso}"
+            oninput="_refreshEmergStatus()"
+            style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:12px;font-family:inherit;box-sizing:border-box;background:var(--surface);">
+        </div>
+        <div>
+          <label style="font-size:9.5px;color:var(--text3);font-weight:700;display:block;margin-bottom:3px;">คงเหลือ (${d.unit})</label>
+          <input id="eb-qty-${i}" type="number" min="0" value="${sv.qty||''}" placeholder="0"
+            style="width:100%;padding:7px 8px;border-radius:8px;border:1.5px solid var(--border2);font-size:13px;font-family:'IBM Plex Mono',monospace;font-weight:700;box-sizing:border-box;background:var(--surface);">
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <span id="eb-status-${i}" style="display:inline-block;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.06);color:var(--text3);">—</span>
         </div>
       </div>
     </div>`;
@@ -8586,15 +8621,18 @@ function renderEmergBox(){
   el.innerHTML=`
     <div style="background:linear-gradient(135deg,#B91C1C,#DC2626);color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;">
       <div style="font-size:15px;font-weight:800;letter-spacing:-.2px;">🚨 กล่องยาฉุกเฉิน</div>
-      <div style="font-size:11px;opacity:.85;margin-top:3px;">รายการยาในกล่องฉุกเฉิน · ${EMERG_BOX.length} รายการ</div>
+      <div style="font-size:11px;opacity:.85;margin-top:3px;">Monitor จำนวนคงเหลือและวันหมดอายุ · ${EMERG_BOX.length} รายการ</div>
     </div>
-    <div style="border:1.5px solid var(--border2);border-radius:12px;overflow:hidden;background:var(--surface);">
-      <div style="padding:9px 12px;background:var(--surface2);border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:11px;font-weight:700;color:var(--text3);">รายการยา</span>
-        <span style="font-size:10px;color:var(--text3);">ตัวเลข PCU = คงเหลือในคลังหลัก</span>
-      </div>
+    <div style="border:1.5px solid var(--border2);border-radius:14px;overflow:hidden;background:var(--surface);margin-bottom:12px;">
       ${rows}
-    </div>`;
+    </div>
+    <button onclick="_saveEmergData()"
+      style="width:100%;padding:13px;border:none;border-radius:12px;background:#B91C1C;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.2px;">
+      💾 บันทึกข้อมูล
+    </button>`;
+
+  // อัพเดทสถานะ EXP ทันทีหลัง render
+  _refreshEmergStatus();
 }
 
 function switchStockSubtab(tab){
