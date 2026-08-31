@@ -2097,7 +2097,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.31.13.06</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.08.31.13.25</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -2927,7 +2927,7 @@ async function loadOuterStock(force){
   try{
     const r=await fetch(SCRIPT_URL+'?action=outerstock&t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
-    if(j.status==='ok'){outerStockRows=_normalizeRowCodes(j.rows||[]);_outerLoaded=true;_clearUnitCache();}
+    if(j.status==='ok'){outerStockRows=_normalizeRowCodes(j.rows||[]);_outerLoaded=true;}
     if(document.getElementById('stock-dashboard'))renderStockDashboard();
   }catch(e){}
   return outerStockRows;
@@ -3175,7 +3175,7 @@ function _ovAggregate(){
   outerStockRows.forEach(r=>{
     if(!r.name)return;const k=r.name+'|'+(r.lot||'');
     if(!om[k])om[k]={name:r.name,code:r.code||'',lot:r.lot||'',exp:r.exp,unit:r.unit||'',qty:0};
-    om[k].qty+=_rowQty(r); if(!om[k].code&&r.code)om[k].code=r.code;
+    om[k].qty+=parseFloat(r.qty)||0; if(!om[k].code&&r.code)om[k].code=r.code;
   });
   Object.values(om).forEach(o=>{
     if(o.qty<=0)return;const d=getD(o.name,o.code);d.outQty+=o.qty;if(!d.unit&&o.unit)d.unit=o.unit;
@@ -3339,7 +3339,7 @@ async function loadReceive(){
     const r=await fetch(SCRIPT_URL+'?t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
     if(j.status==='ok'){
-      receiveRows=_normalizeRowCodes(j.rows||[]);_clearUnitCache();
+      receiveRows=_normalizeRowCodes(j.rows||[]);
       // นับวันนี้จาก rows โดยตรง (format-safe)
       const todayStr=todayTH();
       const todayCount=receiveRows.filter(r=>fmtDate(r.date)===todayStr).length;
@@ -3356,7 +3356,7 @@ async function loadDispense(){
     const r=await fetch(SCRIPT_URL+'?action=dispense&t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
     if(j.status==='ok'){
-      dispenseRows=_normalizeRowCodes(j.rows||[]);_clearUnitCache();
+      dispenseRows=_normalizeRowCodes(j.rows||[]);
       // นับวันนี้จาก rows โดยตรง (format-safe)
       const todayStr=todayTH();
       const dTodayCount=dispenseRows.filter(r=>fmtDate(r.date)===todayStr).length;
@@ -3374,17 +3374,15 @@ async function loadStock(){
       fetch(SCRIPT_URL+'?action=dispense&t='+Date.now(),{redirect:'follow'}).then(r=>r.json())
     ]);
     receiveRows=_normalizeRowCodes(rr.rows||[]);dispenseRows=_normalizeRowCodes(dr.rows||[]);
-    _clearUnitCache();   // ข้อมูลเปลี่ยน — คำนวณชุดหน่วยใหม่
     const stockMap={};
     receiveRows.forEach(r=>{
       const k=r.name+'|'+r.lot;
-      if(!stockMap[k])stockMap[k]={name:r.name,code:r.code,lot:r.lot,exp:fmtExp(r.exp),unit:_baseUnitOf(r.code,r.name)||r.unit,qty:0,group:r.group||'',months:r.months||'',badUnit:false};
-      stockMap[k].qty+=_rowQty(r);   // ★ แปลงหน่วยก่อนบวก
-      if(!_rowQtyOk(r))stockMap[k].badUnit=true;
+      if(!stockMap[k])stockMap[k]={name:r.name,code:r.code,lot:r.lot,exp:fmtExp(r.exp),unit:r.unit,qty:0,group:r.group||'',months:r.months||''};
+      stockMap[k].qty+=parseFloat(r.qty)||0;
       if(r.group)stockMap[k].group=r.group;
       if(r.months)stockMap[k].months=r.months;
     });
-    dispenseRows.forEach(d=>{const k=d.name+'|'+d.lot;if(stockMap[k]){stockMap[k].qty-=_rowQty(d);if(!_rowQtyOk(d))stockMap[k].badUnit=true;}});  // ★ แปลงหน่วยก่อนลบ
+    dispenseRows.forEach(d=>{const k=d.name+'|'+d.lot;if(stockMap[k])stockMap[k].qty-=parseFloat(d.qty)||0;});
     _allStockItems=Object.values(stockMap).filter(i=>i.qty>0);
     if(document.getElementById('stock-dashboard'))renderStockDashboard();
     const now=new Date();now.setHours(0,0,0,0);
@@ -3849,9 +3847,8 @@ function computeDashStats(){
   const innerByName={};
   (_allStockItems||[]).forEach(i=>{
     const k=_drugKey(i.name);
-    if(!innerByName[k])innerByName[k]={name:i.name,code:i.code||'',unit:i.unit||'',qty:0,badUnit:false};
+    if(!innerByName[k])innerByName[k]={name:i.name,code:i.code||'',unit:i.unit||'',qty:0};
     innerByName[k].qty+=i.qty;
-    if(i.badUnit)innerByName[k].badUnit=true;
     if(!innerByName[k].code&&i.code)innerByName[k].code=i.code;
   });
   // ── รวมยอดรายชื่อยา: คลังยานอก ──
@@ -3859,23 +3856,17 @@ function computeDashStats(){
   (outerStockRows||[]).forEach(r=>{
     const nm=String(r.name||'').trim();if(!nm)return;
     const k=_drugKey(nm);
-    if(!outerByName[k])outerByName[k]={name:nm,code:r.code||'',unit:r.unit||'',qty:0,badUnit:false};
-    outerByName[k].qty+=_rowQty(r);
-    if(!_rowQtyOk(r))outerByName[k].badUnit=true;
+    if(!outerByName[k])outerByName[k]={name:nm,code:r.code||'',unit:r.unit||'',qty:0};
+    outerByName[k].qty+=parseFloat(r.qty)||0;
     if(!outerByName[k].code&&r.code)outerByName[k].code=r.code;
   });
 
   // 1) หมดคลัง + 3) ต่ำกว่า Minimum — ดูยอดรวมทุกล็อต
   const checkQty=(area,list)=>Object.values(list).forEach(i=>{
-    if(i.badUnit)return;   // ★ หน่วยไม่สอดคล้อง — ตัวเลขเชื่อถือไม่ได้ ไม่นำมานับ
     const q=Math.round(i.qty||0);
-    const rpRaw=getReorderPoint(i.code,i.name);
-    // ★ ค่า Min ในระบบเป็น "หน่วยบรรจุ" (กล่อง/ลัง) ต้องแปลงเป็นหน่วยย่อยก่อนเทียบกับคงเหลือ
-    const pi=getPackInfo(i.code,i.name);
-    const rp=(rpRaw!=null&&pi&&pi.packQty>0)?rpRaw*pi.packQty:rpRaw;
-    const u=_baseUnitOf(i.code,i.name)||i.unit;
-    if(q<=0){out.push({area,name:i.name,code:i.code,unit:u,qty:0,min:rp});return;}
-    if(rp!=null&&q<=rp)low.push({area,name:i.name,code:i.code,unit:u,qty:q,min:rp});
+    const rp=getReorderPoint(i.code,i.name);
+    if(q<=0){out.push({area,name:i.name,code:i.code,unit:i.unit,qty:0,min:rp});return;}
+    if(rp!=null&&q<=rp)low.push({area,name:i.name,code:i.code,unit:i.unit,qty:q,min:rp});
   });
   checkQty('คลังยาใน',innerByName);
   checkQty('คลังยานอก',outerByName);
@@ -3892,7 +3883,7 @@ function computeDashStats(){
   (_allStockItems||[]).forEach(i=>checkExp('คลังยาใน',i,i.exp,i.qty));
   (outerStockRows||[]).forEach(r=>{
     if(!String(r.name||'').trim())return;
-    checkExp('คลังยานอก',{name:r.name,code:r.code,lot:r.lot,unit:r.unit},fmtExp(r.exp),_rowQty(r));
+    checkExp('คลังยานอก',{name:r.name,code:r.code,lot:r.lot,unit:r.unit},fmtExp(r.exp),parseFloat(r.qty)||0);
   });
 
   const bySeverity=(a,b)=>a.days-b.days;
@@ -3947,18 +3938,6 @@ function renderStockDashboard(){
         ✓ คลังยาปกติ — ไม่มีรายการที่ต้องจัดการเร่งด่วน</div>`:
         `<div style="margin-top:8px;font-size:9.5px;color:var(--text3);text-align:center;">
         แตะการ์ดเพื่อดูรายชื่อยา</div>`}
-      ${(()=>{const bad=findUnitProblems();if(!bad.length)return '';
-        return `<div style="margin-top:10px;padding:10px;border-radius:10px;background:var(--red-l);
-          border:1.5px solid rgba(217,48,37,.3);">
-          <div style="font-size:11.5px;font-weight:800;color:var(--red);">⚠️ ตรวจสอบไม่ได้ ${bad.length} รายการ</div>
-          <div style="font-size:10px;color:var(--text2);line-height:1.5;margin-top:4px;">
-            ยาเหล่านี้บันทึกหน่วยไม่สอดคล้องกัน (เช่น รับเข้าเป็นกล่อง แต่เบิกออกเป็นเม็ด)
-            จึงคำนวณคงเหลือไม่ได้ และไม่ถูกนับในตัวเลขด้านบน<br>
-            <b>วิธีแก้:</b> กรอกคอลัมน์ F (จำนวนต่อหน่วยบรรจุ) ในชีต MedicineDB ให้ครบ</div>
-          <div style="font-size:10px;color:var(--red);margin-top:5px;line-height:1.5;">
-            ${bad.slice(0,6).map(b=>b.name+' <span style="color:var(--text3);">['+b.units+']</span>').join('<br>')}
-            ${bad.length>6?'<br>…และอีก '+(bad.length-6)+' รายการ':''}</div>
-        </div>`;})()}
       <div id="dash-detail"></div>
     </div>`;
   renderDashDetail(s);
@@ -4027,7 +4006,7 @@ function renderNCDCabinet(){
   outerStockRows.forEach(r=>{
     const k=(r.name||'')+'|'+(r.lot||'');
     if(!_lotMap[k])_lotMap[k]={name:r.name,code:r.code,qty:0,unit:r.unit,exp:r.exp};
-    _lotMap[k].qty+=_rowQty(r);
+    _lotMap[k].qty+=parseFloat(r.qty)||0;
   });
   const map={}, stockByCode={};
   Object.values(_lotMap).forEach(s=>{
@@ -4456,18 +4435,18 @@ function showDrugDetail(name){
     const ab=document.getElementById('drug-req-add-btn');if(ab)ab.style.display='none';
     modal.classList.add('open');return;
   }
-  const totalRec=rLots.reduce((s,r)=>s+_rowQty(r),0);
-  const totalDis=dispenseRows.filter(d=>d.name===name).reduce((s,d)=>s+_rowQty(d),0);
+  const totalRec=rLots.reduce((s,r)=>s+(parseFloat(r.qty)||0),0);
+  const totalDis=dispenseRows.filter(d=>d.name===name).reduce((s,d)=>s+(parseFloat(d.qty)||0),0);
   const left=Math.max(0,Math.round(totalRec-totalDis));
   const lotMap={};
   rLots.forEach(r=>{
     const expNorm=fmtExp(r.exp); // normalize ก่อนเก็บ ป้องกัน raw Date-toString ทำให้ parseExpDate คืน null
     if(!lotMap[r.lot])lotMap[r.lot]={lot:r.lot,exp:expNorm,group:r.group||'',received:0,dispensed:0,unit:r.unit,recvDate:''};
-    lotMap[r.lot].received+=_rowQty(r);
+    lotMap[r.lot].received+=parseFloat(r.qty)||0;
     const rd=parseExpDate(fmtDate(r.date)),cur=parseExpDate(fmtDate(lotMap[r.lot].recvDate));
     if(rd&&(!cur||rd>cur))lotMap[r.lot].recvDate=r.date;
   });
-  dispenseRows.filter(d=>d.name===name).forEach(d=>{if(lotMap[d.lot])lotMap[d.lot].dispensed+=_rowQty(d);});
+  dispenseRows.filter(d=>d.name===name).forEach(d=>{if(lotMap[d.lot])lotMap[d.lot].dispensed+=parseFloat(d.qty)||0;});
   const lotItems=Object.values(lotMap).sort((a,b)=>{const ea=parseExpDate(a.exp),eb=parseExpDate(b.exp);if(!ea)return 1;if(!eb)return -1;return ea-eb;});
   const code=rLots[0].code||'',unit=rLots[0].unit||'';
   // คำนวณสถานะจาก EXP ของ LOT ที่ใกล้หมดอายุที่สุด (ถูกต้องกว่าใช้ group จาก receiveRows)
@@ -4667,8 +4646,8 @@ function parseExpToInputVal(raw){
 
 function _getStockQtyMap(){
   const m={};
-  (receiveRows||[]).forEach(r=>{m[r.name]=(m[r.name]||0)+_rowQty(r);});
-  (dispenseRows||[]).forEach(d=>{m[d.name]=(m[d.name]||0)-_rowQty(d);});
+  (receiveRows||[]).forEach(r=>{m[r.name]=(m[r.name]||0)+(parseFloat(r.qty)||0);});
+  (dispenseRows||[]).forEach(d=>{m[d.name]=(m[d.name]||0)-(parseFloat(d.qty)||0);});
   return m;
 }
 function _positionSuggestBox(box,inputEl){
@@ -4767,86 +4746,9 @@ function pickDrug(name,code,boxId){
   }
   if(isD)populateLotOptions(name);else setTimeout(()=>document.getElementById('r-lot').focus(),100);
 }
-/* ══════════════════════════════════════════════════════════════════
- *  ★ แปลงหน่วยก่อนคำนวณคงเหลือ (แก้บั๊กคงเหลือติดลบ/ผิดพลาด) ★
- *  ปัญหา: ชีตบันทึก "รับเข้า" เป็นกล่อง แต่ "เบิกออก" เป็นเม็ด
- *         เดิมเอามาลบกันตรงๆ เช่น 31 กล่อง − 14,500 เม็ด = −14,469 (ผิด)
- *  แก้ไข: แปลงทุกแถวเป็นหน่วยย่อย (เม็ด) ก่อนบวกลบ ด้วยคอลัมน์ F ของ MedicineDB
- *  ถ้าแปลงไม่ได้ = คืนค่าเดิมพร้อมธง ok:false เพื่อให้ผู้ใช้รู้ว่าเชื่อตัวเลขไม่ได้
- * ══════════════════════════════════════════════════════════════════ */
-function _toBaseQty(qty,unit,code,name){
-  const q=parseFloat(qty)||0;
-  const u=String(unit||'').trim();
-  // ★ ยาที่ใช้หน่วยเดียวตลอดทั้งประวัติ = ไม่มีการปนหน่วย บวกลบได้ตรงๆ ★
-  // (สำคัญ: ทำให้ระบบยังทำงานถูกต้องแม้ชีต MedicineDB ยังไม่ได้กรอกคอลัมน์ F)
-  if(!_isMixedUnitDrug(code,name))return {q,ok:true,unit:u};
-  // ── ถึงตรงนี้แปลว่ายาตัวนี้บันทึกหลายหน่วยจริง ต้องแปลงก่อนบวกลบ ──
-  const pi=getPackInfo(code,name);
-  if(!pi||!(pi.packQty>0))return {q,ok:false,unit:u};   // ไม่รู้ว่ากล่องละกี่เม็ด = แปลงไม่ได้
-  const sub=pi.unitSub||'',pack=pi.unitPack||'';
-  if(!u)return {q,ok:true,unit:sub||u};
-  if(sub&&_drugKey(u)===_drugKey(sub))return {q,ok:true,unit:sub};
-  if(pack&&_drugKey(u)===_drugKey(pack))return {q:q*pi.packQty,ok:true,unit:sub||u};
-  return {q,ok:false,unit:u};                            // หน่วยแปลกปลอม ไม่ตรงทั้ง 2 แบบ
-}
-
-/* หายาที่บันทึก "หลายหน่วย" ในประวัติ (ต้นเหตุคงเหลือติดลบ)
- * คำนวณครั้งเดียวแล้ว cache ไว้ — ล้าง cache ทุกครั้งที่โหลดข้อมูลใหม่ */
-let _mixedUnitCache=null;
-function _buildMixedUnitMap(){
-  if(_mixedUnitCache)return _mixedUnitCache;
-  const units={};
-  const scan=rows=>(rows||[]).forEach(r=>{
-    if(!r||!r.name)return;
-    const u=String(r.unit||'').trim();
-    if(!u)return;
-    const k=_drugKey(r.name);
-    if(!units[k])units[k]={};
-    units[k][u]=true;
-  });
-  scan(receiveRows);scan(dispenseRows);scan(outerStockRows);
-  const mixed={};
-  Object.keys(units).forEach(k=>{ if(Object.keys(units[k]).length>1)mixed[k]=Object.keys(units[k]); });
-  _mixedUnitCache=mixed;
-  return mixed;
-}
-function _isMixedUnitDrug(code,name){
-  const m=_buildMixedUnitMap();
-  return !!m[_drugKey(name||'')];
-}
-function _clearUnitCache(){_mixedUnitCache=null;}
-
-// จำนวนของแถวหนึ่ง แปลงเป็นหน่วยย่อยแล้ว (ใช้กับการบวกลบคงเหลือทุกที่)
-function _rowQty(r){ return _toBaseQty(r.qty,r.unit,r.code,r.name).q; }
-// เช็คว่าแถวนี้แปลงหน่วยได้หรือไม่
-function _rowQtyOk(r){ return _toBaseQty(r.qty,r.unit,r.code,r.name).ok; }
-// หน่วยย่อยของยา (ไว้แสดงผลหลังแปลง)
-function _baseUnitOf(code,name){
-  const pi=getPackInfo(code,name);
-  return (pi&&pi.unitSub)||'';
-}
-// รายชื่อยาที่หน่วยนับไม่สอดคล้อง — ตัวเลขคงเหลือเชื่อถือไม่ได้
-function findUnitProblems(){
-  const mixed=_buildMixedUnitMap();
-  const out=[];
-  Object.keys(mixed).forEach(k=>{
-    // หาแถวตัวอย่างเพื่อดึงชื่อ/รหัสจริง
-    let ref=null;
-    [receiveRows,dispenseRows,outerStockRows].forEach(rows=>{
-      if(ref)return;
-      (rows||[]).forEach(r=>{ if(!ref&&r&&r.name&&_drugKey(r.name)===k)ref=r; });
-    });
-    if(!ref)return;
-    const pi=getPackInfo(ref.code,ref.name);
-    if(pi&&pi.packQty>0)return;    // แปลงได้แล้ว ไม่ต้องเตือน
-    out.push({name:ref.name,code:ref.code||'',units:mixed[k].join(', ')});
-  });
-  return out;
-}
-
 function calcStock(name,lot){
-  const recv=receiveRows.filter(r=>r.name===name&&r.lot===lot).reduce((s,r)=>s+_rowQty(r),0);
-  const disp=dispenseRows.filter(d=>d.name===name&&d.lot===lot).reduce((s,d)=>s+_rowQty(d),0);
+  const recv=receiveRows.filter(r=>r.name===name&&r.lot===lot).reduce((s,r)=>s+(parseFloat(r.qty)||0),0);
+  const disp=dispenseRows.filter(d=>d.name===name&&d.lot===lot).reduce((s,d)=>s+(parseFloat(d.qty)||0),0);
   return Math.max(0,Math.round(recv-disp));
 }
 let _dQtyMax=0;   // คงเหลือของ LOT ที่เลือก — ใช้กันเบิกเกินสต็อก
@@ -5957,7 +5859,7 @@ function renderOuterStock(){
       monthsLeft:d.monthsLeft||'', // L จาก Sheet
       qty:0,txns:[]
     };
-    const qty=_rowQty(d);
+    const qty=parseFloat(d.qty)||0;
     stockMap[k].qty+=qty;
     if(!stockMap[k].expRaw&&expRaw)stockMap[k].expRaw=expRaw;
     if(stockMap[k].exp==='—'&&expFmt!=='—')stockMap[k].exp=expFmt;
@@ -6356,7 +6258,7 @@ function _outerMergedByName(){
     if(!nameKey)return;
     if(!merged[nameKey])merged[nameKey]={name:d.name,code:d.code||'',unit:d.unit||'',qty:0,exp:fmtExp(d.exp)||''};
     const m=merged[nameKey];
-    m.qty+=_rowQty(d);
+    m.qty+=parseFloat(d.qty)||0;
     const cur=parseExpDate(m.exp),nw=parseExpDate(fmtExp(d.exp));
     if(nw&&(!cur||nw<cur))m.exp=fmtExp(d.exp);
     if(!m.code&&d.code)m.code=d.code;
@@ -8015,13 +7917,13 @@ function renderSummaryDrugPage(page){
   const nm={};
   receiveRows.forEach(r=>{
     if(!nm[r.name])nm[r.name]={name:r.name,code:r.code,unit:r.unit,recv:0,disp:0,txns:[]};
-    const qty=_rowQty(r);
+    const qty=parseFloat(r.qty)||0;
     nm[r.name].recv+=qty;
     nm[r.name].txns.push({type:'recv',date:r.date,docNum:r.docNum||'—',fromTo:r.source||'—',qty,lot:r.lot,exp:r.exp,unit:r.unit});
   });
   dispenseRows.forEach(d=>{
     if(!nm[d.name])nm[d.name]={name:d.name,code:d.code,unit:d.unit,recv:0,disp:0,txns:[]};
-    const qty=_rowQty(d);
+    const qty=parseFloat(d.qty)||0;
     nm[d.name].disp+=qty;
     nm[d.name].txns.push({type:'disp',date:d.date,docNum:d.docNum||'—',fromTo:d.dest||d.requester||'—',qty,lot:d.lot,exp:d.exp,unit:d.unit});
   });
@@ -8146,13 +8048,13 @@ function openSummaryExportPreview(){
   const nm={};
   receiveRows.forEach(r=>{
     if(!nm[r.name])nm[r.name]={name:r.name,code:r.code,unit:r.unit,recv:0,disp:0,txns:[]};
-    const qty=_rowQty(r);
+    const qty=parseFloat(r.qty)||0;
     nm[r.name].recv+=qty;
     nm[r.name].txns.push({type:'recv',date:fmtDate(r.date),docNum:r.docNum||'—',fromTo:r.source||'—',qty,lot:r.lot,exp:fmtExp(r.exp)||'—',unit:r.unit||nm[r.name].unit});
   });
   dispenseRows.forEach(d=>{
     if(!nm[d.name])nm[d.name]={name:d.name,code:d.code,unit:d.unit,recv:0,disp:0,txns:[]};
-    const qty=_rowQty(d);
+    const qty=parseFloat(d.qty)||0;
     nm[d.name].disp+=qty;
     nm[d.name].txns.push({type:'disp',date:fmtDate(d.date),docNum:d.docNum||'—',fromTo:d.dest||d.requester||'—',qty,lot:d.lot,exp:fmtExp(d.exp)||'—',unit:d.unit||nm[d.name].unit});
   });
@@ -8969,14 +8871,14 @@ function clearDispenseDateFilter(){
           (rr.rows||[]).forEach(r=>{
             const k=r.name+'|'+r.lot;
             if(!sm[k])sm[k]={qty:0,exp:r.exp};
-            sm[k].qty+=_rowQty(r);
+            sm[k].qty+=parseFloat(r.qty)||0;
             if(!byName[r.name])byName[r.name]={name:r.name,code:r.code,qty:0};
-            byName[r.name].qty+=_rowQty(r);
+            byName[r.name].qty+=parseFloat(r.qty)||0;
           });
           (dr.rows||[]).forEach(d=>{
             const k=d.name+'|'+d.lot;
-            if(sm[k])sm[k].qty-=_rowQty(d);
-            if(byName[d.name])byName[d.name].qty-=_rowQty(d);
+            if(sm[k])sm[k].qty-=parseFloat(d.qty)||0;
+            if(byName[d.name])byName[d.name].qty-=parseFloat(d.qty)||0;
           });
           const now2=new Date();now2.setHours(0,0,0,0);
           // (2) ยาต่ำกว่า Minimum — คงเหลือ < จุดสั่งซื้อ (เท่ากับ = ไม่นับ)
