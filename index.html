@@ -1871,6 +1871,109 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
 </div>
 
 <!-- ══ CART PREVIEW MODAL ══ -->
+<!-- ══ 🔍 เลือกยาที่จะแทงจำหน่าย ══ -->
+<div class="cart-modal-bg" id="wo-pick-modal" onclick="if(event.target===this)closeWriteoffPicker()">
+  <div class="cart-modal" style="max-width:430px;">
+    <div class="cart-modal-hd" style="background:linear-gradient(135deg,#D93025,#B31712);">
+      <div>
+        <div class="cart-modal-title">🗑 เลือกยาที่จะแทงจำหน่าย</div>
+        <div class="cart-modal-sub">ค้นหาจากยาที่มีคงเหลือในคลัง</div>
+      </div>
+      <button class="cart-close" onclick="closeWriteoffPicker()">✕</button>
+    </div>
+    <div class="cart-modal-body" style="padding:14px;">
+      <input class="form-input" id="wo-pick-search" placeholder="🔍 พิมพ์ชื่อยาหรือรหัส..."
+        oninput="renderWoPicker()" autocomplete="off" style="margin-bottom:10px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <button id="wo-pick-f-exp" onclick="woPickFilter('exp')"
+          style="flex:1;padding:7px;border-radius:9px;border:1.5px solid var(--border2);background:var(--surface2);
+                 color:var(--text2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">⏰ หมดอายุ/ใกล้หมด</button>
+        <button id="wo-pick-f-all" onclick="woPickFilter('all')"
+          style="flex:1;padding:7px;border-radius:9px;border:1.5px solid var(--border2);background:var(--surface2);
+                 color:var(--text2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">ทั้งหมด</button>
+      </div>
+      <div id="wo-pick-list" style="max-height:400px;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 🗑 โมดัลแทงจำหน่ายยา ══ -->
+<div class="cart-modal-bg" id="wo-modal" onclick="if(event.target===this)closeWriteoffModal()">
+  <div class="cart-modal" style="max-width:430px;">
+    <div class="cart-modal-hd" style="background:linear-gradient(135deg,#D93025,#B31712);">
+      <div>
+        <div class="cart-modal-title">🗑 แทงจำหน่ายยา</div>
+        <div class="cart-modal-sub" id="wo-sub">ตัดยาออกจากคลัง</div>
+      </div>
+      <button class="cart-close" onclick="closeWriteoffModal()">✕</button>
+    </div>
+    <div class="cart-modal-body" style="padding:14px;">
+      <div id="wo-drug-box" style="padding:11px;border-radius:11px;background:var(--surface2);margin-bottom:12px;">
+        <div id="wo-drug-name" style="font-size:13.5px;font-weight:800;color:var(--text1);line-height:1.35;"></div>
+        <div id="wo-drug-meta" style="font-size:10.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:3px;"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">คลังที่ตัดออก <span class="req">*</span></label>
+        <select class="form-input" id="wo-store"></select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">จำนวนที่แทงจำหน่าย <span class="req">*</span></label>
+        <div style="display:flex;gap:6px;align-items:stretch;">
+          <button type="button" onclick="woStep(-1)"
+            style="width:38px;flex-shrink:0;border:1.5px solid var(--border2);background:var(--surface2);
+                   border-radius:10px;font-size:19px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;line-height:1;">−</button>
+          <input class="form-input" id="wo-qty" type="number" inputmode="numeric" min="1" placeholder="0"
+            oninput="woCheckQty()" onfocus="this.select()"
+            style="flex:1;min-width:0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:700;">
+          <button type="button" onclick="woStep(1)"
+            style="width:38px;flex-shrink:0;border:1.5px solid var(--border2);background:var(--surface2);
+                   border-radius:10px;font-size:19px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;line-height:1;">+</button>
+        </div>
+        <div id="wo-quick" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;"></div>
+        <div id="wo-stock-info" style="margin-top:6px;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:600;"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">เหตุผล <span class="req">*</span></label>
+        <select class="form-input" id="wo-reason">
+          <option value="ยาหมดอายุ">ยาหมดอายุ</option>
+          <option value="ยาชำรุด/เสียหาย">ยาชำรุด/เสียหาย</option>
+          <option value="ยาเสื่อมสภาพ">ยาเสื่อมสภาพ</option>
+          <option value="สูญหาย">สูญหาย</option>
+          <option value="ส่งคืน รพ.แม่ข่าย">ส่งคืน รพ.แม่ข่าย</option>
+          <option value="อื่นๆ">อื่นๆ</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">เลขที่เอกสาร</label>
+          <input class="form-input" id="wo-docnum" placeholder="(ถ้ามี)"></div>
+        <div class="form-group"><label class="form-label">ผู้ดำเนินการ <span class="req">*</span></label>
+          <input class="form-input" id="wo-by"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">หมายเหตุ</label>
+        <input class="form-input" id="wo-note" placeholder="(ไม่บังคับ)">
+      </div>
+
+      <div style="padding:9px 11px;border-radius:10px;background:var(--red-l);font-size:10.5px;
+                  color:var(--red);line-height:1.55;margin-bottom:12px;">
+        ⚠️ การแทงจำหน่ายจะตัดยาออกจากคลังทันที และบันทึกไว้ในทะเบียนถาวร
+        กรุณาตรวจสอบจำนวนให้ถูกต้องก่อนยืนยัน
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="closeWriteoffModal()">ยกเลิก</button>
+        <button class="btn btn-primary" id="wo-save-btn" onclick="submitWriteoff()"
+          style="background:linear-gradient(135deg,#D93025,#B31712);">🗑 ยืนยันแทงจำหน่าย</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="cart-modal-bg" id="cart-modal" onclick="if(event.target===this)closeCartModal()">
   <div class="cart-modal">
     <!-- sticky header -->
@@ -1937,6 +2040,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
             <th>ชื่อยา / Drug</th>
             <th style="width:70px;">LOT</th>
             <th style="width:54px;">EXP</th>
+            <th style="width:58px;text-align:right;">ใช้/เดือน</th>
             <th style="width:50px;text-align:right;">จำนวน</th>
             <th style="width:36px;text-align:right;">หน่วย</th>
           </tr>
@@ -2463,6 +2567,23 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <!-- ══ 📊 Dashboard สรุปสถานะคลังยา ══ -->
     <div id="stock-dashboard" style="margin-bottom:12px;"></div>
 
+    <!-- ══ 🗑 ทะเบียนแทงจำหน่ายยา ══ -->
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-header" style="cursor:pointer;" onclick="toggleWoRegister()">
+        <div class="card-header-icon" style="background:var(--red-l);color:var(--red);">🗑</div>
+        <div style="flex:1;">
+          <div class="card-header-title">ทะเบียนแทงจำหน่ายยา</div>
+          <div class="card-header-sub" id="wo-reg-sub">ยาที่ตัดออกจากคลังแล้ว</div>
+        </div>
+        <button onclick="event.stopPropagation();openWriteoffPicker()"
+          style="padding:6px 12px;border-radius:9px;border:none;background:var(--red);color:#fff;
+                 font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;margin-right:8px;">
+          ＋ แทงจำหน่าย</button>
+        <div id="wo-reg-arrow" style="font-size:18px;color:var(--text3);transition:transform .2s;">▾</div>
+      </div>
+      <div class="card-body" id="wo-reg-body" style="display:none;"></div>
+    </div>
+
     <!-- ปุ่มไปหน้าสรุปรับ-เบิก -->
     <button onclick="switchTab('summary')"
       style="width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -2927,7 +3048,8 @@ async function loadOuterStock(force){
   try{
     const r=await fetch(SCRIPT_URL+'?action=outerstock&t='+Date.now(),{redirect:'follow'});
     const j=await r.json();
-    if(j.status==='ok'){outerStockRows=_normalizeRowCodes(j.rows||[]);_outerLoaded=true;}
+    if(j.status==='ok'){outerStockRows=_normalizeRowCodes(j.rows||[]);_outerLoaded=true;
+      await loadWriteoffs();applyWriteoffs();}
     if(document.getElementById('stock-dashboard'))renderStockDashboard();
   }catch(e){}
   return outerStockRows;
@@ -3357,6 +3479,8 @@ async function loadDispense(){
     const j=await r.json();
     if(j.status==='ok'){
       dispenseRows=_normalizeRowCodes(j.rows||[]);
+      await loadWriteoffs();applyWriteoffs();
+    _clearUsageCache();
       // นับวันนี้จาก rows โดยตรง (format-safe)
       const todayStr=todayTH();
       const dTodayCount=dispenseRows.filter(r=>fmtDate(r.date)===todayStr).length;
@@ -3366,6 +3490,333 @@ async function loadDispense(){
     }
   }catch(e){}
 }
+/* ══════════════════════════════════════════════════════════════════
+ *  ★ ทะเบียนแทงจำหน่ายยา (ยาหมดอายุ/ชำรุด/สูญหาย) ★
+ *
+ *  หลักการที่ใช้ — ไม่แตะสูตรคำนวณคงเหลือเดิมแม้แต่จุดเดียว:
+ *    • คลังยาใน  คงเหลือ = รับเข้า − เบิกออก
+ *        → แทงจำหน่าย = ใส่แถวเพิ่มใน dispenseRows (ยอดลดเอง)
+ *    • คลังยานอก คงเหลือ = ผลรวม qty ของแถวในชีตคลังยานอก
+ *        → แทงจำหน่าย = ใส่แถว qty ติดลบใน outerStockRows (ยอดลดเอง)
+ *  ทุกจุดที่คำนวณคงเหลืออยู่แล้วจึงหักยาที่แทงจำหน่ายออกให้อัตโนมัติ
+ *
+ *  ถ้ายังไม่ได้ deploy ฝั่ง Apps Script → writeoffRows = [] → ทุกตัวเลขเหมือนเดิมทุกประการ
+ * ══════════════════════════════════════════════════════════════════ */
+let writeoffRows=[],_writeoffLoaded=false;
+
+async function loadWriteoffs(force){
+  if(_writeoffLoaded&&!force)return writeoffRows;
+  try{
+    const r=await fetch(SCRIPT_URL+'?action=writeoffs&t='+Date.now(),{redirect:'follow'});
+    const j=await r.json();
+    // ตรวจลายเซ็นข้อมูล: ถ้ายังไม่ได้ deploy doGet จะตกไปคืนข้อมูล "รับยาเข้า" แทน
+    // ซึ่งจะทำให้หักสต็อกมั่ว จึงต้องเช็คก่อนใช้
+    const rows=(j&&j.status==='ok')?(j.rows||[]):[];
+    const looksValid=rows.length===0||rows.every(x=>x&&x.store!==undefined&&x.rowIndex!==undefined);
+    writeoffRows=looksValid?rows:[];
+    if(!looksValid)console.warn('action=writeoffs ยังไม่ถูกติดตั้งใน Apps Script — ข้ามการหักยาแทงจำหน่าย');
+    _writeoffLoaded=true;
+  }catch(e){ writeoffRows=[]; }
+  return writeoffRows;
+}
+
+/* นำรายการแทงจำหน่ายไปหักออกจากคลัง (เรียกหลังโหลดข้อมูลคลังเสร็จ)
+ * ใส่ธง _wo:true ไว้เพื่อให้แยกออกจากรายการเบิกจ่ายจริงเวลาแสดงผล
+ * และกันการหักซ้ำด้วยการลบแถวเก่าที่เคยใส่ไว้ก่อนเสมอ */
+function applyWriteoffs(){
+  if(Array.isArray(dispenseRows))
+    dispenseRows=dispenseRows.filter(r=>!r._wo);
+  if(Array.isArray(outerStockRows))
+    outerStockRows=outerStockRows.filter(r=>!r._wo);
+  if(!writeoffRows.length)return;
+
+  writeoffRows.forEach(w=>{
+    const qty=Math.abs(parseFloat(w.qty)||0);
+    if(!w.name||qty<=0)return;
+    const base={name:w.name,code:w.code||'',lot:w.lot||'',exp:w.exp||'',
+      unit:w.unit||'',date:w.date||'',_wo:true,_woReason:w.reason||'',_woId:w.rowIndex};
+    if(w.store==='คลังยานอก'){
+      // ชีตคลังยานอกรวม qty ตรงๆ → ใส่ค่าติดลบเพื่อหักออก
+      outerStockRows.push({...base,qty:-qty,note:'แทงจำหน่าย: '+(w.reason||'')});
+    }else{
+      // คลังยาใน: คงเหลือ = รับเข้า − เบิกออก → ใส่เป็นแถวเบิกออก
+      dispenseRows.push({...base,qty:qty,dest:'แทงจำหน่าย',
+        requester:w.by||'',note:'แทงจำหน่าย: '+(w.reason||'')});
+    }
+  });
+}
+
+/* ══ UI: ทะเบียนแทงจำหน่าย ══ */
+function toggleWoRegister(){
+  const body=document.getElementById('wo-reg-body'),arrow=document.getElementById('wo-reg-arrow');
+  const opening=body.style.display==='none';
+  body.style.display=opening?'block':'none';
+  arrow.style.transform=opening?'rotate(180deg)':'rotate(0deg)';
+  if(opening)renderWoRegister();
+}
+async function renderWoRegister(force){
+  const body=document.getElementById('wo-reg-body');
+  if(!body)return;
+  body.innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลด...</div>';
+  await loadWriteoffs(force);
+  const sub=document.getElementById('wo-reg-sub');
+  if(sub)sub.textContent=writeoffRows.length?`ตัดออกจากคลังแล้ว ${writeoffRows.length} รายการ`:'ยังไม่มีรายการแทงจำหน่าย';
+  if(!writeoffRows.length){
+    body.innerHTML=`<div style="text-align:center;padding:18px;color:var(--text3);font-size:12px;line-height:1.6;">
+      ยังไม่มีรายการแทงจำหน่าย<br>
+      <span style="font-size:10.5px;">กดปุ่ม 🗑 ที่รายการยาใกล้หมดอายุใน Dashboard เพื่อแทงจำหน่าย</span></div>`;
+    return;
+  }
+  const rows=[...writeoffRows].reverse();   // ล่าสุดขึ้นก่อน
+  const totalQty=rows.reduce((s,w)=>s+(parseFloat(w.qty)||0),0);
+  body.innerHTML=`
+    <div style="display:flex;gap:7px;margin-bottom:10px;">
+      <div style="flex:1;background:var(--red-l);border-radius:10px;padding:9px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:var(--red);font-family:'IBM Plex Mono',monospace;">${rows.length}</div>
+        <div style="font-size:9.5px;color:var(--text3);font-weight:700;">รายการ</div></div>
+      <div style="flex:1;background:var(--surface2);border-radius:10px;padding:9px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:var(--text2);font-family:'IBM Plex Mono',monospace;">${Math.round(totalQty).toLocaleString('th-TH')}</div>
+        <div style="font-size:9.5px;color:var(--text3);font-weight:700;">หน่วยรวม</div></div>
+      <button onclick="renderWoRegister(true)" style="flex-shrink:0;padding:0 12px;border-radius:10px;
+        border:1.5px solid var(--border2);background:var(--surface2);color:var(--blue);
+        font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">↻</button>
+    </div>
+    <div style="max-height:340px;overflow-y:auto;">
+      ${rows.map(w=>`
+        <div style="padding:8px 2px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:11.5px;font-weight:700;color:var(--text1);line-height:1.35;">${w.name}</div>
+              <div style="font-size:9.5px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;">
+                ${w.date}${w.lot?' · LOT: '+w.lot:''}${w.exp?' · EXP: '+w.exp:''}</div>
+              <div style="font-size:9.5px;color:var(--text3);margin-top:1px;">
+                ${w.store} · ${w.reason}${w.by?' · โดย '+w.by:''}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:13px;font-weight:800;color:var(--red);font-family:'IBM Plex Mono',monospace;">−${Math.round(w.qty)}</div>
+              <div style="font-size:9px;color:var(--text3);">${w.unit||''}</div>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+/* ══ UI: เลือกยาที่จะแทงจำหน่าย (ใช้ได้กับยาทุกตัวที่มีคงเหลือ) ══ */
+let _woPickMode='exp';   // exp = เฉพาะหมดอายุ/ใกล้หมด · all = ทั้งหมด
+
+function openWriteoffPicker(){
+  _woPickMode='exp';
+  document.getElementById('wo-pick-search').value='';
+  document.getElementById('wo-pick-modal').classList.add('open');
+  woPickFilter('exp');
+}
+function closeWriteoffPicker(){document.getElementById('wo-pick-modal').classList.remove('open');}
+function woPickFilter(m){
+  _woPickMode=m;
+  [['exp','wo-pick-f-exp'],['all','wo-pick-f-all']].forEach(([k,id])=>{
+    const b=document.getElementById(id),on=(k===m);
+    b.style.background=on?'var(--red)':'var(--surface2)';
+    b.style.color=on?'#fff':'var(--text2)';
+    b.style.borderColor=on?'var(--red)':'var(--border2)';
+  });
+  renderWoPicker();
+}
+// รวมยาที่มีคงเหลือจากทั้ง 2 คลัง (รายล็อต เพื่อให้เลือกล็อตที่หมดอายุได้ตรงตัว)
+function _woCandidates(){
+  const now=new Date();now.setHours(0,0,0,0);
+  const out=[];
+  (_allStockItems||[]).forEach(i=>{
+    if(i.qty<=0)return;
+    const ed=parseExpDate(i.exp);
+    out.push({name:i.name,code:i.code||'',lot:i.lot||'',exp:i.exp||'',unit:i.unit||'',
+      qty:Math.round(i.qty),area:'คลังยาใน',
+      days:ed?Math.round((ed-now)/86400000):null});
+  });
+  const om={};
+  (outerStockRows||[]).forEach(r=>{
+    if(!r.name)return;
+    const k=r.name+'|'+(r.lot||'');
+    if(!om[k])om[k]={name:r.name,code:r.code||'',lot:r.lot||'',exp:fmtExp(r.exp),unit:r.unit||'',qty:0,area:'คลังยานอก'};
+    om[k].qty+=parseFloat(r.qty)||0;
+  });
+  Object.values(om).forEach(o=>{
+    if(o.qty<=0)return;
+    const ed=parseExpDate(o.exp);
+    out.push({...o,qty:Math.round(o.qty),days:ed?Math.round((ed-now)/86400000):null});
+  });
+  return out;
+}
+function renderWoPicker(){
+  const listEl=document.getElementById('wo-pick-list');
+  if(!listEl)return;
+  const q=(document.getElementById('wo-pick-search').value||'').trim().toLowerCase();
+  let items=_woCandidates();
+  // โหมด exp: เฉพาะยาที่หมดอายุแล้ว หรือเหลือไม่เกิน 90 วัน
+  if(_woPickMode==='exp')items=items.filter(i=>i.days!==null&&i.days<=90);
+  if(q)items=items.filter(i=>i.name.toLowerCase().includes(q)||(i.code||'').toLowerCase().includes(q));
+  items.sort((a,b)=>{
+    if(a.days===null)return 1;if(b.days===null)return -1;
+    return a.days-b.days;   // ใกล้หมดอายุที่สุดขึ้นก่อน
+  });
+  if(!items.length){
+    listEl.innerHTML=`<div style="text-align:center;padding:22px;color:var(--text3);font-size:12px;line-height:1.6;">
+      ${q?'ไม่พบยาที่ค้นหา':(_woPickMode==='exp'?'ไม่มียาหมดอายุหรือใกล้หมดอายุใน 90 วัน<br><span style="font-size:10.5px;">กด "ทั้งหมด" เพื่อดูยาทุกตัว</span>':'ไม่มียาคงเหลือในคลัง')}</div>`;
+    return;
+  }
+  listEl.innerHTML=items.slice(0,80).map(i=>{
+    const dc=i.days===null?'var(--text3)':i.days<0?'var(--red)':i.days<=30?'var(--red)':i.days<=90?'#C07000':'var(--teal)';
+    const dt=i.days===null?'ไม่ระบุ EXP':i.days<0?'หมดอายุแล้ว':'อีก '+i.days+' วัน';
+    return `<div onclick="closeWriteoffPicker();openWriteoffModal(${JSON.stringify(i.name).replace(/"/g,'&quot;')},${JSON.stringify(i.code).replace(/"/g,'&quot;')},${JSON.stringify(i.lot).replace(/"/g,'&quot;')},${JSON.stringify(i.exp).replace(/"/g,'&quot;')},${JSON.stringify(i.unit).replace(/"/g,'&quot;')})"
+      style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 8px;
+             border:1.5px solid var(--border2);border-radius:10px;margin-bottom:6px;cursor:pointer;background:var(--surface);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:700;color:var(--text1);line-height:1.35;">${i.name}</div>
+        <div style="font-size:9.5px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;">
+          ${i.area}${i.lot?' · LOT: '+i.lot:''}${i.exp?' · '+fmtExp(i.exp):''}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:10px;font-weight:800;color:${dc};">${dt}</div>
+        <div style="font-size:12px;font-weight:800;color:var(--text2);font-family:'IBM Plex Mono',monospace;">${i.qty} <span style="font-size:9px;color:var(--text3);">${i.unit||''}</span></div>
+      </div>
+    </div>`;
+  }).join('')+(items.length>80?`<div style="font-size:10px;color:var(--text3);text-align:center;padding-top:6px;">แสดง 80 จาก ${items.length} รายการ — พิมพ์ค้นหาเพื่อกรอง</div>`:'');
+}
+
+/* ══ UI: โมดัลแทงจำหน่ายยา ══ */
+let _woCtx=null;   // {name,code,lot,exp,unit,stores:[{store,qty}]}
+
+// เปิดโมดัล — ระบุยา (และ LOT ถ้ามี) ระบบจะหาคงเหลือของแต่ละคลังให้เอง
+function openWriteoffModal(name,code,lot,exp,unit){
+  if(!name){showAlert('ไม่พบข้อมูลยา','danger');return;}
+  const stores=[];
+  // คงเหลือคลังยาใน — เฉพาะ LOT นี้ถ้าระบุ ไม่งั้นรวมทุก LOT
+  let inQty=0;
+  if(lot){ inQty=calcStock(name,lot); }
+  else{
+    const seen={};
+    (receiveRows||[]).forEach(r=>{if(r.name===name&&!seen[r.lot]){seen[r.lot]=1;inQty+=calcStock(name,r.lot);}});
+  }
+  if(inQty>0)stores.push({store:'คลังยาใน',qty:Math.round(inQty)});
+  // คงเหลือคลังยานอก
+  let outQty=0;
+  (outerStockRows||[]).forEach(r=>{
+    if(r.name!==name)return;
+    if(lot&&String(r.lot||'')!==String(lot))return;
+    outQty+=parseFloat(r.qty)||0;
+  });
+  if(outQty>0)stores.push({store:'คลังยานอก',qty:Math.round(outQty)});
+
+  if(!stores.length){showAlert('ยานี้ไม่มีคงเหลือในคลังแล้ว','warning');return;}
+
+  _woCtx={name,code:code||'',lot:lot||'',exp:exp||'',unit:unit||'',stores};
+  document.getElementById('wo-drug-name').textContent=name;
+  document.getElementById('wo-drug-meta').textContent=
+    (lot?'LOT: '+lot+'  ·  ':'')+(exp?'EXP: '+fmtExp(exp):'')||(code?'รหัส: '+code:'');
+  const sel=document.getElementById('wo-store');
+  sel.innerHTML=stores.map(st=>`<option value="${st.store}">${st.store} (คงเหลือ ${st.qty} ${unit||''})</option>`).join('');
+  sel.onchange=woOnStoreChange;
+  document.getElementById('wo-qty').value='';
+  document.getElementById('wo-docnum').value='';
+  document.getElementById('wo-note').value='';
+  document.getElementById('wo-reason').value=_woGuessReason(exp);
+  document.getElementById('wo-by').value=currentUser?currentUser.name:'';
+  woOnStoreChange();
+  document.getElementById('wo-modal').classList.add('open');
+}
+// ถ้ายาหมดอายุแล้ว ตั้งเหตุผลเป็น "ยาหมดอายุ" ให้เลย
+function _woGuessReason(exp){
+  const ed=parseExpDate(fmtExp(exp));
+  if(ed&&ed.getTime()<=Date.now())return 'ยาหมดอายุ';
+  return 'ยาหมดอายุ';
+}
+function closeWriteoffModal(){document.getElementById('wo-modal').classList.remove('open');}
+
+function _woMax(){
+  if(!_woCtx)return 0;
+  const st=document.getElementById('wo-store').value;
+  const hit=_woCtx.stores.find(x=>x.store===st);
+  return hit?hit.qty:0;
+}
+function woOnStoreChange(){
+  const max=_woMax(),unit=_woCtx?_woCtx.unit:'';
+  const quick=document.getElementById('wo-quick');
+  const presets=[1,5,10,20,50,100].filter(n=>n<=max);
+  if(max>0&&!presets.includes(max))presets.push(max);
+  quick.innerHTML=presets.map(n=>`
+    <button type="button" onclick="woSetQty(${n})"
+      style="padding:5px 12px;border-radius:14px;border:1.5px solid var(--border2);background:var(--surface2);
+             color:var(--text2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">
+      ${n===max?'ทั้งหมด ('+n+')':n}</button>`).join('');
+  const inp=document.getElementById('wo-qty');
+  inp.max=max;
+  if(parseInt(inp.value)>max)inp.value=max;
+  woCheckQty();
+}
+function woSetQty(n){const inp=document.getElementById('wo-qty');inp.value=Math.min(n,_woMax());woCheckQty();}
+function woStep(d){
+  const inp=document.getElementById('wo-qty');
+  const cur=parseInt(inp.value)||0;
+  inp.value=Math.max(1,Math.min(cur+d,_woMax()));woCheckQty();
+}
+function woCheckQty(){
+  const inp=document.getElementById('wo-qty'),info=document.getElementById('wo-stock-info');
+  const max=_woMax(),unit=_woCtx?_woCtx.unit:'';
+  let v=parseInt(inp.value);
+  if(!isNaN(v)){
+    if(v<1){v=1;inp.value=1;}
+    if(v>max){v=max;inp.value=max;}
+  }
+  if(isNaN(v)||inp.value===''){
+    info.textContent=`คงเหลือ ${max} ${unit}`;
+    info.style.background='var(--blue-l)';info.style.color='var(--blue)';
+  }else{
+    info.textContent=`คงเหลือ ${max} ${unit} · แทงจำหน่าย ${v} → เหลือ ${max-v} ${unit}`;
+    info.style.background=(max-v===0)?'var(--amber-l)':'var(--blue-l)';
+    info.style.color=(max-v===0)?'var(--amber)':'var(--blue)';
+  }
+  // ไฮไลต์ปุ่มลัดที่ตรงกับค่าปัจจุบัน
+  document.querySelectorAll('#wo-quick button').forEach(b=>{
+    const n=parseInt(b.textContent.replace(/[^0-9]/g,''))||0;
+    const on=(n===v&&v>0);
+    b.style.background=on?'var(--red)':'var(--surface2)';
+    b.style.color=on?'#fff':'var(--text2)';
+    b.style.borderColor=on?'var(--red)':'var(--border2)';
+  });
+}
+
+async function submitWriteoff(){
+  if(!_woCtx)return;
+  const store=document.getElementById('wo-store').value;
+  const qty=parseInt(document.getElementById('wo-qty').value)||0;
+  const reason=document.getElementById('wo-reason').value;
+  const by=document.getElementById('wo-by').value.trim();
+  const max=_woMax();
+  if(qty<=0){showAlert('กรุณาระบุจำนวนที่จะแทงจำหน่าย','danger');return;}
+  if(qty>max){showAlert(`แทงจำหน่ายได้สูงสุด ${max}`,'danger');return;}
+  if(!by){showAlert('กรุณาระบุชื่อผู้ดำเนินการ','danger');return;}
+  if(!confirm(`ยืนยันแทงจำหน่าย\n\n${_woCtx.name}\n${_woCtx.lot?'LOT: '+_woCtx.lot+'\n':''}จำนวน ${qty} ${_woCtx.unit||''}\nออกจาก ${store}\nเหตุผล: ${reason}\n\nยาจะถูกตัดออกจากคลังทันที`))return;
+
+  const btn=document.getElementById('wo-save-btn');
+  btn.disabled=true;btn.textContent='กำลังบันทึก...';
+  const payload={action:'writeoff',date:todayTH(),
+    docNum:document.getElementById('wo-docnum').value.trim(),
+    name:_woCtx.name,code:_woCtx.code,lot:_woCtx.lot,exp:fmtExp(_woCtx.exp),
+    qty,unit:_woCtx.unit,store,reason,by,
+    note:document.getElementById('wo-note').value.trim()};
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(payload)});
+    addHistory('out',`แทงจำหน่าย: ${_woCtx.name}`,
+      `${qty} ${_woCtx.unit||''} | ${store} | ${reason}${_woCtx.lot?' | LOT: '+_woCtx.lot:''}`);
+    showAlert(`🗑 แทงจำหน่าย ${_woCtx.name} จำนวน ${qty} ${_woCtx.unit||''} เรียบร้อย`,'success');
+    closeWriteoffModal();
+    setTimeout(async()=>{ await loadWriteoffs(true); loadStock(); loadOuterStock(true); },1200);
+  }catch(e){
+    showAlert('บันทึกไม่สำเร็จ: '+e.message,'danger');
+  }
+  btn.disabled=false;btn.textContent='🗑 ยืนยันแทงจำหน่าย';
+}
+
 async function loadStock(){
   ['stock-summary-card','stock-list','stock-expiring-list'].forEach(id=>document.getElementById(id).innerHTML='<div class="loading"><div class="spin"></div>กำลังโหลด...</div>');
   try{
@@ -3374,6 +3825,8 @@ async function loadStock(){
       fetch(SCRIPT_URL+'?action=dispense&t='+Date.now(),{redirect:'follow'}).then(r=>r.json())
     ]);
     receiveRows=_normalizeRowCodes(rr.rows||[]);dispenseRows=_normalizeRowCodes(dr.rows||[]);
+    await loadWriteoffs();applyWriteoffs();   // ★ หักยาที่แทงจำหน่ายออกก่อนคำนวณ
+    _clearUsageCache();
     const stockMap={};
     receiveRows.forEach(r=>{
       const k=r.name+'|'+r.lot;
@@ -3987,6 +4440,11 @@ function renderDashDetail(s){
                 ${it.area}${it.lot?' · LOT: '+it.lot:''}</div>
             </div>
             <div style="text-align:right;flex-shrink:0;font-size:11px;">${cfg.right(it)}</div>
+            ${_dashFilter==='exp'?`<button title="แทงจำหน่ายยานี้"
+              onclick="openWriteoffModal(${JSON.stringify(it.name).replace(/"/g,'&quot;')},${JSON.stringify(it.code||'').replace(/"/g,'&quot;')},${JSON.stringify(it.lot||'').replace(/"/g,'&quot;')},${JSON.stringify(it.exp||'').replace(/"/g,'&quot;')},${JSON.stringify(it.unit||'').replace(/"/g,'&quot;')})"
+              style="flex-shrink:0;padding:4px 9px;border-radius:8px;border:1.5px solid rgba(217,48,37,.3);
+                     background:var(--red-l);color:var(--red);font-size:10px;font-weight:800;
+                     cursor:pointer;font-family:inherit;white-space:nowrap;align-self:center;">🗑 แทงจำหน่าย</button>`:''}
           </div>`).join('')}
         ${cfg.items.length>MAX?`<div style="font-size:10px;color:var(--text3);text-align:center;padding-top:7px;">
           …และอีก ${cfg.items.length-MAX} รายการ</div>`:''}
@@ -4343,6 +4801,7 @@ function renderExpiringList(){
       <th>ชื่อยา / LOT</th>
       <th>EXP</th>
       <th style="text-align:right;">คงเหลือ</th>
+      <th style="width:34px;"></th>
     </tr></thead>
     <tbody>${filtered.map(i=>{
       const sn=i.name.replace(/'/g,"\\'");
@@ -4382,6 +4841,13 @@ function renderExpiringList(){
           <div class="sum-qty" style="color:${expColor};">${Math.round(i.qty)}</div>
           <div class="sum-unit">${i.unit}</div>
         </td>
+        <td style="text-align:center;padding:4px 2px;">
+          <button title="แทงจำหน่ายยานี้"
+            onclick="event.stopPropagation();openWriteoffModal(${JSON.stringify(i.name).replace(/"/g,'&quot;')},${JSON.stringify(i.code||'').replace(/"/g,'&quot;')},${JSON.stringify(i.lot||'').replace(/"/g,'&quot;')},${JSON.stringify(i.exp||'').replace(/"/g,'&quot;')},${JSON.stringify(i.unit||'').replace(/"/g,'&quot;')})"
+            style="width:28px;height:28px;border-radius:8px;border:1.5px solid rgba(217,48,37,.28);
+                   background:var(--red-l);color:var(--red);font-size:13px;cursor:pointer;
+                   font-family:inherit;line-height:1;">🗑</button>
+        </td>
       </tr>`;
     }).join('')}
     </tbody>
@@ -4390,6 +4856,109 @@ function renderExpiringList(){
 
 // ดึง อัตราใช้/วัน + ใช้ได้อีกกี่วัน จากชีตคลังยานอก (จับด้วยรหัสหรือชื่อ)
 function _fmt3(v){const n=Number(v);return (v===''||v==null||isNaN(n))?(v||'—'):String(Math.round(n));}
+/* ══════════════════════════════════════════════════════════════════
+ *  ★ ดึงอัตราการใช้ยาต่อเดือนจาก Drug OPD Analytics ★
+ *  endpoint แยกจากระบบคลังยา (คนละ Apps Script project)
+ *  action=drug_monthly → { drugs:{ ชื่อยา:{series:[{ym,qty}],unit,code} }, months:[...] }
+ *
+ *  ค่าที่ใช้ = avgPerActiveMonth (รวมยอดจ่าย ÷ จำนวนเดือนที่มีการจ่ายจริง)
+ *  ใช้สูตรเดียวกับหน้า Drug OPD Analytics เป๊ะๆ เพื่อให้ตัวเลข 2 ที่ตรงกัน
+ *  — ไม่ใช้ avgPerTotalMonth เพราะเดือนที่ไม่มีการจ่าย (ยาขาด/ไม่ได้สั่ง)
+ *    จะดึงค่าเฉลี่ยให้ต่ำกว่าความจริง ทำให้เบิกยาไม่พอใช้
+ * ══════════════════════════════════════════════════════════════════ */
+const ANALYTICS_API_URL='https://script.google.com/macros/s/AKfycbwHeB6MLNTR3NL9FLh5ULMFIhfYD0Eg_UtZ3fH4oZJoWpg10ov_Gjmfv3F2pdrUMYws/exec';
+let _opdUsage=null;         // { byCode:{}, byName:{} }
+let _opdLoading=null;       // กัน fetch ซ้อนกันหลายรอบ
+
+async function loadOpdUsage(force){
+  if(_opdUsage&&!force)return _opdUsage;
+  if(_opdLoading)return _opdLoading;          // มีการโหลดค้างอยู่ → รอรอบเดิม
+  _opdLoading=(async()=>{
+    const byCode={},byName={};
+    try{
+      const r=await fetch(ANALYTICS_API_URL+'?action=drug_monthly&_t='+Date.now(),{redirect:'follow'});
+      const j=await r.json();
+      if(j&&j.status==='ok'&&j.drugs){
+        const totalM=(j.months&&j.months.length)||0;
+        Object.entries(j.drugs).forEach(([name,info])=>{
+          const series=info.series||[];
+          const total=series.reduce((s,pt)=>s+(Number(pt.qty)||0),0);
+          if(!total)return;
+          const activeM=series.filter(pt=>(Number(pt.qty)||0)>0).length||1;
+          const rec={
+            perMonth:total/activeM,          // ← อัตราการใช้ต่อเดือน (สูตรเดียวกับ Analytics)
+            total,activeM,totalM,
+            unit:info.unit||'',code:info.code||'',name
+          };
+          if(info.code)byCode[_ncdNorm(info.code)]=rec;
+          byName[_drugKey(name)]=rec;
+        });
+      }
+    }catch(e){ console.warn('โหลด Drug OPD Analytics ไม่สำเร็จ:',e.message); }
+    _opdUsage={byCode,byName};
+    _opdLoading=null;
+    return _opdUsage;
+  })();
+  return _opdLoading;
+}
+// ค้นอัตราการใช้จาก OPD — จับคู่ด้วยรหัสยาก่อน แล้วจึงชื่อยา
+function _opdUsageFor(code,name){
+  if(!_opdUsage)return null;
+  return _opdUsage.byCode[_ncdNorm(code||'')]||_opdUsage.byName[_drugKey(name||'')]||null;
+}
+
+/* ══ อัตราการใช้ยาต่อเดือน (แสดงในใบเบิก เพื่อช่วยตัดสินใจว่าควรเบิกเท่าไร) ══
+ * แหล่งที่ 1: usageRate จากชีตคลังยานอก (ต่อวัน) → คูณ 30
+ * แหล่งที่ 2: ถ้าไม่มี ให้คำนวณจากประวัติเบิกจ่ายจริงย้อนหลัง 90 วัน
+ *             (ไม่นับรายการแทงจำหน่าย เพราะไม่ใช่การใช้ยาจริง)
+ * คืน null เมื่อไม่มีข้อมูลพอ — จะได้ไม่แสดงตัวเลขมั่ว */
+let _usageHistCache=null;
+function _buildUsageHistory(){
+  if(_usageHistCache)return _usageHistCache;
+  const DAYS=90;
+  const cutoff=Date.now()-DAYS*24*60*60*1000;
+  const m={};
+  (dispenseRows||[]).forEach(r=>{
+    if(!r||!r.name||r._wo)return;                       // ข้ามรายการแทงจำหน่าย
+    if(String(r.dest||'')==='แทงจำหน่าย')return;
+    const dt=parseExpDate(fmtDate(r.date));
+    if(!dt||dt.getTime()<cutoff)return;
+    const k=_drugKey(r.name);
+    if(!m[k])m[k]={qty:0,first:dt.getTime(),last:dt.getTime()};
+    m[k].qty+=parseFloat(r.qty)||0;
+    if(dt.getTime()<m[k].first)m[k].first=dt.getTime();
+    if(dt.getTime()>m[k].last)m[k].last=dt.getTime();
+  });
+  _usageHistCache=m;
+  return m;
+}
+function _clearUsageCache(){_usageHistCache=null;}
+
+// คืน { perMonth, src } — src: 'sheet' (จากชีตคลังยานอก) | 'hist' (คำนวณจากประวัติ)
+function usagePerMonth(code,name){
+  // แหล่งที่ 1: Drug OPD Analytics (ข้อมูลจ่ายยาจริงจากห้องยา — แม่นที่สุด)
+  const opd=_opdUsageFor(code,name);
+  if(opd&&opd.perMonth>0)return {perMonth:opd.perMonth,src:'opd',detail:opd};
+  try{
+    const u=(typeof _outerUsageFor==='function')?_outerUsageFor(code,name):null;
+    if(u&&u.rate!==''&&u.rate!=null&&!isNaN(Number(u.rate))&&Number(u.rate)>0){
+      return {perMonth:Number(u.rate)*30,src:'sheet'};
+    }
+  }catch(e){}
+  const h=_buildUsageHistory()[_drugKey(name||'')];
+  if(h&&h.qty>0){
+    // ใช้ช่วงเวลาที่มีการเบิกจริง (อย่างน้อย 30 วัน) เพื่อไม่ให้ค่าพองเกินจริง
+    const spanDays=Math.max(30,(h.last-h.first)/86400000+1);
+    return {perMonth:h.qty/spanDays*30,src:'hist'};
+  }
+  return null;
+}
+// จำนวนเดือนที่ของคงเหลือจะใช้ได้
+function monthsOfStock(qty,perMonth){
+  if(!perMonth||perMonth<=0)return null;
+  return qty/perMonth;
+}
+
 function _outerUsageFor(code,name){
   if(!outerStockRows||!outerStockRows.length)return null;
   const ck=_ncdNorm(code||''),nk=_drugKey(name||'');
@@ -6619,6 +7188,9 @@ function _renderRequisitionModal(data){
       </td>
       <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#475569;">${item.lot||'—'}</td>
       <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#C07000;">${fmtExp(item.exp)||'—'}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#0F766E;text-align:right;">${(()=>{
+        const u=usagePerMonth(item.code,item.name);
+        return u?(u.perMonth>=10?Math.round(u.perMonth):u.perMonth.toFixed(1)):'—';})()}</td>
       <td style="color:#1A5FD4;">${Math.round(parseFloat(item.qty)||0)}</td>
       <td style="color:#64748B;font-size:10px;">${item.unit||''}</td>
     </tr>`).join('');
@@ -7411,12 +7983,14 @@ function _suggestReqQty(it){
   // ถ้าเคยเบิกครั้งก่อนในชื่อเดียวกัน ใช้จำนวนเดิมเป็นฐาน (ใกล้เคียงความจริงสุด)
   const lastQty=_lastReqQtyFor(it.name);
   let rp=null; try{rp=getReorderPoint(it.code,it.name);}catch(e){}
-  let usage=null; try{usage=(typeof _outerUsageFor==='function')?_outerUsageFor(it.code,it.name):null;}catch(e){}
-  const rate=usage&&usage.rate!==''&&usage.rate!=null&&!isNaN(Number(usage.rate))?Number(usage.rate):null;
+  // อัตราการใช้ต่อเดือน (จากชีตคลังยานอก หรือคำนวณจากประวัติเบิกจริง)
+  const um=usagePerMonth(it.code,it.name);
+  const perMonth=um?um.perMonth:null;
   let target;
-  if(rp!=null&&rp>0)target=rp*2;          // เป้าหมาย: สำรองเผื่อ 2 เท่าของ Min
-  else if(rate!=null&&rate>0)target=rate*30; // หรือ 1 เดือนตามอัตราใช้จริง
-  else target=Math.max(10,(it.qty||0)*2);   // ค่าเริ่มต้นเผื่อกรณีไม่มีข้อมูล
+  // ยึดอัตราการใช้จริงเป็นหลัก — สำรองไว้ 2 เดือน (ตรงกับความเป็นจริงมากกว่าค่า Min คงที่)
+  if(perMonth!=null&&perMonth>0)target=perMonth*2;
+  else if(rp!=null&&rp>0)target=rp*2;        // ไม่มีข้อมูลการใช้ → ใช้ 2 เท่าของ Min
+  else target=Math.max(10,(it.qty||0)*2);    // ค่าเริ่มต้นเผื่อกรณีไม่มีข้อมูลเลย
   let suggest=Math.max(1,Math.round(target-(it.qty||0)));
   if(lastQty!=null)suggest=Math.max(suggest,Math.min(lastQty,Math.round(lastQty*1.2))); // ไม่ให้น้อยกว่าที่เคยเบิกครั้งก่อนมากนัก
   suggest=_roundToPack(suggest,it.code,it.name); // ปัดขึ้นเป็นจำนวนเต็มแพ็ค (ถ้ามีข้อมูลจำนวนต่อหน่วยบรรจุ)
@@ -7505,6 +8079,10 @@ function _syncAssistChips(){
 
 function openStockRequisition(){
   _dispFreqCache=null; // เคลียร์แคชความถี่การเบิก ให้คำนวณใหม่ทุกครั้งที่เปิด
+  // โหลดอัตราการใช้จาก Drug OPD Analytics (ถ้ายังไม่มี) แล้ววาดรายการใหม่เมื่อได้ข้อมูล
+  if(!_opdUsage)loadOpdUsage().then(()=>{
+    if(document.getElementById('stock-req-modal').classList.contains('open'))openStockRequisition();
+  });
   if(!_allStockItems.length){showAlert('ยังไม่มีข้อมูลคลัง กดรีเฟรชก่อน','warning');return;}
   // ไม่ reset cart — ยังคงรายการที่เพิ่มไว้
 
@@ -7583,6 +8161,17 @@ function openStockRequisition(){
     const qcTxt=isOut?'var(--red)':isR?'var(--red)':isY?'var(--amber)':'var(--teal)';
     const lowTag=(!isOut&&it._low)?`<span style="background:#FEF3C7;color:#B45309;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;border:1px solid #B4530933;">📉 ต่ำกว่า Min</span>`:'';
     const d30Tag=it._d30?`<span style="background:#EDE9FE;color:#6D28D9;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;border:1px solid #6D28D933;">⏳ ใช้ได้ &lt;30วัน</span>`:'';
+    // ── อัตราการใช้ต่อเดือน + ประเมินว่าของที่มีพอใช้กี่เดือน ──
+    const _um=usagePerMonth(it.code,it.name);
+    const _mos=_um?monthsOfStock(it.qty,_um.perMonth):null;
+    const _umTxt=_um?(_um.perMonth>=10?Math.round(_um.perMonth):_um.perMonth.toFixed(1)):'';
+    const _umColor=_mos===null?'#0F766E':_mos<1?'#D93025':_mos<2?'#C07000':'#0F766E';
+    const _umSrcTxt=_um?(_um.src==='opd'
+        ? `จ่ายจริงจากห้องยา ${Math.round(_um.detail.total).toLocaleString('th-TH')} ${_um.detail.unit||''} ใน ${_um.detail.activeM} เดือน (Drug OPD Analytics)`
+        : _um.src==='hist' ? 'คำนวณจากประวัติเบิก 90 วัน' : 'จากชีตคลังยานอก'):'';
+    const _umTag=_um?`<span title="อัตราการใช้เฉลี่ย ${_umTxt} ${it.unit||''}/เดือน · ${_umSrcTxt}"
+      style="background:#CCFBF1;color:${_umColor};padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;border:1px solid ${_umColor}33;">
+      📈 ใช้ ${_umTxt}/เดือน${_mos!==null?' · พอ '+(_mos<1?'<1':_mos.toFixed(1))+' เดือน':''}</span>`:'';
     const _pi=getPackInfo(it.code,it.name);
     const packTag=_pi?`<span style="background:#E0F2FE;color:#0369A1;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;border:1px solid #0369A133;">📦 ${_pi.packQty?_pi.packQty+' '+(it.unit||_pi.unitSub||'')+'/'+(_pi.unitPack||'แพ็ค'):''}${_pi.packSize?(_pi.packQty?' · ':'')+_pi.packSize:''}</span>`:'';
     const nm=it.name.replace(/'/g,"\\'").replace(/"/g,'&quot;');
@@ -7596,6 +8185,7 @@ function openStockRequisition(){
             <span style="background:${grpBg};color:${grpTxt};padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;border:1px solid ${grpTxt}33;">${grpLabel}</span>
             ${lowTag}
             ${d30Tag}
+            ${_umTag}
             ${packTag}
           </div>
           <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">
@@ -7725,7 +8315,9 @@ function _renderRequisitionModal(data){
         <td style="color:#94A3B8;font-family:'IBM Plex Mono',monospace;">${String(i+1).padStart(2,'0')}</td>
         <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#475569;">${it.code||'—'}</td>
         <td><div class="req-drug-name">${it.name}</div></td>
-        <td style="text-align:right;color:#64748B;">—</td>
+        <td style="text-align:right;font-family:'IBM Plex Mono',monospace;color:#0F766E;font-weight:600;">${(()=>{
+          const u=usagePerMonth(it.code,it.name);
+          return u?(u.perMonth>=10?Math.round(u.perMonth):u.perMonth.toFixed(1)):'—';})()}</td>
         <td style="text-align:right;color:#1A5FD4;">${Math.round(it.stockQty)}</td>
         <td style="text-align:right;color:#C0392B;font-weight:700;">${it.orderQty||'—'}</td>
         <td style="color:#64748B;font-size:10px;">${it.unit}</td>
