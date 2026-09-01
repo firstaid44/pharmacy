@@ -5590,7 +5590,7 @@ async function dispenseStock(){
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(entry)});
     showAlert(`✓ เบิกยา "${name}" LOT: ${lot} จำนวน ${qty} ${unit} โดย ${requester}`,'success');
     addHistory('out',`เบิกยาออก: ${name}`,`LOT: ${lot} | ${qty} ${unit} | ผู้เบิก: ${requester} | เบิกให้: ${dest}${docNum?' | เลขที่: '+docNum:''}`);
-    setTimeout(()=>loadDispense(),1500);
+    setTimeout(()=>{loadDispense();loadStock(true);},1500);
     sendLineFlexDispense({name,code,lot,exp,unit,qty,requester,note,date:todayTH(),stockLeft:Math.max(0,stockLeft)});
   }catch(e){showAlert('ส่งข้อมูลไม่สำเร็จ','danger');}
   btn.textContent='เบิกยาออก';btn.disabled=false;
@@ -6281,7 +6281,7 @@ async function saveDispenseBatch(){
     showAlert(`เบิกสำเร็จ ${ok} รายการ · ไม่สำเร็จ ${fail} รายการ`,'danger');
   }
   clearDispenseForm();
-  setTimeout(()=>loadDispense(),1500);
+  setTimeout(()=>{loadDispense();loadStock(true);},1500);
 }
 
 // ══ REQ LOG — บันทึกใบเบิกยา ════════════════════════════════
