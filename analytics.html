@@ -239,8 +239,18 @@ td.tn{color:var(--tx);font-family:var(--fn);font-size:.88rem;white-space:normal;
   cursor:pointer;transition:all .15s;white-space:nowrap}
 .dv-qbtn:hover{border-color:var(--ac);color:var(--ac)}
 .dv-qbtn.active{background:rgba(61,214,245,.12);border-color:var(--ac);color:var(--ac);font-weight:600}
-/* date input theming */
+/* PATIENT PAGE */
+.pt-row-sel{background:rgba(61,214,245,.1)!important;border-left:3px solid var(--ac)}
+.pt-visit-chip{display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;font-size:.65rem;font-weight:700;
+  font-family:var(--mo);background:rgba(61,214,245,.15);color:var(--ac);flex-shrink:0}
+.pt-drug-row{animation:fadeUp .2s ease both}
+.pt-hn-badge{font-family:var(--mo);font-size:.82rem;color:var(--ac);font-weight:600;cursor:pointer}
+.pt-hn-badge:hover{color:#6ee7fa;text-decoration:underline}
+/* date inputs dark themed */
 input[type="date"].fi{color-scheme:dark}
+
+/* EXPORT BTN (already defined but ensure) */
 
 /* ══════════════════════════════════════════════
    RESPONSIVE — Mobile first
@@ -443,6 +453,9 @@ input[type="date"].fi{color-scheme:dark}
     <button class="bnav-item" data-page="dv" onclick="goPage('dv',this)">
       <span class="bnav-ic">📋</span><span class="bnav-lb">รายวัน</span>
     </button>
+    <button class="bnav-item" data-page="pt" onclick="goPage('pt',this)">
+      <span class="bnav-ic">🧑‍⚕️</span><span class="bnav-lb">รายผู้ป่วย</span>
+    </button>
     <button class="bnav-item" data-page="tr" onclick="goPage('tr',this)">
       <span class="bnav-ic">📈</span><span class="bnav-lb">Trend</span>
     </button>
@@ -546,6 +559,7 @@ input[type="date"].fi{color-scheme:dark}
   <div class="ni" data-page="tr" onclick="goPage('tr',this)"><span class="ni-ic">📈</span>Trend</div>
   <div class="nl">ข้อมูล</div>
   <div class="ni" data-page="dv" onclick="goPage('dv',this)"><span class="ni-ic">📋</span>รายวัน<span class="nbadge" id="nb-dv">—</span></div>
+  <div class="ni" data-page="pt" onclick="goPage('pt',this)"><span class="ni-ic">🧑‍⚕️</span>รายผู้ป่วย<span class="nbadge" id="nb-pt">—</span></div>
   <div class="ni" data-page="dr" onclick="goPage('dr',this)"><span class="ni-ic">💊</span>ยาทั้งหมด<span class="nbadge" id="nb-dr">—</span></div>
   <div class="ni" data-page="cl" onclick="goPage('cl',this)"><span class="ni-ic">🏥</span>คลินิก<span class="nbadge" id="nb-cl">—</span></div>
   <div class="ni" data-page="mo" onclick="goPage('mo',this)"><span class="ni-ic">📅</span>รายเดือน<span class="nbadge" id="nb-mo">—</span></div>
@@ -848,6 +862,115 @@ input[type="date"].fi{color-scheme:dark}
   </div>
 </div>
 
+<!-- PATIENT DRUGS -->
+<div class="page" id="page-pt">
+
+  <!-- Filter bar -->
+  <div class="fb">
+    <label>จาก</label>
+    <input type="date" class="fi" id="ptFrom" onchange="renderPt()">
+    <label>ถึง</label>
+    <input type="date" class="fi" id="ptTo" onchange="renderPt()">
+    <!-- Quick range -->
+    <select class="fi fi-m" id="ptQuick" onchange="ptSetQuick()">
+      <option value="">ช่วงเวลาด่วน…</option>
+      <option value="7">7 วันล่าสุด</option>
+      <option value="14">14 วันล่าสุด</option>
+      <option value="30">30 วันล่าสุด</option>
+      <option value="90">3 เดือนล่าสุด</option>
+      <option value="all">ทั้งหมด</option>
+    </select>
+    <div class="sw inline" style="max-width:200px">
+      <span class="si">🔍</span>
+      <input class="sn" id="ptSearch" placeholder="ค้นหา HN / ชื่อยา…" oninput="renderPt()">
+    </div>
+    <label>เรียงตาม</label>
+    <select class="fi fi-m" id="ptSort" onchange="renderPt()">
+      <option value="visits">ครั้งที่มา</option>
+      <option value="drugs">ชนิดยา</option>
+      <option value="qty">ปริมาณรวม</option>
+      <option value="cost">มูลค่ารวม</option>
+      <option value="hn">HN</option>
+    </select>
+    <span class="fi-tag" id="pt-info">—</span>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpig" id="pt-kpi" style="display:none;margin-bottom:.9rem"></div>
+
+  <!-- Status -->
+  <div id="pt-status" style="display:none;padding:.6rem 1rem;margin-bottom:.85rem;
+    background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:var(--r);
+    font-size:.78rem;color:var(--yl);font-family:var(--mo)"></div>
+
+  <!-- Patient list + detail pane -->
+  <div class="g12" id="pt-main" style="display:none">
+
+    <!-- Left: patient list -->
+    <div class="card" style="min-height:400px">
+      <div class="ct">ผู้ป่วยในช่วงเวลา <span class="ca" id="pt-list-count">—</span>
+        <button class="xbtn" onclick="xPtCSV()">⬇CSV</button>
+      </div>
+      <div class="tw" style="max-height:520px">
+        <table>
+          <thead><tr>
+            <th>#</th>
+            <th onclick="ptSortBy('hn')">HN</th>
+            <th onclick="ptSortBy('visits')">ครั้ง</th>
+            <th onclick="ptSortBy('drugs')">ชนิดยา</th>
+            <th onclick="ptSortBy('qty')">ปริมาณ</th>
+            <th onclick="ptSortBy('cost')">มูลค่า (฿)</th>
+          </tr></thead>
+          <tbody id="pt-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: patient detail -->
+    <div id="pt-detail-pane" style="display:flex;flex-direction:column;gap:.85rem">
+      <div class="card" style="flex-shrink:0">
+        <div class="ct" id="pt-detail-title">เลือกผู้ป่วยเพื่อดูรายละเอียด</div>
+        <div class="dkpi" id="pt-detail-kpi" style="flex-wrap:wrap;gap:.55rem"></div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="ct">ยาที่ได้รับ <span class="ca" id="pt-drug-count">—</span>
+          <button class="xbtn" id="pt-drug-xbtn" style="display:none" onclick="xPtDrugCSV()">⬇CSV</button>
+        </div>
+        <div class="tw" style="max-height:340px">
+          <table>
+            <thead><tr>
+              <th>วันที่</th>
+              <th>ชื่อยา</th>
+              <th>ปริมาณ</th>
+              <th>หน่วย</th>
+              <th>มูลค่า (฿)</th>
+              <th>คลินิก</th>
+            </tr></thead>
+            <tbody id="pt-drug-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" id="pt-chart-card" style="display:none">
+        <div class="ct">ยาที่ได้รับบ่อย</div>
+        <div class="h240"><canvas id="ptDrugBar"></canvas></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Loading / empty -->
+  <div class="empty" id="pt-empty" style="padding:4rem">
+    <div class="empty-ic">🧑‍⚕️</div>
+    <p>เลือกช่วงเวลาแล้วระบบจะดึงข้อมูลผู้ป่วย</p>
+    <p style="font-size:.72rem;color:var(--tx3);margin-top:.4rem">ข้อมูลจะโหลดจาก API เมื่อกำหนดช่วงวันที่</p>
+  </div>
+  <div class="empty" id="pt-loading" style="display:none">
+    <div class="spin" style="width:36px;height:36px;border-width:2px"></div>
+    <p style="color:var(--tx3)">กำลังดึงข้อมูลผู้ป่วย…</p>
+  </div>
+
+</div>
+
 </main>
 </div>
 
@@ -925,7 +1048,7 @@ function goPage(id,el){
   document.getElementById('page-'+id).classList.add('active');
   syncNav(id);
   if(!S.data) return;
-  ({tr:renderTr,dv:renderDvPage,dr:renderDr,cl:renderCl,mo:renderMo,fc:renderFc,ur:renderUr})[id]?.();
+  ({tr:renderTr,dv:renderDvPage,pt:renderPtPage,dr:renderDr,cl:renderCl,mo:renderMo,fc:renderFc,ur:renderUr})[id]?.();
 }
 
 /* ════ FETCH ════ */
@@ -986,6 +1109,7 @@ async function fetchData(){
 function updateBadges(){
   const d=S.data;
   document.getElementById('nb-dv').textContent=fmt(d.daily.length);
+  document.getElementById('nb-pt').textContent=fmt(d.summary.unique_patients||0);
   document.getElementById('nb-dr').textContent=fmt(d.summary.unique_drugs);
   document.getElementById('nb-cl').textContent=fmt(d.top_clinics.length);
   document.getElementById('nb-mo').textContent=fmt(d.monthly.length);
@@ -2014,6 +2138,371 @@ function xDvCSV(){
 function openDrillDayFromDv(date){
   const day=S.data.daily.find(d=>d.date===date);
   if(day) openDrillDay(day);
+}
+
+/* ════════════════════════════════════════════════════════
+   PATIENT DRUGS PAGE
+   - ดึงข้อมูลจาก API: action=patient_drugs&from=YYYY-MM-DD&to=YYYY-MM-DD
+   - แสดงรายชื่อผู้ป่วย + ยาที่ได้รับแต่ละคนในช่วงเวลา
+════════════════════════════════════════════════════════ */
+
+const PT = {
+  patients: [],      // [{hn, visits, drugs:[{date,name,qty,unit,cost,clinic}], totalQty, totalCost, uniqueDrugs}]
+  selected: null,    // HN ที่เลือกอยู่
+  sortKey: 'visits',
+  sortAsc: false,
+  loaded: false,     // โหลดแล้วสำหรับ range นี้หรือยัง
+  lastFrom: '',
+  lastTo: '',
+};
+
+/* ── Init page ── */
+function renderPtPage(){
+  if(!S.data) return;
+  const daily = S.data.daily;
+  if(!daily?.length) return;
+
+  /* ตั้งค่า default range = 30 วันล่าสุด */
+  const lastDate  = daily[daily.length-1].date;
+  const firstDate = daily[0].date;
+  const ptTo   = document.getElementById('ptTo');
+  const ptFrom = document.getElementById('ptFrom');
+  if(!ptTo.value)   ptTo.value   = lastDate;
+  if(!ptFrom.value){
+    const d30 = new Date(lastDate);
+    d30.setDate(d30.getDate()-29);
+    ptFrom.value = d30.toISOString().substring(0,10) < firstDate
+      ? firstDate : d30.toISOString().substring(0,10);
+  }
+  renderPt();
+}
+
+/* ── Set quick range ── */
+function ptSetQuick(){
+  const val = document.getElementById('ptQuick').value;
+  if(!val) return;
+  const daily   = S.data?.daily;
+  if(!daily?.length) return;
+  const lastDate  = daily[daily.length-1].date;
+  const firstDate = daily[0].date;
+  document.getElementById('ptTo').value = lastDate;
+  if(val==='all'){
+    document.getElementById('ptFrom').value = firstDate;
+  } else {
+    const d = new Date(lastDate);
+    d.setDate(d.getDate() - (parseInt(val)-1));
+    const from = d.toISOString().substring(0,10);
+    document.getElementById('ptFrom').value = from < firstDate ? firstDate : from;
+  }
+  document.getElementById('ptQuick').value = '';
+  renderPt();
+}
+
+/* ── Main render: fetch then display ── */
+async function renderPt(){
+  const from = document.getElementById('ptFrom').value;
+  const to   = document.getElementById('ptTo').value;
+  const q    = (document.getElementById('ptSearch').value||'').toLowerCase().trim();
+
+  if(!from || !to){ ptShowEmpty(); return; }
+  if(from > to){ toast('⚠ วันเริ่มต้นต้องน้อยกว่าวันสุดท้าย'); return; }
+
+  /* ถ้า range เปลี่ยน → fetch ใหม่ */
+  if(from !== PT.lastFrom || to !== PT.lastTo){
+    await ptFetch(from, to);
+  }
+
+  ptDisplay(q);
+}
+
+/* ── Fetch patient_drugs from API ── */
+async function ptFetch(from, to){
+  ptShowLoading();
+  document.getElementById('pt-status').style.display='none';
+  try{
+    const url = API_URL + `?action=patient_drugs&from=${from}&to=${to}&_t=${Date.now()}`;
+    const r   = await fetch(url);
+    const d   = await r.json();
+
+    if(d.status !== 'ok') throw new Error(d.message||'API error');
+
+    /* แปลงผลลัพธ์ */
+    PT.patients = buildPatientList(d.patients||d.rows||[]);
+    PT.lastFrom = from;
+    PT.lastTo   = to;
+    PT.loaded   = true;
+    PT.selected = null;
+
+    if(d.note) showPtStatus(d.note);
+
+  } catch(err){
+    /* Fallback: สร้างจาก S.data.daily.top_drugs (จำกัด) */
+    PT.patients = ptFallback(from, to);
+    PT.lastFrom = from;
+    PT.lastTo   = to;
+    PT.loaded   = true;
+    PT.selected = null;
+    showPtStatus('⚠ ใช้ข้อมูลสรุปรายวัน (อัปเดต Apps Script เพื่อดูข้อมูลรายผู้ป่วยที่แท้จริง)');
+  }
+}
+
+/* ── Build patient list from API response ── */
+function buildPatientList(rows){
+  /* rows: [{hn, date, drug, qty, unit, cost, clinic}] */
+  const map = {};
+  rows.forEach(r => {
+    const hn = String(r.hn||r.pid||'').trim();
+    if(!hn) return;
+    if(!map[hn]) map[hn] = { hn, drugs:[], visitDates:new Set() };
+    map[hn].visitDates.add(r.date||'');
+    map[hn].drugs.push({
+      date:   r.date||'',
+      name:   r.drug||r.dname||'',
+      qty:    parseFloat(r.qty||r.amount||0),
+      unit:   r.unit||'',
+      cost:   parseFloat(r.cost||r.drugcost||0),
+      clinic: r.clinic||'',
+      seq:    r.seq||'',
+    });
+  });
+  return Object.values(map).map(p => {
+    const totalQty  = p.drugs.reduce((s,d)=>s+d.qty, 0);
+    const totalCost = p.drugs.reduce((s,d)=>s+d.cost, 0);
+    const uniqueDrugs = new Set(p.drugs.map(d=>d.name)).size;
+    return {
+      hn: p.hn,
+      visits: p.visitDates.size,
+      drugs: p.drugs.sort((a,b)=>a.date.localeCompare(b.date)),
+      totalQty: Math.round(totalQty*10)/10,
+      totalCost: Math.round(totalCost*100)/100,
+      uniqueDrugs,
+    };
+  });
+}
+
+/* ── Fallback: สร้างจาก daily data (ไม่มีข้อมูล HN แท้จริง) ── */
+function ptFallback(from, to){
+  /* เนื่องจาก daily data ไม่มี HN แยกราย
+     สร้าง mock summary per day แทน */
+  const daily = S.data.daily;
+  const inRange = daily.filter(d=>d.date>=from && d.date<=to);
+  /* จำลองเป็น "วันที่" แทน HN เพื่อให้ user เห็นภาพ */
+  return inRange.map(d=>({
+    hn: d.date,           // ใช้วันที่แทน HN
+    visits: 1,
+    drugs: (d.top_drugs||[]).map(dr=>({
+      date: d.date, name:dr.name, qty:dr.qty, unit:'', cost:0, clinic:'',
+    })),
+    totalQty: d.total_qty||0,
+    totalCost: d.total_cost||0,
+    uniqueDrugs: (d.top_drugs||[]).length,
+    isFallback: true,
+  }));
+}
+
+/* ── Display patients ── */
+function ptDisplay(q){
+  let list = [...PT.patients];
+
+  /* filter by search (HN or drug name) */
+  if(q){
+    list = list.filter(p=>{
+      if(p.hn.toLowerCase().includes(q)) return true;
+      return p.drugs.some(d=>d.name.toLowerCase().includes(q));
+    });
+  }
+
+  /* sort */
+  const sk = PT.sortKey;
+  list.sort((a,b)=>{
+    const va = sk==='hn'?a.hn:sk==='visits'?a.visits:sk==='drugs'?a.uniqueDrugs:sk==='qty'?a.totalQty:a.totalCost;
+    const vb = sk==='hn'?b.hn:sk==='visits'?b.visits:sk==='drugs'?b.uniqueDrugs:sk==='qty'?b.totalQty:b.totalCost;
+    return PT.sortAsc
+      ? (typeof va==='string'?va.localeCompare(vb):va-vb)
+      : (typeof va==='string'?vb.localeCompare(va):vb-va);
+  });
+
+  document.getElementById('pt-info').textContent =
+    `${fmt(list.length)} ราย · ${PT.lastFrom} → ${PT.lastTo}`;
+  document.getElementById('pt-list-count').textContent = `${fmt(list.length)} ราย`;
+
+  /* KPI */
+  const totalVisits = list.reduce((s,p)=>s+p.visits, 0);
+  const totalCost   = list.reduce((s,p)=>s+p.totalCost, 0);
+  const totalQty    = list.reduce((s,p)=>s+p.totalQty, 0);
+  const avgDrugs    = list.length ? Math.round(list.reduce((s,p)=>s+p.uniqueDrugs,0)/list.length*10)/10 : 0;
+  document.getElementById('pt-kpi').style.display = '';
+  document.getElementById('pt-kpi').innerHTML =
+    kCard('ผู้ป่วย',fmt(list.length),'ราย (ในช่วง)','var(--ac)')+
+    kCard('Visit รวม',fmt(totalVisits),'ครั้ง','var(--gr)')+
+    kCard('ปริมาณยารวม',fmt(Math.round(totalQty)),'หน่วย','var(--a3)')+
+    kCard('มูลค่ารวม',fmtC(totalCost),'total cost','var(--yl)','1.05rem')+
+    kCard('เฉลี่ยยา/ราย',fmtF(avgDrugs),'ชนิด/ราย','var(--a2)');
+
+  /* Table */
+  document.getElementById('pt-tbody').innerHTML = list.map((p,i)=>{
+    const isFb = p.isFallback;
+    const sel  = p.hn === PT.selected;
+    return `<tr class="${sel?'pt-row-sel':''}" onclick="ptSelectPatient('${p.hn.replace(/'/g,"\\'")}')">
+      <td>${i+1}</td>
+      <td><span class="pt-hn-badge">${isFb?'วันที่ '+p.hn:p.hn}</span></td>
+      <td style="text-align:center"><span class="pt-visit-chip">${p.visits}</span></td>
+      <td style="color:var(--a2)">${fmt(p.uniqueDrugs)}</td>
+      <td style="color:var(--ac)">${fmt(p.totalQty)}</td>
+      <td style="color:var(--yl)">${p.totalCost>0?fmtC(p.totalCost):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  ptHideLoading();
+  ptHideEmpty();
+  document.getElementById('pt-main').style.display = 'grid';
+
+  /* ถ้ามี selected ให้ re-render detail */
+  if(PT.selected) ptShowDetail(PT.selected, list);
+  else ptClearDetail();
+}
+
+/* ── Select patient → show detail ── */
+function ptSelectPatient(hn){
+  PT.selected = hn;
+  const list = PT.patients;
+  /* อัป highlight row */
+  document.querySelectorAll('#pt-tbody tr').forEach(tr=>{
+    tr.classList.toggle('pt-row-sel',
+      tr.querySelector('.pt-hn-badge')?.textContent?.includes(hn));
+  });
+  ptShowDetail(hn, list);
+}
+
+function ptShowDetail(hn, list){
+  const p = list.find(x=>x.hn===hn);
+  if(!p) return;
+
+  /* KPI cards */
+  document.getElementById('pt-detail-title').textContent =
+    `HN: ${p.isFallback?'วันที่ '+p.hn:p.hn}`;
+  document.getElementById('pt-detail-kpi').innerHTML = `
+    <div class="dk"><div class="dkl">Visit</div><div class="dkv" style="color:var(--ac)">${p.visits}</div></div>
+    <div class="dk"><div class="dkl">ชนิดยา</div><div class="dkv" style="color:var(--a2)">${p.uniqueDrugs}</div></div>
+    <div class="dk"><div class="dkl">ปริมาณรวม</div><div class="dkv" style="color:var(--a3)">${fmt(p.totalQty)}</div></div>
+    <div class="dk"><div class="dkl">มูลค่ารวม</div><div class="dkv" style="color:var(--yl);font-size:.95rem">${p.totalCost>0?fmtC(p.totalCost):'—'}</div></div>`;
+
+  /* Drug table */
+  const drugs = p.drugs;
+  document.getElementById('pt-drug-count').textContent = `${fmt(drugs.length)} รายการ`;
+  document.getElementById('pt-drug-xbtn').style.display = '';
+  document.getElementById('pt-drug-tbody').innerHTML = drugs.map((d,i)=>`
+    <tr class="pt-drug-row" style="animation-delay:${Math.min(i*0.02,0.3)}s"
+        onclick="openDrillDrug('${d.name.replace(/'/g,"\\'")}')">
+      <td style="color:var(--tx3);font-size:.72rem">${d.date}</td>
+      <td class="tn">${d.name}</td>
+      <td style="color:var(--ac);font-weight:600">${fmt(d.qty)}</td>
+      <td style="color:var(--tx3)">${d.unit||'—'}</td>
+      <td style="color:var(--yl)">${d.cost>0?fmtC(d.cost):'—'}</td>
+      <td style="color:var(--tx3);font-size:.72rem">${d.clinic||'—'}</td>
+    </tr>`).join('');
+
+  /* Bar chart: top drugs by qty */
+  const drugAgg = {};
+  drugs.forEach(d=>{ drugAgg[d.name]=(drugAgg[d.name]||0)+d.qty; });
+  const top10 = Object.entries(drugAgg).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const chartCard = document.getElementById('pt-chart-card');
+  if(top10.length > 0){
+    chartCard.style.display='';
+    kc('ptDrugBar');
+    rc('ptDrugBar', new Chart(document.getElementById('ptDrugBar').getContext('2d'),{
+      type:'bar',
+      data:{
+        labels: top10.map(([n])=>n.length>20?n.substring(0,20)+'…':n),
+        datasets:[{
+          label:'ปริมาณรวม',
+          data: top10.map(([,v])=>v),
+          backgroundColor: C.pal.map(c=>c+'66'),
+          borderColor: C.pal,
+          borderWidth:1.2,
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, indexAxis:'y',
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{beginAtZero:true,grid:{color:'rgba(61,214,245,.05)'},ticks:{font:{size:12}}},
+          y:{ticks:{font:{size:11}}}
+        },
+        onClick:(_,els)=>{
+          if(!els.length) return;
+          openDrillDrug(top10[els[0].index]?.[0]);
+        }
+      }
+    }));
+  } else {
+    chartCard.style.display='none';
+  }
+}
+
+function ptClearDetail(){
+  document.getElementById('pt-detail-title').textContent = 'เลือกผู้ป่วยเพื่อดูรายละเอียด';
+  document.getElementById('pt-detail-kpi').innerHTML = '';
+  document.getElementById('pt-drug-count').textContent = '—';
+  document.getElementById('pt-drug-xbtn').style.display='none';
+  document.getElementById('pt-drug-tbody').innerHTML =
+    `<tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:2rem;font-size:.82rem">คลิกแถวผู้ป่วยด้านซ้ายเพื่อดูรายการยา</td></tr>`;
+  document.getElementById('pt-chart-card').style.display='none';
+  kc('ptDrugBar');
+}
+
+function ptSortBy(key){
+  PT.sortKey===key ? PT.sortAsc=!PT.sortAsc : (PT.sortKey=key, PT.sortAsc=false);
+  ptDisplay((document.getElementById('ptSearch').value||'').toLowerCase().trim());
+}
+
+function showPtStatus(msg){
+  const el = document.getElementById('pt-status');
+  el.style.display='block';
+  el.textContent = msg;
+}
+function ptShowLoading(){
+  document.getElementById('pt-empty').style.display='none';
+  document.getElementById('pt-main').style.display='none';
+  document.getElementById('pt-kpi').style.display='none';
+  document.getElementById('pt-loading').style.display='flex';
+}
+function ptHideLoading(){ document.getElementById('pt-loading').style.display='none'; }
+function ptShowEmpty(){
+  document.getElementById('pt-loading').style.display='none';
+  document.getElementById('pt-main').style.display='none';
+  document.getElementById('pt-kpi').style.display='none';
+  document.getElementById('pt-empty').style.display='flex';
+}
+function ptHideEmpty(){ document.getElementById('pt-empty').style.display='none'; }
+
+/* ── Export: รายชื่อผู้ป่วย CSV ── */
+function xPtCSV(){
+  if(!PT.patients.length){ toast('⚠ ยังไม่มีข้อมูล'); return; }
+  const rows = [['HN','ครั้งที่มา','ชนิดยา','ปริมาณรวม','มูลค่ารวม (฿)']];
+  PT.patients.forEach(p=>rows.push([p.hn, p.visits, p.uniqueDrugs, p.totalQty, p.totalCost]));
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `patients_${PT.lastFrom}_${PT.lastTo}.csv`;
+  a.click();
+  toast('⬇ CSV ผู้ป่วย '+fmt(PT.patients.length)+' ราย');
+}
+
+/* ── Export: รายการยาของผู้ป่วยที่เลือก ── */
+function xPtDrugCSV(){
+  const p = PT.patients.find(x=>x.hn===PT.selected);
+  if(!p){ toast('⚠ เลือกผู้ป่วยก่อน'); return; }
+  const rows = [['วันที่','ชื่อยา','ปริมาณ','หน่วย','มูลค่า (฿)','คลินิก']];
+  p.drugs.forEach(d=>rows.push([d.date, d.name, d.qty, d.unit, d.cost, d.clinic]));
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `drugs_${p.hn}_${PT.lastFrom}_${PT.lastTo}.csv`;
+  a.click();
+  toast(`⬇ CSV ยาของ HN ${p.hn} (${fmt(p.drugs.length)} รายการ)`);
 }
 
 /* ════ SPARKLINE ════ */
