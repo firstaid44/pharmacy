@@ -2201,7 +2201,7 @@ mark.hl{background:#FEF08A;color:#713F12;border-radius:2px;padding:0 1px;}
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
     <div class="header-text">
       <div class="app-title">คลังยา PCU สะบ้าย้อย</div>
-      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.09.21.15.24</div>
+      <div class="app-sub">ระบบบริหารจัดการยา Version 2569.09.21.15.43</div>
     </div>
     <!-- search + connection dot -->
     <div style="position:relative;flex-shrink:0;">
@@ -3503,6 +3503,7 @@ async function loadDispense(){
  *  ถ้ายังไม่ได้ deploy ฝั่ง Apps Script → writeoffRows = [] → ทุกตัวเลขเหมือนเดิมทุกประการ
  * ══════════════════════════════════════════════════════════════════ */
 let writeoffRows=[],_writeoffLoaded=false;
+let _woApiStatus='unknown';   // ok | not-installed | error
 
 async function loadWriteoffs(force){
   if(_writeoffLoaded&&!force)return writeoffRows;
@@ -3514,9 +3515,10 @@ async function loadWriteoffs(force){
     const rows=(j&&j.status==='ok')?(j.rows||[]):[];
     const looksValid=rows.length===0||rows.every(x=>x&&x.store!==undefined&&x.rowIndex!==undefined);
     writeoffRows=looksValid?rows:[];
+    _woApiStatus=looksValid?'ok':'not-installed';
     if(!looksValid)console.warn('action=writeoffs ยังไม่ถูกติดตั้งใน Apps Script — ข้ามการหักยาแทงจำหน่าย');
     _writeoffLoaded=true;
-  }catch(e){ writeoffRows=[]; }
+  }catch(e){ writeoffRows=[]; _woApiStatus='error'; }
   return writeoffRows;
 }
 
@@ -3807,14 +3809,36 @@ async function submitWriteoff(){
     name:_woCtx.name,code:_woCtx.code,lot:_woCtx.lot,exp:fmtExp(_woCtx.exp),
     qty,unit:_woCtx.unit,store,reason,by,
     note:document.getElementById('wo-note').value.trim()};
+  const ctx={..._woCtx};
   try{
+    // นับจำนวนรายการก่อนส่ง เพื่อตรวจทีหลังว่าบันทึกเข้าชีตจริงหรือไม่
+    await loadWriteoffs(true);
+    const before=writeoffRows.length;
+    // หมายเหตุ: mode 'no-cors' ทำให้อ่านคำตอบจากเซิร์ฟเวอร์ไม่ได้ จึงต้องตรวจจากชีตแทน
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
       body:JSON.stringify(payload)});
-    addHistory('out',`แทงจำหน่าย: ${_woCtx.name}`,
-      `${qty} ${_woCtx.unit||''} | ${store} | ${reason}${_woCtx.lot?' | LOT: '+_woCtx.lot:''}`);
-    showAlert(`🗑 แทงจำหน่าย ${_woCtx.name} จำนวน ${qty} ${_woCtx.unit||''} เรียบร้อย`,'success');
-    closeWriteoffModal();
-    setTimeout(async()=>{ await loadWriteoffs(true); loadStock(); loadOuterStock(true); },1200);
+    btn.textContent='กำลังตรวจสอบในชีต...';
+    let saved=false;
+    for(let i=0;i<4&&!saved;i++){               // รอเซิร์ฟเวอร์เขียนชีต (สูงสุด ~6 วินาที)
+      await new Promise(r=>setTimeout(r,1500));
+      await loadWriteoffs(true);
+      saved=_woApiStatus==='ok'&&writeoffRows.length>before&&writeoffRows.some(w=>
+        w.name===ctx.name&&String(w.lot||'')===String(ctx.lot||'')&&Number(w.qty)===qty);
+    }
+    if(saved){
+      addHistory('out',`แทงจำหน่าย: ${ctx.name}`,
+        `${qty} ${ctx.unit||''} | ${store} | ${reason}${ctx.lot?' | LOT: '+ctx.lot:''}`);
+      showAlert(`🗑 บันทึกแทงจำหน่าย ${ctx.name} จำนวน ${qty} ${ctx.unit||''} ลงชีตเรียบร้อย`,'success');
+      closeWriteoffModal();
+      loadStock(); loadOuterStock(true);
+    }else{
+      const why=_woApiStatus==='not-installed'
+        ? 'Apps Script ยังไม่รู้จักคำสั่งแทงจำหน่าย (doGet/doPost ยังไม่ได้เพิ่ม หรือยังไม่ได้ Deploy เวอร์ชันใหม่)'
+        : _woApiStatus==='error' ? 'เชื่อมต่อ Apps Script ไม่ได้'
+        : 'ส่งข้อมูลแล้วแต่ไม่พบในชีต — doPost อาจยังไม่มีคำสั่ง writeoff หรือยังไม่ได้ Deploy เวอร์ชันใหม่';
+      showAlert('❌ แทงจำหน่ายไม่สำเร็จ ข้อมูลไม่ได้บันทึกลงชีต<br>'+why+
+        '<br>วิธีตรวจ: ใน Apps Script เลือกฟังก์ชัน checkWriteoffInstall แล้วกด Run','danger');
+    }
   }catch(e){
     showAlert('บันทึกไม่สำเร็จ: '+e.message,'danger');
   }
