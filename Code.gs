@@ -80,18 +80,22 @@ function addReceive_(ss, d) {
   var sheet = getOrCreateSheet_(ss, 'รับยาเข้า',
     ['วันที่','ชื่อยา','รหัสยา','LOT Number','วันหมดอายุ','จำนวน','หน่วยนับ','หมายเหตุ','เลขที่เอกสาร','รับจาก']);
 
-  sheet.appendRow([
+  var nextRow = sheet.getLastRow() + 1;
+  // Force LOT column (D=4) to text BEFORE writing — prevents Google Sheets
+  // from stripping leading zeros by auto-converting to number
+  sheet.getRange(nextRow, 4).setNumberFormat('@');
+  sheet.getRange(nextRow, 1, 1, 10).setValues([[
     d.date   || '',
     d.name   || '',
     d.code   || '',
-    d.lot    || '',
+    String(d.lot || ''),
     d.exp    || '',
     Number(d.qty) || 0,
     d.unit   || '',
     d.note   || '',
     d.docNum || '',
     d.source || ''
-  ]);
+  ]]);
   return json_({ status: 'ok' });
 }
 
@@ -106,11 +110,13 @@ function editReceive_(ss, d) {
     if (String(r[1]) === d.name &&
         String(r[3]) === d.originalLot &&
         _dateMatch_(String(r[0]), d.originalDate)) {
-      sheet.getRange(i + 1, 1, 1, 10).setValues([[
+      var sheetRow = i + 1;
+      sheet.getRange(sheetRow, 4).setNumberFormat('@');
+      sheet.getRange(sheetRow, 1, 1, 10).setValues([[
         d.date   || r[0],
         d.name   || r[1],
         d.code   || r[2],
-        d.lot    || r[3],
+        String(d.lot || r[3]),
         d.exp    || r[4],
         Number(d.qty) || r[5],
         d.unit   || r[6],
@@ -174,11 +180,13 @@ function addDispense_(ss, d) {
   var sheet = getOrCreateSheet_(ss, 'เบิกยาออก',
     ['วันที่','ชื่อยา','รหัสยา','LOT Number','วันหมดอายุ','จำนวน','หน่วยนับ','ผู้เบิก','เบิกให้','หมายเหตุ','เลขที่เอกสาร']);
 
-  sheet.appendRow([
+  var nextRow = sheet.getLastRow() + 1;
+  sheet.getRange(nextRow, 4).setNumberFormat('@');
+  sheet.getRange(nextRow, 1, 1, 11).setValues([[
     d.date      || '',
     d.name      || '',
     d.code      || '',
-    d.lot       || '',
+    String(d.lot || ''),
     d.exp       || '',
     Number(d.qty) || 0,
     d.unit      || '',
@@ -186,7 +194,7 @@ function addDispense_(ss, d) {
     d.dest      || '',
     d.note      || '',
     d.docNum    || ''
-  ]);
+  ]]);
   return json_({ status: 'ok' });
 }
 
@@ -201,11 +209,13 @@ function editDispense_(ss, d) {
     if (String(r[1]) === d.name &&
         String(r[3]) === d.originalLot &&
         _dateMatch_(String(r[0]), d.originalDate)) {
-      sheet.getRange(i + 1, 1, 1, 11).setValues([[
+      var sheetRow = i + 1;
+      sheet.getRange(sheetRow, 4).setNumberFormat('@');
+      sheet.getRange(sheetRow, 1, 1, 11).setValues([[
         d.date      || r[0],
         d.name      || r[1],
         d.code      || r[2],
-        d.lot       || r[3],
+        String(d.lot || r[3]),
         d.exp       || r[4],
         Number(d.qty) || r[5],
         d.unit      || r[6],
@@ -336,6 +346,8 @@ function getOrCreateSheet_(ss, name, headers) {
       .setBackground('#1A5FD4')
       .setFontColor('#ffffff');
     sheet.setFrozenRows(1);
+    // ตั้ง LOT column (D=4) ทั้งคอลัมน์เป็น text เพื่อป้องกัน auto-convert ตัดเลข 0 นำหน้า
+    sheet.getRange(2, 4, sheet.getMaxRows() - 1, 1).setNumberFormat('@');
   }
   return sheet;
 }

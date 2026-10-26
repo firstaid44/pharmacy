@@ -438,6 +438,10 @@ input[type="date"].fi{color-scheme:dark}
     <span class="api-url-text">drug_opd · Google Sheets</span>
   </div>
   <div class="topbar-btns">
+    <select id="fySelect" onchange="fetchData()" style="background:var(--bg3);color:var(--tx);border:1px solid var(--bdr);border-radius:5px;padding:.25rem .5rem;font-size:.8rem;cursor:pointer;">
+      <option value="2570">ปีงบ 2570</option>
+      <option value="2569">ปีงบ 2569</option>
+    </select>
     <button class="pack-topbar-btn" id="packTopBtn" onclick="togglePack()" title="คำนวณหน่วยบรรจุ">📦 Pack Calc</button>
     <button class="btn btn-p" id="fetchBtn" onclick="fetchData()">↺ รีโหลด</button>
     <span id="pill">กำลังโหลด…</span>
@@ -1053,7 +1057,12 @@ function goPage(id,el){
 
 /* ════ FETCH ════ */
 /* ════ API ════ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbwHeB6MLNTR3NL9FLh5ULMFIhfYD0Eg_UtZ3fH4oZJoWpg10ov_Gjmfv3F2pdrUMYws/exec';
+const API_URLS = {
+  '2569': 'https://script.google.com/macros/s/AKfycbwHeB6MLNTR3NL9FLh5ULMFIhfYD0Eg_UtZ3fH4oZJoWpg10ov_Gjmfv3F2pdrUMYws/exec',
+  '2570': '%%API_URL_2570%%',  // ← ใส่ URL ที่ได้หลัง Deploy GS_DrugAnalytics.gs
+};
+function currentFY(){ return document.getElementById('fySelect')?.value || '2570'; }
+function API_URL(){ return API_URLS[currentFY()] || API_URLS['2570']; }
 
 async function fetchData(){
   document.getElementById('fetchBtn').disabled=true;
@@ -1061,7 +1070,7 @@ async function fetchData(){
   document.getElementById('ov-empty').style.display='none';
   document.getElementById('ov-data').style.display='none';
   try{
-    const base = API_URL + '?';
+    const base = API_URL() + '?';
     const [r1, r2] = await Promise.all([
       fetch(base+'_t='+Date.now()),
       fetch(base+'action=drug_monthly&_t='+(Date.now()+1))

@@ -3127,10 +3127,18 @@ const _drugKey=s=>String(s||'').toLowerCase().replace(/[\s().,\-/*]+/g,'');
 // ยึดตามชื่อยาที่ตรงกับ drugDB เป๊ะๆเป็นหลัก (ชื่อยาคือของจริง รหัสอาจกรอกผิดได้)
 const _codeByName={};
 drugDB.forEach(d=>{ _codeByName[_drugKey(d[1])]=d[0]; });
+function _normLot(lot){
+  // Normalize LOT for consistent matching: strip leading zeros from purely-numeric LOTs.
+  // Google Sheets may auto-convert "01234" → number 1234 on one sheet but not the other,
+  // causing receive/dispense keys to mismatch. Normalizing both sides fixes this.
+  const s=String(lot||'').trim();
+  return /^\d+$/.test(s)?(s.replace(/^0+/,'')||'0'):s;
+}
 function _normalizeRowCodes(rows){
   (rows||[]).forEach(r=>{
     const correct=_codeByName[_drugKey(r.name)];
-    if(correct&&r.code!==correct)r.code=correct; // แก้รหัสให้ตรงกับชื่อยาเสมอ
+    if(correct&&r.code!==correct)r.code=correct;
+    if(r.lot!=null)r.lot=_normLot(r.lot);  // normalize LOT ป้องกัน leading-zero mismatch
   });
   return rows;
 }
